@@ -3,6 +3,7 @@ statusline configuration helper for minimalist.
 
 # Configuration Sample
 
+```vim
     let g:ezbar = {}
     let g:ezbar.active = {}                      
     let s:bg = 'gray25'
@@ -59,4 +60,5 @@ statusline configuration helper for minimalist.
     endfunction
     let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
     unlet u
+```
 

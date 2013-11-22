@@ -2,6 +2,7 @@ let h = {} | let s:h = h
 
 function! h.init() "{{{1
   let self.hls = {}
+  let self._hls = []
   return self
 endfunction
 
@@ -26,6 +27,16 @@ function! h.register(lis) "{{{1
         \ hlname, a:lis[0], a:lis[1])
   execute cmd
   let self.hls[self.key_name_for(a:lis)] = hlname
+  call add(self._hls, a:lis )
+endfunction
+
+function! h.refresh() "{{{1
+  call self.clear()
+  let colors = deepcopy(self._hls)
+  let self._hls = []
+  for color in colors
+    call self.register(color)
+  endfor
 endfunction
 
 function! h.next_color() "{{{1

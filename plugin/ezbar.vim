@@ -25,7 +25,7 @@ call s:set_options(options)
 augroup EzBar
   autocmd!
   autocmd WinEnter,BufWinEnter,FileType,ColorScheme * call ezbar#set()
-  " autocmd ColorScheme,SessionLoadPost * call ezbar#hl()
+  autocmd ColorScheme,SessionLoadPost * call ezbar#hl_refresh()
   " autocmd CursorMoved,BufUnload * call 
 augroup END
 " KeyMap:

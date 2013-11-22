@@ -82,8 +82,8 @@ function! ezbar#update() "{{{1
   call setwinvar(winnr(), '&statusline', '%!ezbar#string("active")')
 endfunction "}}}
 
-function! ezbar#parts() "{{{1
-  return self.parts
+function! ezbar#hl_refresh() "{{{1
+  call s:ez.hl.refresh()
 endfunction "}}}
 
 call s:ez.init()

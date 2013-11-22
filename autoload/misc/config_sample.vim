@@ -5,6 +5,7 @@ let g:ezbar.active.default_color = [ s:bg, 'gray61']
 let g:ezbar.active.sep_color = [ 'gray22', 'gray61']
 let g:ezbar.inactive = {}
 let g:ezbar.inactive.default_color = [ 'gray22', 'gray57' ]
+let g:ezbar.inactive.sep_color = [ 'gray23', 'gray61']
 let g:ezbar.active.layout = [
       \ 'mode',
       \ 'textmanip',
@@ -20,7 +21,6 @@ let g:ezbar.active.layout = [
 let g:ezbar.inactive.layout = [
       \ 'modified',
       \ 'filename',
-      \ 'filetype',
       \ '__SEP__',
       \ 'encoding',
       \ ]

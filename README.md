@@ -3,6 +3,13 @@ statusline configuration helper for minimalist.
 
 # Configuration Sample
 
+no secret, every part is function which return part of statusline.
+Currently only cli vim is not supported.
+* change color based on value.
+* every user defined function(=part) is first class citizen in ezbar plugin.
+* no precedence to predefined parts, so it's up to you how organize your statusline!
+
+
 ```Vim
 let g:ezbar = {}
 let g:ezbar.active = {}                      

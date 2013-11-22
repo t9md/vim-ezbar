@@ -28,9 +28,6 @@ function! ez.prepare(win) "{{{1
   return layout
 endfunction
 
-function! ez._p2s(part)
-endfunction
-
 function! ez.string(win) "{{{1
   let layout = self.prepare(a:win)
   let r = ''

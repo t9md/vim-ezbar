@@ -16,7 +16,7 @@ function! h.get_name(lis) "{{{1
   return self.hls[keyname]
 endfunction
 
-function! h.key_name_for(lis)
+function! h.key_name_for(lis) "{{{1
   return join(a:lis, '_')
 endfunction
 
@@ -53,6 +53,32 @@ function! h.dump() "{{{1
   return PP(self)
 endfunction
 
+function! h.preview(first, last)
+  " FIXME
+  call clearmatches()
+
+  for n in range(a:first, a:last)
+    let line = getline(n)
+
+    " let custom_color_pat = '\v\s*\zs[.*]\ze'
+    let custom_color_pat = '\v\s*\zs\[.*]\ze'
+    let color = matchstr(line, custom_color_pat)
+    if !empty(color)
+      let color_name = self.get_name(eval(color))
+    else
+      let predefined_pat = '\v''c'':\s*''\zs.*\ze'''
+      let color_name = matchstr(line, predefined_pat)
+    endif
+    if !exists('color_name')
+      continue
+    endif
+    call matchadd(color_name, '\%' . n . 'l')
+  endfor
+endfunction
+
+function! ezbar#highlighter#preview(first, last) "{{{1
+  call deepcopy(s:h).init().preview(a:first, a:last)
+endfunction "}}}
 function! ezbar#highlighter#new() "{{{1
   return deepcopy(s:h).init()
 endfunction "}}}
@@ -61,3 +87,4 @@ endfunction "}}}
 " echo h.get_name('SmallsCurrent')
 " echo h.get_name(['snow', 'DarkSlateGray'])
 
+" vim: foldmethod=marker

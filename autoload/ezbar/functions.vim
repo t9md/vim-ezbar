@@ -1,11 +1,11 @@
 let f = {} | let s:f = f
 let s:mode_map = {
-      \ 'n':      { 's': 'N', 'c': ['snow', 'DarkSlateGray'] },
-      \ 'i':      { 's': 'I', 'c':  'SmallsCurrent' },
-      \ 'R':      { 's': 'R ', 'c': 'Type' },
-      \ 'v':      { 's': 'V ', 'c': 'IncSearch' },
-      \ 'V':      { 's': 'VL', 'c': 'IncSearch' },
-      \ "\<C-v>": { 's': 'VB', 'c': 'IncSearch' },
+      \ 'n':      { 's': 'N ', 'c': ['SkyBlue3', 'Black'] },
+      \ 'i':      { 's': 'I ', 'c': ['PaleGreen3', 'Black'] },
+      \ 'R':      { 's': 'R ', 'c': [ 'tomato1', 'Black' ] },
+      \ 'v':      { 's': 'V ', 'c': [ 'PaleVioletRed', 'Black'] },
+      \ 'V':      { 's': 'VL', 'c': [ 'PaleVioletRed', 'Black'] }, 
+      \ "\<C-v>": { 's': 'VB', 'c': [ 'PaleVioletRed', 'Black'] }, 
       \ 'c':      { 's': 'C ', 'c': 'Type' },
       \ 's':      { 's': 'S ', 'c': 'Type' },
       \ 'S':      { 's': 'SL', 'c': 'Type' },
@@ -17,7 +17,7 @@ function! f._mode() "{{{1
   return s:mode_map[mode()]
 endfunction
 function! f._percent() "{{{1
-  return '%3p%%'
+  return { 's': '%3p%%', 'c' : ['gray40', 'gray95'] }
 endfunction
 function! f._modified() "{{{1
   return &modified ? '+' : ''
@@ -26,7 +26,7 @@ function! f._readonly() "{{{1
   return &readonly ? 'RO' : ''
 endfunction
 function! f._line_col() "{{{1
-  return { 's': '%3l:%-2c ', 'c' : 'EasyStatusLine27' }
+  return { 's': '%3l:%-2c ', 'c' : ['gray58', 'Black'] }
 endfunction
 function! f._line() "{{{1
   return '%l/%L'

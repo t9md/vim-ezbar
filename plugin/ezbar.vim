@@ -45,7 +45,7 @@ call s:set_options(options)
 " AutoCmd:
 augroup EzBar
   autocmd!
-  " autocmd WinEnter,BufWinEnter,FileType,ColorScheme * call ezbar#set()
+  autocmd WinEnter,BufWinEnter,FileType,ColorScheme * call ezbar#update()
   " autocmd ColorScheme,SessionLoadPost * call ezbar#hl()
   " autocmd CursorMoved,BufUnload * call 
 augroup END
@@ -56,6 +56,8 @@ augroup END
 command! EzBar call ezbar#set()
 command! EzBarUpdate call ezbar#update()
 command! EzBarDefaultFunctionNames echo ezbar#functions#default_names()
+command! -range EzBarColorPreview 
+      \ :call ezbar#highlighter#preview(<line1>, <line2>)
 
 " Finish:
 let &cpo = s:old_cpo

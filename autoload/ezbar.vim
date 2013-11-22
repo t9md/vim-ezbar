@@ -12,7 +12,7 @@ function! ez.prepare(win) "{{{1
   let r = []
   let s:default_f = ezbar#functions#default()
   let default_color = g:ezbar[a:win].default_color
-  let default_color_name = self.name_of_hl(default_color)
+  let default_color_name = self.hl.get_name(default_color)
   call extend(s:default_f, g:ezbar.functions , 'force')
 
   for part in g:ezbar[a:win].layout
@@ -36,10 +36,6 @@ function! ez.prepare(win) "{{{1
   return r
 endfunction
 
-function! ez.name_of_hl(hl)
-  return self.hl.get_name(a:hl)
-endfunction
-
 function! ez.string(win) "{{{1
   let lis = self.prepare(a:win)
   let r = ''
@@ -49,7 +45,7 @@ function! ez.string(win) "{{{1
     unlet! v
     let v = lis[idx]
     if type(v) == type({})
-      let color_name = self.name_of_hl(v.c)
+      let color_name = self.hl.get_name(v.c)
       let s = '%#'. color_name . '# ' . v.s
     else
       let s = v
@@ -59,7 +55,7 @@ function! ez.string(win) "{{{1
     endif
     let next = idx + 1
     if next != max_idx && type(lis[idx+1]) == type({})
-      if color_name == self.name_of_hl(lis[next].c)
+      if color_name == self.hl.get_name(lis[next].c)
         let sep = ' |'
       else
         let sep = ' '
@@ -95,12 +91,13 @@ function! ezbar#set() "{{{1
     endif
   endfor
 endfunction
+
 function! ezbar#update() "{{{1
   call s:ez.init()
   call setwinvar(winnr(), '&statusline', '%!ezbar#string("active")')
 endfunction
-call s:ez.init()
-echo s:ez.dump()
+" call s:ez.init()
+" echo s:ez.dump()
 " echo PP( s:ez.string('active'))
 " echo ez.string()
 " vim: foldmethod=marker

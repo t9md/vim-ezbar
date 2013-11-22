@@ -1,12 +1,11 @@
 let g:ezbar = {}
 let g:ezbar.active = {}                      
-let g:ezbar.active.default_color = 'StatusLine'
+let g:ezbar.active.default_color = ['gray18', 'gray61']
 let g:ezbar.active.layout = [
       \ '_mode',
-      \ '_filename',
+      \ 'textmanip',
       \ '_modified',
       \ '_filetype',
-      \ 'textmanip',
       \ 'smalls',
       \ 'fugitive',
       \ '__SEP__',
@@ -28,7 +27,9 @@ let g:ezbar.functions = {}
 let u = {}
 function! u.textmanip() "{{{1
   let s = toupper(g:textmanip_current_mode[0])
-  return { 's' : s, 'c': s == 'R' ? 'Statement' : 'Function' }
+  return { 's' : s, 'c': s == 'R'
+        \ ?  ['gray18', 'DeepPink3']
+        \ :  ['gray18', 'PaleGreen1'] }
 endfunction
 function! u.smalls() "{{{1
   let s = toupper(g:smalls_current_mode[0])
@@ -42,7 +43,10 @@ function! u.fugitive() "{{{1
   if empty(s)
     return ''
   endif
-  return { 's' : s, 'c': s == 'master' ? 'Normal' : 'SmallsCurrent' }
+  return { 's' : s, 'c': s == 'master'
+        \ ?  ['gray18', 'gray61']
+        \ :  ['red4', 'gray61']
+        \ }
 endfunction
 let g:ezbar.functions = u
 " echo ezbar#string()

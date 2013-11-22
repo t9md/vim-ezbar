@@ -1,61 +1,54 @@
 function! s:plog(msg) "{{{1
   cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vim.log')
 endfunction
-" %-0{minwid}.{maxwid}{item}
-
 let ez = {} | let s:ez = ez
 function! ez.init() "{{{1
   let self.hl = ezbar#highlighter#new()
 endfunction
 
 function! ez.prepare(win) "{{{1
-  let r = []
-  let s:default_f = ezbar#functions#default()
-  let default_color = g:ezbar[a:win].default_color
-  let default_color_name = self.hl.get_name(default_color)
-  call extend(s:default_f, g:ezbar.functions , 'force')
+  let layout = []
+  let win = a:win
+  let default_hl = self.hl.get_name(g:ezbar[win].default_color)
+  let sep_hl = self.hl.get_name( get(g:ezbar[win], 'sep_color', default_hl) )
 
-  for part in g:ezbar[a:win].layout
+  for part in g:ezbar[win].layout
     if part == '__SEP__'
-      call add(r, '%#' . default_color_name . '#')
-      call add(r, '%=')
+      call add(layout, { 's': '%=', 'c': sep_hl })
     else
       unlet! p
-      let p = s:default_f[part]()
+      let p = g:ezbar.parts[part]()
       if empty(p)
         continue
       endif
-      if type(p) == type('')
-        let d = { 's': p, 'c': default_color_name }
-      else
-        let d = p
-      endif
-      call add(r, d)
+      call add(layout, type(p) == type('') ? { 's': p, 'c': default_hl } : p  )
     endif
+    unlet! part
   endfor
-  return r
+  return layout
+endfunction
+
+function! ez._p2s(part)
 endfunction
 
 function! ez.string(win) "{{{1
-  let lis = self.prepare(a:win)
+  let layout = self.prepare(a:win)
   let r = ''
-  let last_color = ''
-  let max_idx = len(lis)
-  for idx in range(len(lis))
-    unlet! v
-    let v = lis[idx]
-    if type(v) == type({})
-      let color_name = self.hl.get_name(v.c)
-      let s = '%#'. color_name . '# ' . v.s
-    else
-      let s = v
-      let last_color = ''
+  let max_idx = len(layout)
+  for idx in range(len(layout))
+    unlet! part
+    let part = layout[idx]
+    let color = self.hl.get_name(part.c)
+    let s = '%#'. color . '# ' . part.s
+
+    if part.s ==# '%='
       let r .= s
       continue
     endif
+
     let next = idx + 1
-    if next != max_idx && type(lis[idx+1]) == type({})
-      if color_name == self.hl.get_name(lis[next].c)
+    if next != max_idx
+      if color == self.hl.get_name(layout[next].c)
         let sep = ' |'
       else
         let sep = ' '
@@ -65,7 +58,6 @@ function! ez.string(win) "{{{1
     endif
     let r .= s
     let r .= sep
-    let last_color = color_name
   endfor
   return r
 endfunction
@@ -75,16 +67,13 @@ function! ez.dump() "{{{1
 endfunction
 
 function! ezbar#string(win) "{{{1
-  call s:ez.init()
-  " return '%#SmallsCurrent#%(n%) %#Normal# vim %= %l/%L %p%%'
   return s:ez.string(a:win)
 endfunction
 
 function! ezbar#set() "{{{1
-  call s:ez.init()
-  let current_win = winnr()
+  let cwin = winnr()
   for n in range(1, winnr('$'))
-    if n == current_win
+    if n ==# cwin
       call setwinvar(n, '&statusline', '%!ezbar#string("active")')
     else
       call setwinvar(n, '&statusline', '%!ezbar#string("inactive")')
@@ -93,9 +82,15 @@ function! ezbar#set() "{{{1
 endfunction
 
 function! ezbar#update() "{{{1
-  call s:ez.init()
   call setwinvar(winnr(), '&statusline', '%!ezbar#string("active")')
-endfunction
+endfunction "}}}
+
+function! ezbar#parts() "{{{1
+  return self.parts
+endfunction "}}}
+
+call s:ez.init()
+" echo s:ez.string('active')
 " call s:ez.init()
 " echo s:ez.dump()
 " echo PP( s:ez.string('active'))

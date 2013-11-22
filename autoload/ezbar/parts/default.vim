@@ -13,42 +13,51 @@ let s:mode_map = {
       \ '?':      { 's': '  ', 'c': 'Type' },
       \ }
 
-function! f._mode() "{{{1
+function! f.mode() "{{{1
   return s:mode_map[mode()]
 endfunction
-function! f._percent() "{{{1
+function! f.percent() "{{{1
   return { 's': '%3p%%', 'c' : ['gray40', 'gray95'] }
 endfunction
-function! f._modified() "{{{1
+function! f.modified() "{{{1
   return &modified ? '+' : ''
 endfunction
-function! f._readonly() "{{{1
+function! f.readonly() "{{{1
   return &readonly ? 'RO' : ''
 endfunction
-function! f._line_col() "{{{1
+function! f.line_col() "{{{1
   return { 's': '%3l:%-2c ', 'c' : ['gray58', 'Black'] }
 endfunction
-function! f._line() "{{{1
+function! f.line() "{{{1
   return '%l/%L'
 endfunction
-function! f._encoding() "{{{1
+function! f.encoding() "{{{1
   return &enc
 endfunction
-function! f._fileformat() "{{{1
+function! f.fileformat() "{{{1
   return &fileformat
 endfunction
-function! f._filetype() "{{{1
+function! f.filetype() "{{{1
   return &ft
 endfunction "}}}
-function! f._filename() "{{{1
+function! f.filename() "{{{1
   return '%t'
 endfunction "}}}
 
 " Public:
-function! ezbar#functions#default()
+function! ezbar#parts#default#new()
   return deepcopy(s:f)
 endfunction
-function! ezbar#functions#default_names()
+
+function! ezbar#parts#default#use(list) "{{{1
+  let p = {}
+  for part in a:list
+    let p[part] = s:f[part]
+  endfor
+  return deepcopy(p)
+endfunction
+
+function! ezbar#parts#default#list()
   return keys(s:f)
 endfunction
 " vim: foldmethod=marker

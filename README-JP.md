@@ -3,20 +3,29 @@
 CUIモードのカラー設定は、Predefined なカラーのみサポート(色の直接指定はGUIモードのみ)。
 
 # コレは何？
-vim 上級者向けの statuline 設定ヘルパーです。
+ミニマリスト向けの statuline 設定ヘルパー。
 
 # 特徴
 * ファンシーなカラーテーマはなし。
 * シンプルなデザイン。Vim Scripter にとって設定しやすい。親切なエラー回避が無い。
-* 条件によって動的に色を変えたり、ステータスラインのレイアウト自体も変えられる。
+* 条件によって動的に色を変えたり、ステータスラインのレイアウト自体を変えられる。
 * 全てのステータスラインの部品(part)は、辞書関数として実装される。
-* ユーザー関数よりも優先される、定義済みの関数はほぼ無く、全てはユーザーの設定次第。
+* ユーザー関数よりも優先される定義済みの関数はほぼ無く、全てはユーザーの設定次第。
 
-# CONCEPT
+# スクリーン画像
+* Gitブランチが master でない場合に色を変える。
+![ConditionalColor-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color1.png)  
+![ConditionalColor-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color2.png)  
+
+* 特定のプラグインのモードが発動した場合にステータスラインの他の部品を隠す(easymotion 等で使う。)
+![Fill-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill1.png)  
+![Fill-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill2.png)  
+
+# コンセプト
 * ユーザーの設定は `g:ezbar` 辞書に保存する。
 * どの部品(part)が表示されるかは、`g:ezbar.active.layout`, `g:ezbar.inactive.layout` 配列で制御する。
   ```Vim
-  " active window's statusline
+  " アクティブウィンドウのステータスライン
   let g:ezbar.active.layout = [
         \ 'mode',
         \ 'filetype',
@@ -24,7 +33,7 @@ vim 上級者向けの statuline 設定ヘルパーです。
         \ 'encoding',
         \ 'percent',
         \ ]
-  " inactive window's statusline
+  " 非アクティブウィンドウのステータスライン
   let g:ezbar.inactive.layout = [
         \ 'filetype',
         \ '__SEP__',
@@ -33,7 +42,7 @@ vim 上級者向けの statuline 設定ヘルパーです。
         \ ]
   ```
 
-* レイアウトは、パート(`part`) で構成される。各パートは `g:ezbar.parts[{part}]()` に対応する。
+* レイアウトは、パート(`part`) で構成される。各パートは `g:ezbar.parts[{part}]()` 関数の呼び出し結果に対応する。
   ```Vim
   let g:ezbar.active.layout = [
         \ 'mode',        <-- g:ezbar.parts.mode()
@@ -44,7 +53,7 @@ vim 上級者向けの statuline 設定ヘルパーです。
         \ ]
   ```
 
-* よって、ユーザーが設定することは、自分のパート関数を書き、その関数名をレイアウトの中で使うこと。以上。
+* したがって、ユーザーが設定することは、自分のパート関数を書き、その関数名をレイアウトの中で使うこと。
   ```Vim
   let g:ezbar.active.layout = [
         \ 'my_encoding', <-- g:ezbar.parts.my_encoding()
@@ -86,18 +95,17 @@ vim 上級者向けの statuline 設定ヘルパーです。
   unlet u
   ```
 
-パート関数が以下の値を返した場合、そのパートはステータスラインに表示されない。
-空の文字列、空の辞書、's' フィールドが空の辞書
+パート関数が「 空の文字列、空の辞書、's' フィールドが空の辞書 」のいずれかを返した場合、そのパートはステータスラインに表示されない。
 
-* 上の例で見たように、色をパートのなかで色を直接指定することが出来る。
+* 上の例で見たように、パートの中で色を直接指定することが出来る。
   ```Vim
   " 色を直接指定する。['guibg', 'guifg' ]
   { 's' : "foo", 'c': ['gray18', 'gray61'] }
 
-  " 定義済みの色(ハイライト・グループ)を使う。
+  " 定義済みの色(ハイライトグループ)を使う。
   { 's' : "foo", 'c': 'Statement' }
 
-  " オプショナルな色として `'ac'`(アクティブウィンドウ用)と `'ic'`(非アクティブなウィンドウ用)がある。
+  " オプショナルとして使用可能な色に 'ac'(アクティブウィンドウ用)と 'ic'(非アクティブなウィンドウ用)がある。
   " ** どの色が適用されるかは以下の優先度で決まる。
   "   アクティブウィンドウ:   'ac' => 'c' => g:ezbar.active.default_color
   "   非アクティブウィンドウ: 'ic' => 'c' => g:ezbar.inactive.default_color
@@ -105,7 +113,7 @@ vim 上級者向けの statuline 設定ヘルパーです。
   ```
 
 * どの色が利用できるか調べるには？
-`:help rgb.txt`
+`:help rgb.txt`  
 `:edit misc/colortest/compact.vim` してから `%so`  
 `:so misc/colortest/full.vim` してから `%so`  
 
@@ -123,14 +131,14 @@ vim 上級者向けの statuline 設定ヘルパーです。
 ```
 
 # 設定サンプル
-サンプルファイルは[ここ](https://github.com/t9md/vim-ezbar/tree/master/misc/config_sample)にある。
+サンプルの設定ファイルは[ここ](https://github.com/t9md/vim-ezbar/tree/master/misc/config_sample)にある。
 
-設定を試行錯誤する時は以下のコマンドが助けになるかもしれない。
-`:EzBarUpdate` で現在のウィンドウ(アクティブウィンドウ)のステータスラインを更新する。
-`:EzBarDisable` は EzBar が設定する autocmd を削除する。
-`:EzBarSet` 全ウィンドウのステータスラインを設定する。
-`:'<,'>EzBarColorPreview` 選択した行を `matchadd()` でハイライトする。色のプレビューに使う。
-`:echo ezbar#string('active')` or `:echo ezbar#string('inactive')` 最終的に設定されるステータスラインの文字列を返す。
+設定を試行錯誤する時は以下のコマンドが助けになるかもしれない。  
+`:EzBarUpdate` で現在のウィンドウ(アクティブウィンドウ)のステータスラインを更新する。  
+`:EzBarDisable` は EzBar が設定する autocmd を削除する。  
+`:EzBarSet` 全ウィンドウのステータスラインを設定する。  
+`:'<,'>EzBarColorPreview` 選択した行を `matchadd()` でハイライトする。色のプレビューに使う。  
+`:echo ezbar#string('active')` or `:echo ezbar#string('inactive')` 最終的に設定されるステータスラインの文字列を返す。  
 
 * ベーシック
   ```Vim
@@ -199,7 +207,7 @@ vim 上級者向けの statuline 設定ヘルパーです。
   let s:bg = 'gray25'
 
   let g:ezbar = {}
-  let g:ezbar.active = {}                      
+  let g:ezbar.active = {}
   let g:ezbar.active.default_color = [ s:bg, 'gray61']
   let g:ezbar.active.sep_color = [ 'gray30', 'gray61']
   let g:ezbar.inactive = {}

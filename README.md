@@ -12,7 +12,7 @@ statusline configuration helper for minimalist.
 * all statusline component(part) is implemented as dictionary function.
 * no precedence to predefined parts, so it's up to you how organize your statusline.
 
-# Capture
+# Screen Capture
 * Change color when git branch is not master  
 ![ConditionalColor-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color1.png)  
 ![ConditionalColor-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color2.png)  

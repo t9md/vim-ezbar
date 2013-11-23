@@ -1,20 +1,20 @@
 # DON't USE THIS
-Very experimental stage.
-NO CUI mode color support.
+実験的段階です。
+CUIモードのカラー設定は、Predefined なカラーのみサポート(色の直接指定はGUIモードのみ)。
 
-# What's this?
-statusline configuration helper for minimalist.
+# コレは何？
+vim 上級者向けの statuline 設定ヘルパーです。
 
-# Feature
-* no fancy colorscheme
-* simple design, easy to configure for vim-scripter(advanced user), no fail-safe guared for begginer
-* dynamically configure color based on condition.
-* all statusline component(part) is implemented as dictionary function.
-* no precedence to predefined parts, so it's up to you how organize your statusline.
+# 特徴
+* ファンシーなカラーテーマはなし。
+* シンプルなデザイン。Vim Scripter にとって設定しやすい。親切なエラー回避が無い。
+* 条件によって動的に色を変えたり、ステータスラインのレイアウト自体も変えられる。
+* 全てのステータスラインの部品(part)は、辞書関数として実装される。
+* ユーザー関数よりも優先される、定義済みの関数はほぼ無く、全てはユーザーの設定次第。
 
 # CONCEPT
-* user configuration is stored under `g:ezbar` dictionary
-* part shown is controlled with `g:ezbar.active.layout`, `g:ezbar.inactive.layout` array.
+* ユーザーの設定は `g:ezbar` 辞書に保存する。
+* どの部品(part)が表示されるかは、`g:ezbar.active.layout`, `g:ezbar.inactive.layout` 配列で制御する。
   ```Vim
   " active window's statusline
   let g:ezbar.active.layout = [
@@ -33,7 +33,7 @@ statusline configuration helper for minimalist.
         \ ]
   ```
 
-* Layout consists of `part`. Each part is mapped to result of `g:ezbar.parts[{part}]()`.
+* レイアウトは、パート(`part`) で構成される。各パートは `g:ezbar.parts[{part}]()` に対応する。
   ```Vim
   let g:ezbar.active.layout = [
         \ 'mode',        <-- g:ezbar.parts.mode()
@@ -44,7 +44,7 @@ statusline configuration helper for minimalist.
         \ ]
   ```
 
-* So all you have to do is write your own function and use that function in `layout`. That's it!
+* よって、ユーザーが設定することは、自分のパート関数を書き、その関数名をレイアウトの中で使うこと。以上。
   ```Vim
   let g:ezbar.active.layout = [
         \ 'my_encoding', <-- g:ezbar.parts.my_encoding()
@@ -54,8 +54,7 @@ statusline configuration helper for minimalist.
   endfunction
   ```
 
-* But its' tiresome to write all configuration by your self?  
-Merge parts other user provide and add a little portion
+* しかし、全関数を自分自身で設定するのは面倒な場合もある。その場合は、他のユーザーが書いたパーツ(partの集合)辞書をマージすれば良い。
   ```Vim
   let u = {}
   function! u.my_encoding()
@@ -65,14 +64,14 @@ Merge parts other user provide and add a little portion
   unlet u
   ```
 
-* each part function should return simple string or dictionary
+* 各パート関数は、単なる文字列か辞書を返さなければならない。
   ```Vim
-  " return simple string
+  " 単なる文字列
   function! u.my_encoding()
     return &encoding
   endfunction
 
-  " return dictionary, change color when git branch is not 'master'
+  " 辞書。git ブランチが 'master' でない場合には色を変える。
   function! u.fugitive() "{{{1
     let s = fugitive#head()
     if empty(s)
@@ -86,32 +85,35 @@ Merge parts other user provide and add a little portion
   let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
   unlet u
   ```
-Empty string or Dictionary or Dictionary for 's' is empty will not shown to statusline.
 
-* as you see in above example you can set color directly
+パート関数が以下の値を返した場合、そのパートはステータスラインに表示されない。
+空の文字列、空の辞書、's' フィールドが空の辞書
+
+* 上の例で見たように、色をパートのなかで色を直接指定することが出来る。
   ```Vim
-  " directly specify color ['guibg', 'guifg' ]
+  " 色を直接指定する。['guibg', 'guifg' ]
   { 's' : "foo", 'c': ['gray18', 'gray61'] }
 
-  " use predefined color
+  " 定義済みの色(ハイライト・グループ)を使う。
   { 's' : "foo", 'c': 'Statement' }
 
-  " optional color `'ac'` for active window, and `'ic'` inactive window.
-  " **color precedence
-  "   active:   'ac' => 'c' => g:ezbar.active.default_color
-  "   inactive: 'ic' => 'c' => g:ezbar.inactive.default_color
+  " オプショナルな色として `'ac'`(アクティブウィンドウ用)と `'ic'`(非アクティブなウィンドウ用)がある。
+  " ** どの色が適用されるかは以下の優先度で決まる。
+  "   アクティブウィンドウ:   'ac' => 'c' => g:ezbar.active.default_color
+  "   非アクティブウィンドウ: 'ic' => 'c' => g:ezbar.inactive.default_color
   { 's': 'bar', 'ac' : ['gray40', 'gray95'] }
   ```
 
-* To check color available  
+* どの色が利用できるか調べるには？
 `:help rgb.txt`
-`:edit misc/colortest/compact.vim` then `%so`  
-`:so misc/colortest/full.vim` then `%so`  
+`:edit misc/colortest/compact.vim` してから `%so`  
+`:so misc/colortest/full.vim` してから `%so`  
 
-* Also you can use `self.__is_active` in each `part` to know whether here is active window or not.
+* パート関数の中では、`self.__is_active` がアクティブ、非アクティブの判断に使用可能。
 ```Vim
   function! f.percent() "{{{1
     let s  = '%3p%%'
+    " アクティブの場合のみ色をつける。
     if g:ezbar.parts.__is_active
       return { 's': s, 'c' : ['gray40', 'gray95'] }
     else
@@ -120,17 +122,17 @@ Empty string or Dictionary or Dictionary for 's' is empty will not shown to stat
   endfunction
 ```
 
-# Configuration Sample
-[ExampleFile](https://github.com/t9md/vim-ezbar/tree/master/misc/config_sample)
+# 設定サンプル
+サンプルファイルは[ここ](https://github.com/t9md/vim-ezbar/tree/master/misc/config_sample)にある。
 
-While preparing configuration, following command might help.
-`:EzBarUpdate` update current statusline for active window.  
-`:EzBarDisable` disable and delete autocmd  
-`:EzBarSet` set all window's statusline  
-`:'<,'>EzBarColorPreview` set color to visually selected range for preview.  
-`:echo ezbar#string('active')` or `:echo ezbar#string('inactive')`  
+設定を試行錯誤する時は以下のコマンドが助けになるかもしれない。
+`:EzBarUpdate` で現在のウィンドウ(アクティブウィンドウ)のステータスラインを更新する。
+`:EzBarDisable` は EzBar が設定する autocmd を削除する。
+`:EzBarSet` 全ウィンドウのステータスラインを設定する。
+`:'<,'>EzBarColorPreview` 選択した行を `matchadd()` でハイライトする。色のプレビューに使う。
+`:echo ezbar#string('active')` or `:echo ezbar#string('inactive')` 最終的に設定されるステータスラインの文字列を返す。
 
-* Basic
+* ベーシック
   ```Vim
   let g:ezbar = {}
   let g:ezbar.active = {}
@@ -187,15 +189,12 @@ While preparing configuration, following command might help.
           \ }
           " \ ?  ['red4', 'gray61']
   endfunction
-  " function! u._filter(layout) "{{{1
-    " echo len(a:layout)
-  " endfunction
 
   let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
   unlet u
   ```
 
-* Advanced
+* 応用
   ```Vim
   let s:bg = 'gray25'
 
@@ -244,22 +243,22 @@ While preparing configuration, following command might help.
     return fugitive#head()
   endfunction
 
-  " `_init()` is special function, if `g:ezbar.parts._init` is function.
-  " use this to define some field to store state.
+  " `_init()` は特別な関数。`g:ezbar.parts._init` が関数であれば呼ばれる。
+  " 状態管理に使うフィールドを定義する場合に使う。
   function! u._init() "{{{1
     let self.__smalls_active = 0
   endfunction
 
-  " `_filter()` is special function, if `g:ezbar.parts._filter` is function.
-  " ezbar call this function with normalized layout as argument.
+  " `_filter()` は特別な関数。`g:ezbar.parts._filter` が関数であれば呼ばれる。
+  " ezbar は標準化した(辞書化して 'name' フィールドを定義) レイアウトを引数として呼び出す。
   function! u._filter(layout) "{{{1
     if self.__smalls_active && self.__is_active
-      " fill statusline when smalls is active
+      " smalls がアクティブの場合は、目立つようにステータスラインを占領する(他のパートを消す。)
       return filter(a:layout, 'v:val.name == "smalls"')
     endif
 
     let r =  []
-    " you can decorate color here instead of in each part function.
+    " 各パート関数の中で色を設定する代わりに、ここで設定することも可能。
     for part in a:layout
       if part.name == 'fugitive'
         let part.c = part.s == 'master' ?  ['gray18', 'gray61'] : ['red4', 'gray61']

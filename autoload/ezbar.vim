@@ -1,7 +1,3 @@
-function! s:plog(msg) "{{{1
-  cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vim.log')
-endfunction
-
 let ez = {} | let s:ez = ez
 function! ez.init() "{{{1
   let self.hl = ezbar#highlighter#new()

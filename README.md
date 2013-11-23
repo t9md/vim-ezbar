@@ -86,6 +86,7 @@ Merge parts other user provide and add a little portion
   let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
   unlet u
   ```
+Empty string or Dictionary or Dictionary for 's' is empty will not shown to statusline.
 
 * as you see in above example you can set color directly
   ```Vim

@@ -104,7 +104,7 @@ Merge parts other user provide and add a little portion
   { 's': 'bar', 'ac' : ['gray40', 'gray95'] }
   ```
 
-* To check color available
+* To check color available  
 `:help rgb.txt` or see  
 `:so misc/colortest/compact.vim`  
 `:so misc/colortest/full.vim`  

@@ -7,16 +7,14 @@ statusline configuration helper for minimalist.
 
 # Feature
 * no fancy colorscheme
-* simple design, easy to configure for vim-scripter(advanced user).
-no failsafe guared for begginer
+* simple design, easy to configure for vim-scripter(advanced user), no fail-safe guared for begginer
 * dynamically configure color based on condition.
-* all statusline componet(part) is implemented as dictionary function.
-every user defined function(=part) is first class citizen in ezbar plugin.
-* no precedence to predefined parts, so it's up to you how organize your statusline!
+* all statusline component(part) is implemented as dictionary function.
+* no precedence to predefined parts, so it's up to you how organize your statusline.
 
 # CONCEPT
 * user configuration is stored under `g:ezbar` dictionary
-* which part to show is controlled with `g:ezbar.active.layout`, `g:ezbar.active.layout` array.
+* part shown is controlled with `g:ezbar.active.layout`, `g:ezbar.inactive.layout` array.
   ```Vim
   " active window's statusline
   let g:ezbar.active.layout = [
@@ -39,14 +37,14 @@ every user defined function(=part) is first class citizen in ezbar plugin.
   ```Vim
   let g:ezbar.active.layout = [
         \ 'mode',        <-- g:ezbar.parts.mode()
-        \ 'filetype',    <-- g:ezbar.parts.filetype() 
-        \ '__SEP__',     <-- g:ezbar.parts.__SEP__() 
-        \ 'encoding',    <-- g:ezbar.parts.encoding() 
-        \ 'percent',     <-- g:ezbar.parts.percent() 
+        \ 'filetype',    <-- g:ezbar.parts.filetype()
+        \ '__SEP__',     <-- g:ezbar.parts.__SEP__()
+        \ 'encoding',    <-- g:ezbar.parts.encoding()
+        \ 'percent',     <-- g:ezbar.parts.percent()
         \ ]
   ```
 
-* So all user have to do is write your own function and use that function in `layout`. That's it.
+* So all you have to do is write your own function and use that function in `layout`. That's it!
   ```Vim
   let g:ezbar.active.layout = [
         \ 'my_encoding', <-- g:ezbar.parts.my_encoding()
@@ -94,7 +92,7 @@ Merge parts other user provide and add a little portion
   " directly specify color ['guibg', 'guifg' ]
   { 's' : "foo", 'c': ['gray18', 'gray61'] }
 
-  " user predefined color
+  " use predefined color
   { 's' : "foo", 'c': 'Statement' }
 
   " optional color `'ac'` for active window, and `'ic'` inactive window.
@@ -105,11 +103,11 @@ Merge parts other user provide and add a little portion
   ```
 
 * To check color available  
-`:help rgb.txt` or see  
+`:help rgb.txt`
 `:so misc/colortest/compact.vim`  
 `:so misc/colortest/full.vim`  
 
-* Also you can user `self.__is_active` in part function to determine whether this is active win or not.
+* Also you can use `self.__is_active` in part function to determine whether this is active win or not.
 ```Vim
   function! f.percent() "{{{1
     let s  = '%3p%%'

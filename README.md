@@ -13,11 +13,11 @@ statusline configuration helper for minimalist.
 * no precedence to predefined parts, so it's up to you how organize your statusline.
 
 # Capture
-* Change color when git branch is not master
+* Change color when git branch is not master  
 [ConditionalColor-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color1.png?raw=true)  
 [ConditionalColor-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color2.png?raw=true)  
 
-* Hide other statusline part when specific plugin active
+* Hide other statusline part when specific plugin active  
 [Fill-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill1.png?raw=true)  
 [Fill-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill2.png?raw=true)  
 

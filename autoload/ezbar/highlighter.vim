@@ -25,7 +25,7 @@ function! h.register(lis) "{{{1
   let hlname = self.next_color()
   let cmd = printf('highlight %s guibg=%s guifg=%s', 
         \ hlname, a:lis[0], a:lis[1])
-  execute cmd
+  silent execute cmd
   let self.hls[self.key_name_for(a:lis)] = hlname
   call add(self._hls, a:lis )
 endfunction

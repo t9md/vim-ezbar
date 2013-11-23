@@ -90,19 +90,19 @@ Merge parts other user provide and add a little portion
   ```
 
 * as you see in above example you can set color directly
-```Vim
-" directly specify color ['guibg', 'guifg' ]
-{ 's' : "foo", 'c': ['gray18', 'gray61'] }
+  ```Vim
+  " directly specify color ['guibg', 'guifg' ]
+  { 's' : "foo", 'c': ['gray18', 'gray61'] }
 
-" user predefined color
-{ 's' : "foo", 'c': 'Statement' }
+  " user predefined color
+  { 's' : "foo", 'c': 'Statement' }
 
-" optional color `'ac'` for active window, and `'ic'` inactive window.
-" color precedence
-" active:   'ac' => 'c' => g:ezbar.active.default_color
-" inactive: 'ic' => 'c' => g:ezbar.inactive.default_color
-{ 's': 'bar', 'ac' : ['gray40', 'gray95'] }
-```
+  " optional color `'ac'` for active window, and `'ic'` inactive window.
+  " color precedence
+  " active:   'ac' => 'c' => g:ezbar.active.default_color
+  " inactive: 'ic' => 'c' => g:ezbar.inactive.default_color
+  { 's': 'bar', 'ac' : ['gray40', 'gray95'] }
+  ```
 
 # Configuration Sample
 

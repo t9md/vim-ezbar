@@ -134,13 +134,13 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
 サンプルの設定ファイルは[ここ](https://github.com/t9md/vim-ezbar/tree/master/misc/config_sample)にある。
 
 設定を試行錯誤する時は以下のコマンドが助けになるかもしれない。  
-`:EzBarUpdate` で現在のウィンドウ(アクティブウィンドウ)のステータスラインを更新する。  
-`:EzBarDisable` は EzBar が設定する autocmd を削除する。  
-`:EzBarSet` 全ウィンドウのステータスラインを設定する。  
-`:'<,'>EzBarColorPreview` 選択した行を `matchadd()` でハイライトする。色のプレビューに使う。  
-`:echo ezbar#string('active')` or `:echo ezbar#string('inactive')` 最終的に設定されるステータスラインの文字列を返す。  
+* `:EzBarUpdate` で現在のウィンドウ(アクティブウィンドウ)のステータスラインを更新する。  
+* `:EzBarDisable` は EzBar が設定する autocmd を削除する。  
+* `:EzBarSet` 全ウィンドウのステータスラインを設定する。  
+* `:'<,'>EzBarColorPreview` 選択した行を `matchadd()` でハイライトする。色のプレビューに使う。  
+* `:echo ezbar#string('active')` or `:echo ezbar#string('inactive')` 最終的に設定されるステータスラインの文字列を返す。  
 
-* ベーシック
+## ベーシック
   ```Vim
   let g:ezbar = {}
   let g:ezbar.active = {}
@@ -202,7 +202,7 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
   unlet u
   ```
 
-* 応用
+## 応用
   ```Vim
   let s:bg = 'gray25'
 

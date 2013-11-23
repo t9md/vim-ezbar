@@ -56,8 +56,8 @@ every user defined function(=part) is first class citizen in ezbar plugin.
   endfunction
   ```
 
-* But its' tiresome to write all configuration by your self?
-Merge parts other user provide and add a little portion 
+* But its' tiresome to write all configuration by your self?  
+Merge parts other user provide and add a little portion
   ```Vim
   let u = {}
   function! u.my_encoding()
@@ -68,26 +68,26 @@ Merge parts other user provide and add a little portion
   ```
 
 * each part function should return simple string or dictionary
-```Vim
-" return simple string
-function! u.my_encoding()
-  return &encoding
-endfunction
+  ```Vim
+  " return simple string
+  function! u.my_encoding()
+    return &encoding
+  endfunction
 
-" return dictionary, change color when git branch is not 'master'
-function! u.fugitive() "{{{1
-  let s = fugitive#head()
-  if empty(s)
-    return ''
-  endif
-  return { 's' : s, 'c': s == 'master'
-        \ ?  ['gray18', 'gray61']
-        \ :  ['red4', 'gray61']
-        \ }
-endfunction
-let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
-unlet u
-```
+  " return dictionary, change color when git branch is not 'master'
+  function! u.fugitive() "{{{1
+    let s = fugitive#head()
+    if empty(s)
+      return ''
+    endif
+    return { 's' : s, 'c': s == 'master'
+          \ ?  ['gray18', 'gray61']
+          \ :  ['red4', 'gray61']
+          \ }
+  endfunction
+  let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
+  unlet u
+  ```
 
 * as you see in above example you can set color directly
 ```Vim

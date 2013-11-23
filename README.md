@@ -17,34 +17,34 @@ every user defined function(=part) is first class citizen in ezbar plugin.
 # CONCEPT
 * user configuration is stored under `g:ezbar` dictionary
 * which part to show is controlled with `g:ezbar.active.layout`, `g:ezbar.active.layout` array.
-```Vim
-" active window's statusline
-let g:ezbar.active.layout = [
-      \ 'mode',
-      \ 'filetype',
-      \ '__SEP__',
-      \ 'encoding',
-      \ 'percent',
-      \ ]
-" inactive window's statusline
-let g:ezbar.inactive.layout = [
-      \ 'filetype',
-      \ '__SEP__',
-      \ 'encoding',
-      \ 'percent',
-      \ ]
-```
+  ```Vim
+  " active window's statusline
+  let g:ezbar.active.layout = [
+        \ 'mode',
+        \ 'filetype',
+        \ '__SEP__',
+        \ 'encoding',
+        \ 'percent',
+        \ ]
+  " inactive window's statusline
+  let g:ezbar.inactive.layout = [
+        \ 'filetype',
+        \ '__SEP__',
+        \ 'encoding',
+        \ 'percent',
+        \ ]
+  ```
 
 * Layout consists of `part`. Each part is mapped to result of `g:ezbar.parts[{part}]()`.
-```Vim
-let g:ezbar.active.layout = [
-      \ 'mode',        <-- g:ezbar.parts.mode()
-      \ 'filetype',    <-- g:ezbar.parts.filetype() 
-      \ '__SEP__',     <-- g:ezbar.parts.__SEP__() 
-      \ 'encoding',    <-- g:ezbar.parts.encoding() 
-      \ 'percent',     <-- g:ezbar.parts.percent() 
-      \ ]
-```
+  ```Vim
+  let g:ezbar.active.layout = [
+        \ 'mode',        <-- g:ezbar.parts.mode()
+        \ 'filetype',    <-- g:ezbar.parts.filetype() 
+        \ '__SEP__',     <-- g:ezbar.parts.__SEP__() 
+        \ 'encoding',    <-- g:ezbar.parts.encoding() 
+        \ 'percent',     <-- g:ezbar.parts.percent() 
+        \ ]
+  ```
 
 * So all user have to do is write your own function and use that function in `layout`. That's it.
   ```Vim
@@ -58,14 +58,14 @@ let g:ezbar.active.layout = [
 
 * But its' tiresome to write all configuration by your self?
 Merge parts other user provide and add a little portion 
-```Vim
-let u = {}
-function! u.my_encoding()
-  return &encoding
-endfunction
-let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
-unlet u
-```
+  ```Vim
+  let u = {}
+  function! u.my_encoding()
+    return &encoding
+  endfunction
+  let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
+  unlet u
+  ```
 
 * each part function should return simple string or dictionary
 ```Vim

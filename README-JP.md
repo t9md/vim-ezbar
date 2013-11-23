@@ -13,11 +13,11 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
 * ユーザー関数よりも優先される定義済みの関数はほぼ無く、全てはユーザーの設定次第。
 
 # スクリーン画像
-* Gitブランチが master でない場合に色を変える。
+* Gitブランチが master でない場合に色を変える。  
 ![ConditionalColor-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color1.png)  
 ![ConditionalColor-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color2.png)  
 
-* 特定のプラグインのモードが発動した場合にステータスラインの他の部品を隠す(easymotion 等で使う。)
+* 特定のプラグインのモードが発動した場合にステータスラインの他の部品を隠す(easymotion 等で使う。)  
 ![Fill-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill1.png)  
 ![Fill-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill2.png)  
 

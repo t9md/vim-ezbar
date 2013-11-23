@@ -105,9 +105,9 @@ Merge parts other user provide and add a little portion
   ```
 
 * To check color available
-** `:help rgb.txt` or see
-** `:so misc/colortest/compact.vim`
-** `:so misc/colortest/full.vim`
+`:help rgb.txt` or see  
+`:so misc/colortest/compact.vim`  
+`:so misc/colortest/full.vim`  
 
 * Also you can user `self.__is_active` in part function to determine whether this is active win or not.
 ```Vim

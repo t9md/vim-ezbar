@@ -104,6 +104,23 @@ Merge parts other user provide and add a little portion
   { 's': 'bar', 'ac' : ['gray40', 'gray95'] }
   ```
 
+* To check color available
+** `:help rgb.txt` or see
+** `:so misc/colortest/compact.vim`
+** `:so misc/colortest/full.vim`
+
+* Also you can user `self.__is_active` in part function to determine whether this is active win or not.
+```Vim
+  function! f.percent() "{{{1
+    let s  = '%3p%%'
+    if g:ezbar.parts.__is_active
+      return { 's': s, 'c' : ['gray40', 'gray95'] }
+    else
+      return s
+    endif
+  endfunction
+```
+
 # Configuration Sample
 
 * Basic

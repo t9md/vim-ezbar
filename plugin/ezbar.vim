@@ -22,11 +22,13 @@ endfunction "}}}
 call s:set_options(options)
 
 " AutoCmd:
-augroup EzBar
-  autocmd!
-  autocmd WinEnter,BufWinEnter,FileType,ColorScheme * call ezbar#set()
-  autocmd ColorScheme,SessionLoadPost * call ezbar#hl_refresh()
-augroup END
+if !empty(g:ezbar)
+  augroup EzBar
+    autocmd!
+    autocmd WinEnter,BufWinEnter,FileType,ColorScheme * call ezbar#set()
+    autocmd ColorScheme,SessionLoadPost * call ezbar#hl_refresh()
+  augroup END
+endif
 
 " Command:
 command! EzBar call ezbar#set()
@@ -39,4 +41,3 @@ command! -range EzBarColorPreview
 " Finish:
 let &cpo = s:old_cpo
 " vim: foldmethod=marker
-

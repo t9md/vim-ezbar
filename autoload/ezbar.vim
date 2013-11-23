@@ -5,6 +5,10 @@ endfunction
 
 function! ez.prepare(win) "{{{1
   let g:ezbar.parts.__is_active = ( a:win ==# 'active' )
+  if type(get( g:ezbar.parts, '_init')) == type(function('getchar'))
+    call g:ezbar.parts._init()
+  endif
+
   let layout = self.normalize(a:win, g:ezbar[a:win].layout)
   call filter(layout, '!empty(v:val.s)')
   if type(get( g:ezbar.parts, '_filter')) == type(function('getchar'))

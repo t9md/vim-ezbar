@@ -128,6 +128,7 @@ While preparing configuration, following command might help.
 `:EzBarDisable` disable and delete autocmd  
 `:EzBarSet` set all window's statusline  
 `:'<,'>EzBarColorPreview` set color to visually selected range for preview.  
+`:echo ezbar#string('active')` or `:echo ezbar#string('inactive')`  
 
 * Basic
   ```Vim
@@ -196,9 +197,10 @@ While preparing configuration, following command might help.
 
 * Advanced
   ```Vim
-  let g:ezbar = {}
-  let g:ezbar.active = {}
   let s:bg = 'gray25'
+
+  let g:ezbar = {}
+  let g:ezbar.active = {}                      
   let g:ezbar.active.default_color = [ s:bg, 'gray61']
   let g:ezbar.active.sep_color = [ 'gray30', 'gray61']
   let g:ezbar.inactive = {}
@@ -243,19 +245,20 @@ While preparing configuration, following command might help.
     return fugitive#head()
   endfunction
 
+  " filter is special function, if `g:ezbar.parts._filter` is function.
+  " ezbar call this function with normalized layout as argument.
   function! u._filter(layout) "{{{1
-    let r =  []
-    let names = []
-    if self.__smalls_active
+    if !self.__smalls_active && self.__is_active
       " fill statusline when smalls is active
       return filter(a:layout, 'v:val.name == "smalls"')
     endif
+
+    let r =  []
+    " you can decorate color here instead of in each part function.
     for part in a:layout
-      call add(names, part.name)
       if part.name == 'fugitive'
         let part.c = part.s == 'master' ?  ['gray18', 'gray61'] : ['red4', 'gray61']
-      endif
-      if part.name == 'textmanip'
+      elseif part.name == 'textmanip'
         let part.c = part.s == 'R' ? [ s:bg, 'HotPink1'] :  [ s:bg, 'PaleGreen1']
       endif
       call add(r, part)

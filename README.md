@@ -104,10 +104,10 @@ Merge parts other user provide and add a little portion
 
 * To check color available  
 `:help rgb.txt`
-`:so misc/colortest/compact.vim`  
-`:so misc/colortest/full.vim`  
+`:edit misc/colortest/compact.vim` then `%so`  
+`:so misc/colortest/full.vim` then `%so`  
 
-* Also you can use `self.__is_active` in part function to determine whether this is active win or not.
+* Also you can use `self.__is_active` in each `part` to know whether here is active window or not.
 ```Vim
   function! f.percent() "{{{1
     let s  = '%3p%%'
@@ -120,6 +120,7 @@ Merge parts other user provide and add a little portion
 ```
 
 # Configuration Sample
+[ExampleFile](https://github.com/t9md/vim-ezbar/tree/master/misc/config_sample)
 
 * Basic
   ```Vim

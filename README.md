@@ -47,14 +47,14 @@ let g:ezbar.active.layout = [
 ```
 
 * So all user have to do is write your own function and use that function in `layout`. That's it.
-```Vim
-let g:ezbar.active.layout = [
-      \ 'my_encoding', <-- g:ezbar.parts.my_encoding()
-      \ ]
-function! g:ezbar.parts.my_encoding()
-  return &encoding
-endfunction
-```
+  ```Vim
+  let g:ezbar.active.layout = [
+        \ 'my_encoding', <-- g:ezbar.parts.my_encoding()
+        \ ]
+  function! g:ezbar.parts.my_encoding()
+    return &encoding
+  endfunction
+  ```
 
 * But its' tiresome to write all configuration by your self?
 Merge parts other user provide and add a little portion 

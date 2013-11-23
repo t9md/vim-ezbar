@@ -1,15 +1,112 @@
 # DON't USE THIS
+Very experimental stage.
+NO CUI mode color support.
+
+# What's this?
 statusline configuration helper for minimalist.
+
+# Feature
+* no fancy colorscheme
+* simple design, easy to configure for vim-scripter(advanced user).
+no failsafe guared for begginer
+* dynamically configure color based on condition.
+* all statusline componet(part) is implemented as dictionary function.
+every user defined function(=part) is first class citizen in ezbar plugin.
+* no precedence to predefined parts, so it's up to you how organize your statusline!
+
+# CONCEPT
+* user configuration is stored under `g:ezbar` dictionary
+* which part to show is controlled with `g:ezbar.active.layout`, `g:ezbar.active.layout` array.
+```Vim
+" active window's statusline
+let g:ezbar.active.layout = [
+      \ 'mode',
+      \ 'filetype',
+      \ '__SEP__',
+      \ 'encoding',
+      \ 'percent',
+      \ ]
+" inactive window's statusline
+let g:ezbar.inactive.layout = [
+      \ 'filetype',
+      \ '__SEP__',
+      \ 'encoding',
+      \ 'percent',
+      \ ]
+```
+
+* Layout consists of `part`. Each part is mapped to result of `g:ezbar.parts[{part}]()`.
+```Vim
+let g:ezbar.active.layout = [
+      \ 'mode',        <-- g:ezbar.parts.mode()
+      \ 'filetype',    <-- g:ezbar.parts.filetype() 
+      \ '__SEP__',     <-- g:ezbar.parts.__SEP__() 
+      \ 'encoding',    <-- g:ezbar.parts.encoding() 
+      \ 'percent',     <-- g:ezbar.parts.percent() 
+      \ ]
+```
+
+* So all user have to do is write your own function and use that function in `layout`. That's it.
+```Vim
+let g:ezbar.active.layout = [
+      \ 'my_encoding', <-- g:ezbar.parts.my_encoding()
+      \ ]
+function! g:ezbar.parts.my_encoding()
+  return &encoding
+endfunction
+```
+
+* But its' tiresome to write all configuration by your self?
+Merge parts other user provide and add a little portion 
+```Vim
+let u = {}
+function! u.my_encoding()
+  return &encoding
+endfunction
+let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
+unlet u
+```
+
+* each part function should return simple string or dictionary
+```Vim
+" return simple string
+function! u.my_encoding()
+  return &encoding
+endfunction
+
+" return dictionary, change color when git branch is not 'master'
+function! u.fugitive() "{{{1
+  let s = fugitive#head()
+  if empty(s)
+    return ''
+  endif
+  return { 's' : s, 'c': s == 'master'
+        \ ?  ['gray18', 'gray61']
+        \ :  ['red4', 'gray61']
+        \ }
+endfunction
+let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
+unlet u
+```
+
+* as you see in above example you can set color directly
+```Vim
+" directly specify color ['guibg', 'guifg' ]
+{ 's' : "foo", 'c': ['gray18', 'gray61'] }
+
+" user predefined color
+{ 's' : "foo", 'c': 'Statement' }
+
+" optional color `'ac'` for active window, and `'ic'` inactive window.
+" color precedence
+" active:   'ac' => 'c' => g:ezbar.active.default_color
+" inactive: 'ic' => 'c' => g:ezbar.inactive.default_color
+{ 's': 'bar', 'ac' : ['gray40', 'gray95'] }
+```
 
 # Configuration Sample
 
-no secret, every part is function which return part of statusline.
-Currently only cli vim is not supported.
-* change color based on value.
-* every user defined function(=part) is first class citizen in ezbar plugin.
-* no precedence to predefined parts, so it's up to you how organize your statusline!
-
-
+* Basic
 ```Vim
 let g:ezbar = {}
 let g:ezbar.active = {}                      
@@ -18,6 +115,7 @@ let g:ezbar.active.default_color = [ s:bg, 'gray61']
 let g:ezbar.active.sep_color = [ 'gray22', 'gray61']
 let g:ezbar.inactive = {}
 let g:ezbar.inactive.default_color = [ 'gray22', 'gray57' ]
+let g:ezbar.inactive.sep_color = [ 'gray23', 'gray61']
 let g:ezbar.active.layout = [
       \ 'mode',
       \ 'textmanip',
@@ -33,9 +131,9 @@ let g:ezbar.active.layout = [
 let g:ezbar.inactive.layout = [
       \ 'modified',
       \ 'filename',
-      \ 'filetype',
       \ '__SEP__',
       \ 'encoding',
+      \ 'percent',
       \ ]
 
 let u = {}
@@ -65,7 +163,83 @@ function! u.fugitive() "{{{1
         \ }
         " \ ?  ['red4', 'gray61']
 endfunction
+" function! u._filter(layout) "{{{1
+  " echo len(a:layout)
+" endfunction
+
 let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
 unlet u
 ```
 
+* Advanced
+```Vim
+let g:ezbar = {}
+let g:ezbar.active = {}                      
+let s:bg = 'gray25'
+let g:ezbar.active.default_color = [ s:bg, 'gray61']
+let g:ezbar.active.sep_color = [ 'gray30', 'gray61']
+let g:ezbar.inactive = {}
+let g:ezbar.inactive.default_color = [ 'gray18', 'gray57' ]
+let g:ezbar.inactive.sep_color = [ 'gray23', 'gray61']
+let g:ezbar.active.layout = [
+      \ 'mode',
+      \ 'textmanip',
+      \ 'smalls',
+      \ 'modified',
+      \ 'filetype',
+      \ 'fugitive',
+      \ '__SEP__',
+      \ 'encoding',
+      \ 'percent',
+      \ 'line_col',
+      \ ]
+let g:ezbar.inactive.layout = [
+      \ 'modified',
+      \ 'filename',
+      \ '__SEP__',
+      \ 'encoding',
+      \ 'percent',
+      \ ]
+
+let u = {}
+function! u.textmanip() "{{{1
+  return toupper(g:textmanip_current_mode[0])
+endfunction
+function! u.smalls() "{{{1
+  let self.__smalls_active = 0
+  let s = toupper(g:smalls_current_mode[0])
+  if empty(s)
+    return ''
+  endif
+  let self.__smalls_active = 1
+  let color = s == 'E' ? 'SmallsCurrent' : 'SmallsCandidate'
+  return { 's' : 's', 'c': color }
+endfunction
+
+function! u.fugitive() "{{{1
+  return fugitive#head()
+endfunction
+
+function! u._filter(layout) "{{{1
+  let r =  []
+  let names = []
+  if self.__smalls_active
+    " fill statusline when smalls is active
+    return filter(a:layout, 'v:val.name == "smalls"')
+  endif
+  for part in a:layout
+    call add(names, part.name)
+    if part.name == 'fugitive'
+      let part.c = part.s == 'master' ?  ['gray18', 'gray61'] : ['red4', 'gray61']
+    endif
+    if part.name == 'textmanip'
+      let part.c = part.s == 'R' ? [ s:bg, 'HotPink1'] :  [ s:bg, 'PaleGreen1']
+    endif
+    call add(r, part)
+  endfor
+  return r
+endfunction
+
+let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
+unlet u
+```

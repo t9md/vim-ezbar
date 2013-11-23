@@ -1,3 +1,7 @@
+" FromVimwiki:
+" URL:
+" http://vim.wikia.com/wiki/View_all_colors_available_to_gvim
+
 " To use, save this file and type ":so %"
 " Optional: First enter ":let g:rgb_fg=1" to highlight foreground only.
 " Restore normal highlighting by typing ":e"

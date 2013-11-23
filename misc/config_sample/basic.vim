@@ -23,6 +23,7 @@ let g:ezbar.inactive.layout = [
       \ 'filename',
       \ '__SEP__',
       \ 'encoding',
+      \ 'percent',
       \ ]
 
 let u = {}
@@ -52,6 +53,10 @@ function! u.fugitive() "{{{1
         \ }
         " \ ?  ['red4', 'gray61']
 endfunction
+" function! u._filter(layout) "{{{1
+  " echo len(a:layout)
+" endfunction
+
 let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
 unlet u
 

@@ -17,8 +17,17 @@ function! f.mode() "{{{1
   return s:mode_map[mode()]
 endfunction
 function! f.percent() "{{{1
-  return { 's': '%3p%%', 'c' : ['gray40', 'gray95'] }
+  let s  = '%3p%%'
+  return { 's': s, 'ac' : ['gray40', 'gray95'] }
 endfunction
+" function! f.percent() "{{{1
+  " let s  = '%3p%%'
+  " if self.__is_active 
+    " return { 's': s, 'c' : ['gray40', 'gray95'] }
+  " else
+     " return s
+  " endif
+" endfunction
 function! f.modified() "{{{1
   return &modified ? '+' : ''
 endfunction
@@ -26,7 +35,8 @@ function! f.readonly() "{{{1
   return &readonly ? 'RO' : ''
 endfunction
 function! f.line_col() "{{{1
-  return { 's': '%3l:%-2c ', 'c' : ['gray58', 'Black'] }
+  " return { 's': '%3l:%-2c', 'ac' : ['gray58', 'Red'], 'ic'
+  return { 's': '%3l:%-2c', 'ac' : ['gray58', 'Black'] }
 endfunction
 function! f.line() "{{{1
   return '%l/%L'
@@ -42,6 +52,11 @@ function! f.filetype() "{{{1
 endfunction "}}}
 function! f.filename() "{{{1
   return '%t'
+endfunction "}}}
+function! f.__SEP__() "{{{1
+  let ac = get(g:ezbar.active,   'sep_color', g:ezbar.active.default_color)
+  let ic = get(g:ezbar.inactive, 'sep_color', g:ezbar.inactive.default_color)
+  return { 's': '%=', 'ac': ac, 'ic': ic,  }
 endfunction "}}}
 
 " Public:

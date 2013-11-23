@@ -122,6 +122,12 @@ Merge parts other user provide and add a little portion
 # Configuration Sample
 [ExampleFile](https://github.com/t9md/vim-ezbar/tree/master/misc/config_sample)
 
+While preparing configuration, following command might help.
+`:EzBarUpdate` update current statusline for active window.  
+`:EzBarDisable` disable and delete autocmd  
+`:EzBarSet` set all window's statusline  
+`:'<,'>EzBarColorPreview` set color to visually selected range for preview.  
+
 * Basic
   ```Vim
   let g:ezbar = {}

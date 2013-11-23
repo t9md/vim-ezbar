@@ -14,12 +14,12 @@ statusline configuration helper for minimalist.
 
 # Capture
 * Change color when git branch is not master
-[ConditionalColor-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color1.png)
-[ConditionalColor-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color2.png)
+[ConditionalColor-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color1.png?raw=true)  
+[ConditionalColor-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color2.png?raw=true)  
 
 * Hide other statusline part when specific plugin active
-[Fill-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill1.png)
-[Fill-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill2.png)
+[Fill-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill1.png?raw=true)  
+[Fill-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill2.png?raw=true)  
 
 # CONCEPT
 * user configuration is stored under `g:ezbar` dictionary

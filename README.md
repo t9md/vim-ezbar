@@ -23,20 +23,18 @@ statusline configuration helper for minimalist.
 
 # CONCEPT
 * user configuration is stored under `g:ezbar` dictionary
-* part shown is controlled with `g:ezbar.active.layout`, `g:ezbar.inactive.layout` array.
+* part shown is controlled with `g:ezbar.active`, `g:ezbar.inactive` array.
   ```Vim
   " active window's statusline
-  let g:ezbar.active.layout = [
+  let g:ezbar.active = [
         \ 'mode',
         \ 'filetype',
-        \ '__SEP__',
         \ 'encoding',
         \ 'percent',
         \ ]
   " inactive window's statusline
-  let g:ezbar.inactive.layout = [
+  let g:ezbar.inactive = [
         \ 'filetype',
-        \ '__SEP__',
         \ 'encoding',
         \ 'percent',
         \ ]
@@ -44,18 +42,17 @@ statusline configuration helper for minimalist.
 
 * Layout consists of `part`. Each part is mapped to result of `g:ezbar.parts[{part}]()`.
   ```Vim
-  let g:ezbar.active.layout = [
+  let g:ezbar.active = [
         \ 'mode',        <-- g:ezbar.parts.mode()
         \ 'filetype',    <-- g:ezbar.parts.filetype()
-        \ '__SEP__',     <-- g:ezbar.parts.__SEP__()
         \ 'encoding',    <-- g:ezbar.parts.encoding()
         \ 'percent',     <-- g:ezbar.parts.percent()
         \ ]
   ```
 
-* So all you have to do is write your own function and use that function in `layout`. That's it!
+* So all you have to do is write your own function and use that function in `active` or `inactive` array. That's it!
   ```Vim
-  let g:ezbar.active.layout = [
+  let g:ezbar.active = [
         \ 'my_encoding', <-- g:ezbar.parts.my_encoding()
         \ ]
   function! g:ezbar.parts.my_encoding()
@@ -63,8 +60,8 @@ statusline configuration helper for minimalist.
   endfunction
   ```
 
-* But its' tiresome to write all configuration by your self?  
-Merge parts other user provide and add a little portion
+* But sometime, its' tiresome to write all configuration by your self?  
+Merge parts other user provide with a portion you added.
   ```Vim
   let u = {}
   function! u.my_encoding()
@@ -128,6 +125,22 @@ Empty string or Dictionary or Dictionary for 's' is empty will not shown to stat
     endif
   endfunction
 ```
+* Special treatment in layout array.
+In `g:ezbar.active` or `g:ezbar.inactive` array.
+If member is `string`. it mapped to parts function, otherwise some special handling.
+
+```Vim
+  let g:ezbar.active = [
+        \ [ s:bg, 'gray61'], <-- if member is List(Array) change default color.
+        \ 'mode',
+        \ 'filetype',
+        \ [ s:bg, 'red'], <-- you can use multiple time.
+        \ 'fugitive',
+        \ { '__SEP__': [ 'gray22', 'gray61'] }, <-- right/left separator with color.
+        \ 'encoding',
+        \ 'line_col',
+        \ ]
+```
 
 # Configuration Sample
 [ExampleFile](https://github.com/t9md/vim-ezbar/tree/master/misc/config_sample)
@@ -141,30 +154,27 @@ While preparing configuration, following command might help.
 
 * Basic
   ```Vim
-  let g:ezbar = {}
-  let g:ezbar.active = {}
   let s:bg = 'gray25'
-  let g:ezbar.active.default_color = [ s:bg, 'gray61']
-  let g:ezbar.active.sep_color = [ 'gray22', 'gray61']
-  let g:ezbar.inactive = {}
-  let g:ezbar.inactive.default_color = [ 'gray22', 'gray57' ]
-  let g:ezbar.inactive.sep_color = [ 'gray23', 'gray61']
-  let g:ezbar.active.layout = [
+
+  let g:ezbar = {}
+  let g:ezbar.active = [
+        \ [ s:bg, 'gray61'],
         \ 'mode',
         \ 'textmanip',
         \ 'smalls',
         \ 'modified',
         \ 'filetype',
         \ 'fugitive',
-        \ '__SEP__',
+        \ { '__SEP__': [ 'gray22', 'gray61'] },
         \ 'encoding',
         \ 'percent',
         \ 'line_col',
         \ ]
-  let g:ezbar.inactive.layout = [
+  let g:ezbar.inactive = [
+        \ [ 'gray22', 'gray57' ],
         \ 'modified',
         \ 'filename',
-        \ '__SEP__',
+        \ { '__SEP__': [ 'gray23', 'gray61'] },
         \ 'encoding',
         \ 'percent',
         \ ]
@@ -202,35 +212,33 @@ While preparing configuration, following command might help.
 
   let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
   unlet u
+
+  " echo ezbar#string()
+  nnoremap <F9> :<C-u>EzBarUpdate<CR>
   ```
 
 * Advanced
   ```Vim
   let s:bg = 'gray25'
-
   let g:ezbar = {}
-  let g:ezbar.active = {}                      
-  let g:ezbar.active.default_color = [ s:bg, 'gray61']
-  let g:ezbar.active.sep_color = [ 'gray30', 'gray61']
-  let g:ezbar.inactive = {}
-  let g:ezbar.inactive.default_color = [ 'gray18', 'gray57' ]
-  let g:ezbar.inactive.sep_color = [ 'gray23', 'gray61']
-  let g:ezbar.active.layout = [
+  let g:ezbar.active = [
+        \ [ s:bg, 'gray61' ],
         \ 'mode',
         \ 'textmanip',
         \ 'smalls',
         \ 'modified',
         \ 'filetype',
         \ 'fugitive',
-        \ '__SEP__',
+        \ { '__SEP__': [ 'gray30', 'gray61'] },
         \ 'encoding',
         \ 'percent',
         \ 'line_col',
         \ ]
-  let g:ezbar.inactive.layout = [
+  let g:ezbar.inactive = [
+        \ [ 'gray18', 'gray57'],
         \ 'modified',
         \ 'filename',
-        \ '__SEP__',
+        \ { '__SEP__': [ 'gray23', 'gray61'] },
         \ 'encoding',
         \ 'percent',
         \ ]

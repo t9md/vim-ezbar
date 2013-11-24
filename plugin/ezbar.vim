@@ -31,10 +31,9 @@ if !empty(g:ezbar)
 endif
 
 " Command:
-command! EzBar call ezbar#set()
-command! EzBarUpdate call ezbar#update()
+command! EzBarUpdate  call ezbar#update()
+command! EzBarSet     call ezbar#set()
 command! EzBarDisable call ezbar#disable()
-command! EzBarSet call ezbar#set()
 command! -range EzBarColorPreview
       \ :call ezbar#hl_preview(<line1>, <line2>)
 

@@ -23,20 +23,18 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
 
 # コンセプト
 * ユーザーの設定は `g:ezbar` 辞書に保存する。
-* どの部品(part)が表示されるかは、`g:ezbar.active.layout`, `g:ezbar.inactive.layout` 配列で制御する。
+* どの部品(part)が表示されるかは、`g:ezbar.active`, `g:ezbar.inactive` 配列で制御する。
   ```Vim
   " アクティブウィンドウのステータスライン
-  let g:ezbar.active.layout = [
+  let g:ezbar.active = [
         \ 'mode',
         \ 'filetype',
-        \ '__SEP__',
         \ 'encoding',
         \ 'percent',
         \ ]
   " 非アクティブウィンドウのステータスライン
-  let g:ezbar.inactive.layout = [
+  let g:ezbar.inactive = [
         \ 'filetype',
-        \ '__SEP__',
         \ 'encoding',
         \ 'percent',
         \ ]
@@ -44,10 +42,9 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
 
 * レイアウトは、パート(`part`) で構成される。各パートは `g:ezbar.parts[{part}]()` 関数の呼び出し結果に対応する。
   ```Vim
-  let g:ezbar.active.layout = [
+  let g:ezbar.active = [
         \ 'mode',        <-- g:ezbar.parts.mode()
         \ 'filetype',    <-- g:ezbar.parts.filetype()
-        \ '__SEP__',     <-- g:ezbar.parts.__SEP__()
         \ 'encoding',    <-- g:ezbar.parts.encoding()
         \ 'percent',     <-- g:ezbar.parts.percent()
         \ ]
@@ -55,7 +52,7 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
 
 * したがって、ユーザーが設定することは、自分のパート関数を書き、その関数名をレイアウトの中で使うこと。
   ```Vim
-  let g:ezbar.active.layout = [
+  let g:ezbar.active = [
         \ 'my_encoding', <-- g:ezbar.parts.my_encoding()
         \ ]
   function! g:ezbar.parts.my_encoding()
@@ -130,6 +127,24 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
   endfunction
 ```
 
+* レイアウトList の中の特別なメンバー
+`g:ezbar.active` または `g:ezbar.inactive` のリストの中で、
+メンバーが `string` の場合は、`g:ezbar.parts` のメンバー関数の結果に対応する。
+それ以外の場合、以下のような特別な処理に使われる。
+
+```Vim
+  let g:ezbar.active = [
+        \ [ s:bg, 'gray61'], <-- メンバーがListの場合、デフォルトの色を変える。
+        \ 'mode',
+        \ 'filetype',
+        \ [ s:bg, 'red'], <-- 何度でも使える。このセクション以降の色が変わる
+        \ 'fugitive',
+        \ { '__SEP__': [ 'gray22', 'gray61'] }, <-- セパレータを挿入、色を指定。
+        \ 'encoding',
+        \ 'line_col',
+        \ ]
+```
+
 # 設定サンプル
 サンプルの設定ファイルは[ここ](https://github.com/t9md/vim-ezbar/tree/master/misc/config_sample)にある。
 
@@ -142,30 +157,27 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
 
 ## ベーシック
   ```Vim
-  let g:ezbar = {}
-  let g:ezbar.active = {}
   let s:bg = 'gray25'
-  let g:ezbar.active.default_color = [ s:bg, 'gray61']
-  let g:ezbar.active.sep_color = [ 'gray22', 'gray61']
-  let g:ezbar.inactive = {}
-  let g:ezbar.inactive.default_color = [ 'gray22', 'gray57' ]
-  let g:ezbar.inactive.sep_color = [ 'gray23', 'gray61']
-  let g:ezbar.active.layout = [
+
+  let g:ezbar = {}
+  let g:ezbar.active = [
+        \ [ s:bg, 'gray61'],
         \ 'mode',
         \ 'textmanip',
         \ 'smalls',
         \ 'modified',
         \ 'filetype',
         \ 'fugitive',
-        \ '__SEP__',
+        \ { '__SEP__': [ 'gray22', 'gray61'] },
         \ 'encoding',
         \ 'percent',
         \ 'line_col',
         \ ]
-  let g:ezbar.inactive.layout = [
+  let g:ezbar.inactive = [
+        \ [ 'gray22', 'gray57' ],
         \ 'modified',
         \ 'filename',
-        \ '__SEP__',
+        \ { '__SEP__': [ 'gray23', 'gray61'] },
         \ 'encoding',
         \ 'percent',
         \ ]
@@ -207,28 +219,24 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
   let s:bg = 'gray25'
 
   let g:ezbar = {}
-  let g:ezbar.active = {}
-  let g:ezbar.active.default_color = [ s:bg, 'gray61']
-  let g:ezbar.active.sep_color = [ 'gray30', 'gray61']
-  let g:ezbar.inactive = {}
-  let g:ezbar.inactive.default_color = [ 'gray18', 'gray57' ]
-  let g:ezbar.inactive.sep_color = [ 'gray23', 'gray61']
-  let g:ezbar.active.layout = [
+  let g:ezbar.active = [
+        \ [ s:bg, 'gray61' ],
         \ 'mode',
         \ 'textmanip',
         \ 'smalls',
         \ 'modified',
         \ 'filetype',
         \ 'fugitive',
-        \ '__SEP__',
+        \ { '__SEP__': [ 'gray30', 'gray61'] },
         \ 'encoding',
         \ 'percent',
         \ 'line_col',
         \ ]
-  let g:ezbar.inactive.layout = [
+  let g:ezbar.inactive = [
+        \ [ 'gray18', 'gray57'],
         \ 'modified',
         \ 'filename',
-        \ '__SEP__',
+        \ { '__SEP__': [ 'gray23', 'gray61'] },
         \ 'encoding',
         \ 'percent',
         \ ]

@@ -57,11 +57,11 @@ endfunction "}}}
 function! f.filename() "{{{1
   return '%t'
 endfunction "}}}
-function! f.__SEP__() "{{{1
-  let ac = get(g:ezbar.active,   'sep_color', g:ezbar.active.default_color)
-  let ic = get(g:ezbar.inactive, 'sep_color', g:ezbar.inactive.default_color)
-  return { 's': '%=', 'ac': ac, 'ic': ic,  }
-endfunction "}}}
+" function! f.__SEP__() "{{{1
+  " let ac = get(g:ezbar.active,   'sep_color', "Normal")
+  " let ic = get(g:ezbar.inactive, 'sep_color', "Normal")
+  " return { 's': '%=', 'ac': ac, 'ic': ic,  }
+" endfunction "}}}
 
 " Public:
 function! ezbar#parts#default#new()

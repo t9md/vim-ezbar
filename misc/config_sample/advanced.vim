@@ -1,28 +1,24 @@
 let s:bg = 'gray25'
 
 let g:ezbar = {}
-let g:ezbar.active = {}                      
-let g:ezbar.active.default_color = [ s:bg, 'gray61']
-let g:ezbar.active.sep_color = [ 'gray30', 'gray61']
-let g:ezbar.inactive = {}
-let g:ezbar.inactive.default_color = [ 'gray18', 'gray57' ]
-let g:ezbar.inactive.sep_color = [ 'gray23', 'gray61']
-let g:ezbar.active.layout = [
+let g:ezbar.active = [
+      \ [ s:bg, 'gray61' ],
       \ 'mode',
       \ 'textmanip',
       \ 'smalls',
       \ 'modified',
       \ 'filetype',
       \ 'fugitive',
-      \ '__SEP__',
+      \ { '__SEP__': [ 'gray30', 'gray61'] },
       \ 'encoding',
       \ 'percent',
       \ 'line_col',
       \ ]
-let g:ezbar.inactive.layout = [
+let g:ezbar.inactive = [
+      \ [ 'gray18', 'gray57'],
       \ 'modified',
       \ 'filename',
-      \ '__SEP__',
+      \ { '__SEP__': [ 'gray23', 'gray61'] },
       \ 'encoding',
       \ 'percent',
       \ ]

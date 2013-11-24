@@ -1,6 +1,13 @@
+function! s:plog(msg) "{{{1
+  cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vim.log')
+endfunction "}}}
+
 let ez = {} | let s:ez = ez
 
 function! ez.init() "{{{1
+  let self.default_color = {}
+  let self.default_color.active   = 'StatusLine'
+  let self.default_color.inactive = 'StatusLineNC'
   let self.hl = ezbar#highlighter#new()
 endfunction
 
@@ -10,40 +17,60 @@ function! ez.prepare(win) "{{{1
     call g:ezbar.parts._init()
   endif
 
-  let layout = self.normalize(a:win, g:ezbar[a:win].layout)
+  " let layout = self.normalize(a:win, g:ezbar[a:win])
+  let layout = map( deepcopy(g:ezbar[a:win]),
+        \ 'self.normalize_part(a:win, v:val)')
+
   call filter(layout, '!empty(v:val.s)')
+
   if exists('*g:ezbar.parts._filter')
     let layout = g:ezbar.parts._filter(layout)
   endif
   return layout
 endfunction
 
-function! ez.normalize(win, layout) "{{{1
-  let r = []
-  for part_name in a:layout
-    call add(r, self.normalize_part(a:win, part_name))
-  endfor
-  return r
-endfunction
+" function! ez.normalize(win, layout) "{{{1
+  " let r = []
+  " for part_name in a:layout
+    " call add(r, self.normalize_part(a:win, part_name))
+  " endfor
+  " return r
+" endfunction
 
 function! ez.normalize_part(win, part_name) "{{{1
-  let part = g:ezbar.parts[a:part_name]()
+  if type(a:part_name) ==# type([])
+    let self.default_color[a:win] = a:part_name
+    return { 's': '' }
+
+  elseif type(a:part_name) ==# type({})
+    if has_key(a:part_name, '__SEP__')
+      let part =  { 'name': '__SEP__', 's': '%=', 'c': a:part_name['__SEP__'] }
+    else
+      return { 's': '' }
+    endif
+  elseif type(a:part_name) ==# type('')
+    let part = g:ezbar.parts[a:part_name]()
+  endif
+
   if type(part) == type({})
     let d = part
   else
     let s = type(part) == type('') ? part : ''
     let d = { 's' : s }
   endif
-  let d.name = a:part_name
+
+  if empty(get(d, 'c'))
+    let d.c = self.default_color[a:win]
+  endif
+  if !has_key(d, 'name')
+    let d.name = a:part_name
+  endif
   return d
 endfunction
 
 function! ez.color_of(win, part)
   let wc = a:win ==# 'active' ? 'ac' : 'ic'
-  let color = 
-        \ has_key(a:part,  wc) ? a:part[wc] :
-        \ has_key(a:part, 'c') ? a:part['c'] :
-        \ g:ezbar[a:win].default_color
+  let color = has_key(a:part,  wc) ? a:part[wc] : a:part.c
   return self.hl.get_name(color)
 endfunction
 
@@ -87,13 +114,9 @@ function! ezbar#string(win) "{{{1
 endfunction
 
 function! ezbar#set() "{{{1
-  let cwin = winnr()
   for n in range(1, winnr('$'))
-    if n ==# cwin
-      call setwinvar(n, '&statusline', '%!ezbar#string("active")')
-    else
-      call setwinvar(n, '&statusline', '%!ezbar#string("inactive")')
-    endif
+    let target = n ==# winnr() ? 'active' : 'inactive'
+    call setwinvar(n, '&statusline', '%!ezbar#string("' . target . '")')
   endfor
 endfunction
 
@@ -110,7 +133,7 @@ function! ezbar#hl_preview(first, last) "{{{1
 endfunction "}}}
 
 function! ezbar#disable() "{{{1
-  set statusline&
+  silent set statusline&
   for n in range(1, winnr('$'))
     call setwinvar(n, '&statusline', &statusline)
   endfor

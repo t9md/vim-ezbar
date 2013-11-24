@@ -1,59 +1,49 @@
 let ez = {} | let s:ez = ez
+
 function! ez.init() "{{{1
   let self.hl = ezbar#highlighter#new()
 endfunction
 
 function! ez.prepare(win) "{{{1
   let g:ezbar.parts.__is_active = ( a:win ==# 'active' )
-  if type(get( g:ezbar.parts, '_init')) == type(function('getchar'))
+  if exists('*g:ezbar.parts._init')
     call g:ezbar.parts._init()
   endif
 
   let layout = self.normalize(a:win, g:ezbar[a:win].layout)
   call filter(layout, '!empty(v:val.s)')
-  if type(get( g:ezbar.parts, '_filter')) == type(function('getchar'))
+  if exists('*g:ezbar.parts._filter')
     let layout = g:ezbar.parts._filter(layout)
   endif
-  call self.colorize(a:win, layout)
   return layout
 endfunction
 
 function! ez.normalize(win, layout) "{{{1
   let r = []
-  for part in a:layout
-    let d = self.normalize_part(a:win, g:ezbar.parts[part]() )
-    let d.name = part
-    call add(r, d)
+  for part_name in a:layout
+    call add(r, self.normalize_part(a:win, part_name))
   endfor
   return r
 endfunction
 
-function! ez.normalize_part(win, part) "{{{1
-  let default_hl = g:ezbar[a:win].default_color
-  if type(a:part) == type({})
-    let d = a:part
+function! ez.normalize_part(win, part_name) "{{{1
+  let part = g:ezbar.parts[a:part_name]()
+  if type(part) == type({})
+    let d = part
   else
-    let d = {}
-    let d.s = type(a:part) == type('')
-          \ ? a:part
-          \ : ''
+    let s = type(part) == type('') ? part : ''
+    let d = { 's' : s }
   endif
+  let d.name = a:part_name
   return d
 endfunction
 
-function! ez.colorize(win, layout) "{{{1
-  let default_hl = g:ezbar[a:win].default_color
-  let color_key = a:win ==# 'active' ? 'ac' : 'ic'
-  for part in a:layout
-    if !has_key(part, color_key) && !has_key(part, 'c')
-      let part.c = default_hl
-    endif
-  endfor
-endfunction
-
 function! ez.color_of(win, part)
-  let color_key = a:win ==# 'active' ? 'ac' : 'ic'
-  let color = get(a:part, color_key, get(a:part, 'c'))
+  let wc = a:win ==# 'active' ? 'ac' : 'ic'
+  let color = 
+        \ has_key(a:part,  wc) ? a:part[wc] :
+        \ has_key(a:part, 'c') ? a:part['c'] :
+        \ g:ezbar[a:win].default_color
   return self.hl.get_name(color)
 endfunction
 
@@ -131,9 +121,4 @@ function! ezbar#disable() "{{{1
 endfunction "}}}
 
 call s:ez.init()
-" echo s:ez.string('active')
-" call s:ez.init()
-" echo s:ez.dump()
-" echo PP( s:ez.string('active'))
-" echo ez.string()
 " vim: foldmethod=marker

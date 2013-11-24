@@ -118,7 +118,7 @@ Empty string or Dictionary or Dictionary for 's' is empty will not shown to stat
 ```Vim
   function! f.percent() "{{{1
     let s  = '%3p%%'
-    if g:ezbar.parts.__is_active
+    if self.__is_active
       return { 's': s, 'c' : ['gray40', 'gray95'] }
     else
       return s

@@ -119,7 +119,7 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
   function! f.percent() "{{{1
     let s  = '%3p%%'
     " アクティブの場合のみ色をつける。
-    if g:ezbar.parts.__is_active
+    if self.__is_active
       return { 's': s, 'c' : ['gray40', 'gray95'] }
     else
       return s

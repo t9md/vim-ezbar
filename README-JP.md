@@ -109,7 +109,7 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
   { 's': 'bar', 'ac' : ['gray40', 'gray95'] }
   ```
 
-* どの色が利用できるか調べるには？
+* どの色が利用できるか調べるには？  
 `:help rgb.txt`  
 `:edit misc/colortest/compact.vim` してから `%so`  
 `:so misc/colortest/full.vim` してから `%so`  
@@ -127,9 +127,9 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
   endfunction
 ```
 
-* レイアウトList の中の特別なメンバー
-`g:ezbar.active` または `g:ezbar.inactive` のリストの中で、
-メンバーが `string` の場合は、`g:ezbar.parts` のメンバー関数の結果に対応する。
+* レイアウトList の中の特別なメンバー  
+`g:ezbar.active` または `g:ezbar.inactive` のメンバーが `string` の場合は、`g:ezbar.parts` のメンバー関数の結果に対応する。
+
 それ以外の場合、以下のような特別な処理に使われる。
 
 ```Vim

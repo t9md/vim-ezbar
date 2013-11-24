@@ -7,7 +7,7 @@ let s:old_cpo = &cpo
 set cpo&vim
 
 " Main:
-let options = {
+let s:options = {
       \ 'g:ezbar' : {},
       \ }
 
@@ -19,7 +19,7 @@ function! s:set_options(options) "{{{
     unlet value
   endfor
 endfunction "}}}
-call s:set_options(options)
+call s:set_options(s:options)
 
 " AutoCmd:
 if !empty(g:ezbar)

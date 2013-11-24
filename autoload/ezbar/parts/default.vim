@@ -2,7 +2,7 @@
 " If you want to improve or don't like this.
 " Use your own parts based on this sample.
 " don't forget to define __SEP__().
-let f = {} | let s:f = f
+let s:f = {}
 let s:mode_map = {
       \ 'n':      { 's': 'N ', 'c': ['SkyBlue3', 'Black'] },
       \ 'i':      { 's': 'I ', 'c': ['PaleGreen3', 'Black'] },
@@ -17,14 +17,14 @@ let s:mode_map = {
       \ '?':      { 's': '  ', 'c': 'Type' },
       \ }
 
-function! f.mode() "{{{1
+function! s:f.mode() "{{{1
   return s:mode_map[mode()]
 endfunction
-function! f.percent() "{{{1
+function! s:f.percent() "{{{1
   let s  = '%3p%%'
   return { 's': s, 'ac' : ['gray40', 'gray95'] }
 endfunction
-" function! f.percent() "{{{1
+" function! s:f.percent() "{{{1
   " let s  = '%3p%%'
   " if self.__is_active 
     " return { 's': s, 'c' : ['gray40', 'gray95'] }
@@ -32,32 +32,32 @@ endfunction
      " return s
   " endif
 " endfunction
-function! f.modified() "{{{1
+function! s:f.modified() "{{{1
   return &modified ? '+' : ''
 endfunction
-function! f.readonly() "{{{1
+function! s:f.readonly() "{{{1
   return &readonly ? 'RO' : ''
 endfunction
-function! f.line_col() "{{{1
+function! s:f.line_col() "{{{1
   " return { 's': '%3l:%-2c', 'ac' : ['gray58', 'Red'], 'ic'
   return { 's': '%3l:%-2c', 'ac' : ['gray58', 'Black'] }
 endfunction
-function! f.line() "{{{1
+function! s:f.line() "{{{1
   return '%l/%L'
 endfunction
-function! f.encoding() "{{{1
+function! s:f.encoding() "{{{1
   return &enc
 endfunction
-function! f.fileformat() "{{{1
+function! s:f.fileformat() "{{{1
   return &fileformat
 endfunction
-function! f.filetype() "{{{1
+function! s:f.filetype() "{{{1
   return &ft
 endfunction "}}}
-function! f.filename() "{{{1
+function! s:f.filename() "{{{1
   return '%t'
 endfunction "}}}
-" function! f.__SEP__() "{{{1
+" function! s:f.__SEP__() "{{{1
   " let ac = get(g:ezbar.active,   'sep_color', "Normal")
   " let ic = get(g:ezbar.inactive, 'sep_color', "Normal")
   " return { 's': '%=', 'ac': ac, 'ic': ic,  }

@@ -1,12 +1,12 @@
-let h = {} | let s:h = h
+let s:h = {}
 
-function! h.init() "{{{1
+function! s:h.init() "{{{1
   let self.hls = {}
   let self._hls = []
   return self
 endfunction
 
-function! h.get_name(lis) "{{{1
+function! s:h.get_name(lis) "{{{1
   if type(a:lis) == type('')
     return a:lis
   endif
@@ -17,11 +17,11 @@ function! h.get_name(lis) "{{{1
   return self.hls[keyname]
 endfunction
 
-function! h.key_name_for(lis) "{{{1
+function! s:h.key_name_for(lis) "{{{1
   return join(a:lis, '_')
 endfunction
 
-function! h.register(lis) "{{{1
+function! s:h.register(lis) "{{{1
   let hlname = self.next_color()
   let cmd = printf('highlight %s guibg=%s guifg=%s', 
         \ hlname, a:lis[0], a:lis[1])
@@ -30,7 +30,7 @@ function! h.register(lis) "{{{1
   call add(self._hls, a:lis )
 endfunction
 
-function! h.refresh() "{{{1
+function! s:h.refresh() "{{{1
   call self.clear()
   let colors = deepcopy(self._hls)
   let self._hls = []
@@ -39,32 +39,32 @@ function! h.refresh() "{{{1
   endfor
 endfunction
 
-function! h.next_color() "{{{1
+function! s:h.next_color() "{{{1
   return printf('EzBar%03d', self.next_index())
 endfunction
 
-function! h.next_index() "{{{1
+function! s:h.next_index() "{{{1
   return len(self.hls)
 endfunction
 
-function! h.clear() "{{{1
+function! s:h.clear() "{{{1
   for hl in values(self.hls)
     execute 'highlight ' . hl . ' NONE'
   endfor
   let self.hls = {}
 endfunction
 
-function! h.list() "{{{1
+function! s:h.list() "{{{1
   for hl in values(self.hls)
     execute 'highlight ' . hl
   endfor
 endfunction
 
-function! h.dump() "{{{1
+function! s:h.dump() "{{{1
   return PP(self)
 endfunction
 
-function! h.preview(first, last)
+function! s:h.preview(first, last)
   " FIXME
   call clearmatches()
 
@@ -91,8 +91,8 @@ function! ezbar#highlighter#new() "{{{1
   return deepcopy(s:h).init()
 endfunction "}}}
 
-" call h.init()
-" echo h.get_name('SmallsCurrent')
-" echo h.get_name(['snow', 'DarkSlateGray'])
+" call s:h.init()
+" echo s:h.get_name('SmallsCurrent')
+" echo s:h.get_name(['snow', 'DarkSlateGray'])
 
 " vim: foldmethod=marker

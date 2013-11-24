@@ -2,16 +2,16 @@ function! s:plog(msg) "{{{1
   cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vim.log')
 endfunction "}}}
 
-let ez = {} | let s:ez = ez
+let s:ez = {}
 
-function! ez.init() "{{{1
+function! s:ez.init() "{{{1
   let self.default_color = {}
   let self.default_color.active   = 'StatusLine'
   let self.default_color.inactive = 'StatusLineNC'
   let self.hl = ezbar#highlighter#new()
 endfunction
 
-function! ez.prepare(win) "{{{1
+function! s:ez.prepare(win) "{{{1
   let g:ezbar.parts.__is_active = ( a:win ==# 'active' )
   if exists('*g:ezbar.parts._init')
     call g:ezbar.parts._init()
@@ -29,7 +29,7 @@ function! ez.prepare(win) "{{{1
   return layout
 endfunction
 
-" function! ez.normalize(win, layout) "{{{1
+" function! s:ez.normalize(win, layout) "{{{1
   " let r = []
   " for part_name in a:layout
     " call add(r, self.normalize_part(a:win, part_name))
@@ -37,7 +37,7 @@ endfunction
   " return r
 " endfunction
 
-function! ez.normalize_part(win, part_name) "{{{1
+function! s:ez.normalize_part(win, part_name) "{{{1
   if type(a:part_name) ==# type([])
     let self.default_color[a:win] = a:part_name
     return { 's': '' }
@@ -68,13 +68,13 @@ function! ez.normalize_part(win, part_name) "{{{1
   return d
 endfunction
 
-function! ez.color_of(win, part)
+function! s:ez.color_of(win, part)
   let wc = a:win ==# 'active' ? 'ac' : 'ic'
   let color = has_key(a:part,  wc) ? a:part[wc] : a:part.c
   return self.hl.get_name(color)
 endfunction
 
-function! ez.string(win) "{{{1
+function! s:ez.string(win) "{{{1
   let layout = self.prepare(a:win)
   let r = ''
   let max_idx = len(layout)
@@ -105,7 +105,7 @@ function! ez.string(win) "{{{1
   return r
 endfunction
 
-function! ez.dump() "{{{1
+function! s:ez.dump() "{{{1
   return PP(self)
 endfunction
 

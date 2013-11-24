@@ -18,20 +18,13 @@ let s:mode_map = {
       \ }
 
 function! s:f.mode() "{{{1
-  return s:mode_map[mode()]
+  let mode = mode()
+  return get(s:mode_map, mode, mode)
 endfunction
 function! s:f.percent() "{{{1
   let s  = '%3p%%'
   return { 's': s, 'ac' : ['gray40', 'gray95'] }
 endfunction
-" function! s:f.percent() "{{{1
-  " let s  = '%3p%%'
-  " if self.__is_active 
-    " return { 's': s, 'c' : ['gray40', 'gray95'] }
-  " else
-     " return s
-  " endif
-" endfunction
 function! s:f.modified() "{{{1
   return &modified ? '+' : ''
 endfunction

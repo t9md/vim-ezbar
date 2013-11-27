@@ -71,6 +71,7 @@ Merge parts other user provide with a portion you added.
   ```
 
 * each part function should return simple string or dictionary
+
   ```Vim
   " return simple string
   function! u.my_encoding()

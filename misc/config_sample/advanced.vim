@@ -74,4 +74,3 @@ endfunction
 
 let g:ezbar.parts = extend(ezbar#parts#default#new(), s:u)
 unlet s:u
-delfunction s:GUI

@@ -312,5 +312,4 @@ GUI の bold のみ指定したい場合、以下の様に他の部分を空に�
 
   let g:ezbar.parts = extend(ezbar#parts#default#new(), s:u)
   unlet s:u
-  delfunction s:GUI
   ```

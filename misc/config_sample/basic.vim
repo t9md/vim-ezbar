@@ -59,7 +59,7 @@ function! s:u.fugitive() "{{{1
 endfunction
 
 let g:ezbar.parts = extend(ezbar#parts#default#new(), s:u)
-unlet! s:u
+unlet s:u
 
 " echo ezbar#string()
 " nnoremap <F9> :<C-u>EzBarUpdate<CR>

@@ -24,21 +24,21 @@ statusline configuration helper for minimalist.
 # CONCEPT
 * user configuration is stored under `g:ezbar` dictionary
 * part shown is controlled with `g:ezbar.active`, `g:ezbar.inactive` array.
-  ```Vim
-  " active window's statusline
-  let g:ezbar.active = [
-        \ 'mode',
-        \ 'filetype',
-        \ 'encoding',
-        \ 'percent',
-        \ ]
-  " inactive window's statusline
-  let g:ezbar.inactive = [
-        \ 'filetype',
-        \ 'encoding',
-        \ 'percent',
-        \ ]
-  ```
+```Vim
+" active window's statusline
+let g:ezbar.active = [
+      \ 'mode',
+      \ 'filetype',
+      \ 'encoding',
+      \ 'percent',
+      \ ]
+" inactive window's statusline
+let g:ezbar.inactive = [
+      \ 'filetype',
+      \ 'encoding',
+      \ 'percent',
+      \ ]
+```
 
 * Layout consists of `part`. Each part is mapped to result of `g:ezbar.parts[{part}]()`.
   ```Vim

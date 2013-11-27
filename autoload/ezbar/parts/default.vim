@@ -1,7 +1,6 @@
 " This is merely sample configration to show concept.
 " If you want to improve or don't like this.
 " Use your own parts based on this sample.
-" don't forget to define __SEP__().
 let s:f = {}
 let s:mode_map = {
       \ 'n':      { 's': 'N ', 'c': ['SkyBlue3', 'Black'] },

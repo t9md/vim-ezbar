@@ -9,7 +9,6 @@ let s:c = {
       \ 'plug_WARNING':  { 'gui': ['red4',    'gray61']     },
       \ }
 
-
 let g:ezbar = {}
 let g:ezbar.active = [
       \ { 'chg_color': s:c.act_L} ,

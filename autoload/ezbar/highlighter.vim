@@ -1,46 +1,54 @@
 let s:h = {}
 
 function! s:h.init() "{{{1
-  let self.hls = {}
-  let self._hls = []
+  let self.hls       = {}
+  let self.match_ids = []
   return self
 endfunction
 
-function! s:h.get_name(lis) "{{{1
-  if type(a:lis) == type('')
-    return a:lis
-  endif
-  let keyname = self.key_name_for(a:lis)
-  if !has_key(self.hls, keyname)
-    call self.register(a:lis)
-  endif
-  return self.hls[keyname]
+function! s:h.hlname_for(defstr) "{{{1
+  for [hlname, defstr] in items(self.hls)
+    if defstr == a:defstr
+      return hlname
+    endif
+  endfor
+  return ''
 endfunction
 
-function! s:h.key_name_for(lis) "{{{1
-  return join(a:lis, '_')
+function! s:h.register(color) "{{{1
+  if type(a:color) == type('')
+    return a:color
+  endif
+  let defstr = self.hl_defstr(a:color)
+
+  let hlname = self.hlname_for(defstr)
+  if empty(hlname)
+    let hlname = get(a:color, 'name', self.next_color())
+    call self.define(hlname, defstr)
+  endif
+  return hlname
 endfunction
 
-function! s:h.register(lis) "{{{1
-  let hlname = self.next_color()
-  let cmd = printf('highlight %s guibg=%s guifg=%s', 
-        \ hlname, a:lis[0], a:lis[1])
-  silent execute cmd
-  let self.hls[self.key_name_for(a:lis)] = hlname
-  call add(self._hls, a:lis )
+function! s:h.define(hlname, defstr) "{{{1
+  silent execute self.command(a:hlname, a:defstr)
+endfunction
+
+function! s:h.command(hlname, defstr) "{{{1
+  let self.hls[a:hlname] = a:defstr
+  return printf('highlight %s %s', a:hlname, a:defstr)
 endfunction
 
 function! s:h.refresh() "{{{1
-  call self.clear()
-  let colors = deepcopy(self._hls)
-  let self._hls = []
-  for color in colors
-    call self.register(color)
+  let colors = deepcopy(self.hls)
+  call self.reset()
+  for [hlname, defstr] in items(colors)
+    echo [hlname, defstr]
+    call self.define(hlname, defstr)
   endfor
 endfunction
 
 function! s:h.next_color() "{{{1
-  return printf('EzBar%03d', self.next_index())
+  return printf( self.hl_prefix . '%03d', self.next_index())
 endfunction
 
 function! s:h.next_index() "{{{1
@@ -48,49 +56,83 @@ function! s:h.next_index() "{{{1
 endfunction
 
 function! s:h.clear() "{{{1
-  for hl in values(self.hls)
+  for hl in self.colors()
     execute 'highlight ' . hl . ' NONE'
   endfor
-  let self.hls = {}
+endfunction
+
+function! s:h.reset() "{{{1
+  call self.clear()
+  call self.init()
 endfunction
 
 function! s:h.list() "{{{1
-  for hl in values(self.hls)
+  for hl in self.colors()
     execute 'highlight ' . hl
   endfor
 endfunction
+
+function! s:h.list_define() "{{{1
+  let s = []
+  for [hlname, defstr] in items(self.hls)
+    call add(s, self.command(hlname, defstr))
+  endfor
+  return s
+endfunction
+
+function! s:h.colors() "{{{1
+  return keys(self.hls)
+endfunction
+
+function! s:h.matchadd(group, pattern, ...) "{{{1
+  let args = [ a:group, a:pattern ]
+  if a:0 && type(a:1) == type(1)
+    call add(args, a:1)
+  endif
+  let id = call('matchadd', args)
+  call add(self.match_ids, id)
+  return id
+endfunction
+
+function! s:h.matchdelete_all() "{{{1
+  for id in self.match_ids
+    call matchdelete(id)
+  endfor
+endfunction
+
+function! s:h.matchdelete_ids(ids) "{{{1
+  for id in a:ids
+    call matchdelete(id)
+  endfor
+endfunction
+
+function! s:h.hl_defstr(color) "{{{1
+  let r = []
+  for key in ["gui", "term", "cterm"]
+    if empty(get(a:color, key))
+      continue
+    endif
+    let color = a:color[key]
+    if !empty(color[0])      | call add(r, key . 'bg=' . color[0]) | endif
+    if !empty(color[1])      | call add(r, key . 'fg=' . color[1]) | endif
+    if !empty(get(color, 2)) | call add(r, key . '=' . color[2])   | endif
+  endfor
+  return join(r)
+endfunction "}}}
 
 function! s:h.dump() "{{{1
   return PP(self)
 endfunction
 
-function! s:h.preview(first, last)
-  " FIXME
-  call clearmatches()
-
-  for n in range(a:first, a:last)
-    let line = getline(n)
-
-    " let custom_color_pat = '\v\s*\zs[.*]\ze'
-    let custom_color_pat = '\v\s*\zs\[.*]\ze'
-    let color = matchstr(line, custom_color_pat)
-    if !empty(color)
-      let color_name = self.get_name(eval(color))
-    else
-      let predefined_pat = '\v''c'':\s*''\zs.{-}\ze'''
-      let color_name = matchstr(line, predefined_pat)
-    endif
-    if !exists('color_name')
-      continue
-    endif
-    call matchadd(color_name, '\%' . n . 'l')
-  endfor
-endfunction
-
-function! ezbar#highlighter#new() "{{{1
-  return deepcopy(s:h).init()
+function! s:h.our_match() "{{{
+  return filter(getmatches(), "v:val.group =~# '". self.hl_prefix . "'")
 endfunction "}}}
 
+function! ezbar#highlighter#new(hl_prefix) "{{{1
+  let o = deepcopy(s:h).init()
+  let o.hl_prefix = a:hl_prefix
+  return o
+endfunction "}}}
 " call s:h.init()
 " echo s:h.get_name('SmallsCurrent')
 " echo s:h.get_name(['snow', 'DarkSlateGray'])

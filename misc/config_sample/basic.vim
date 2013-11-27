@@ -1,36 +1,47 @@
 let s:bg = 'gray25'
+let s:c = {
+      \ 'act_L':         { 'gui': [ s:bg,     'gray61']     },
+      \ 'act_SEP':       { 'gui': [ 'gray22', 'gray61']     },
+      \ 'inact_L':       { 'gui': [ 'gray22', 'gray57']    },
+      \ 'inact_SEP':     { 'gui': [ 'gray23', 'gray61']     },
+      \ 'plug_STANDOUT': { 'gui': [ s:bg,     'HotPink1']   },
+      \ 'plug_NORMAL':   { 'gui': [ s:bg,     'PaleGreen1'] },
+      \ 'plug_WARNING':  { 'gui': ['red4',    'gray61']     },
+      \ }
+
 
 let g:ezbar = {}
 let g:ezbar.active = [
-      \ [ s:bg, 'gray61'],
+      \ { 'chg_color': s:c.act_L} ,
       \ 'mode',
       \ 'textmanip',
       \ 'smalls',
       \ 'modified',
       \ 'filetype',
       \ 'fugitive',
-      \ { '__SEP__': [ 'gray22', 'gray61'] },
+      \ { '__SEP__': s:c.act_SEP },
       \ 'encoding',
       \ 'percent',
       \ 'line_col',
       \ ]
 let g:ezbar.inactive = [
-      \ [ 'gray22', 'gray57' ],
+      \ {'chg_color': s:c.inact_L },
       \ 'modified',
       \ 'filename',
-      \ { '__SEP__': [ 'gray23', 'gray61'] },
+      \ { '__SEP__': s:c.inact_SEP },
       \ 'encoding',
       \ 'percent',
       \ ]
 
-let u = {}
-function! u.textmanip() "{{{1
+let s:u = {}
+function! s:u.textmanip() "{{{1
   let s = toupper(g:textmanip_current_mode[0])
   return { 's' : s, 'c': s == 'R'
-        \ ?  [ s:bg, 'HotPink1']
-        \ :  [ s:bg, 'PaleGreen1'] }
+        \ ? s:c.plug_STANDOUT
+        \ : s:c.plug_NORMAL }
 endfunction
-function! u.smalls() "{{{1
+
+function! s:u.smalls() "{{{1
   let s = toupper(g:smalls_current_mode[0])
   if empty(s)
     return ''
@@ -39,24 +50,17 @@ function! u.smalls() "{{{1
         \ s == 'E' ? 'SmallsCurrent' : 'Function' }
 endfunction
 
-function! u.fugitive() "{{{1
+function! s:u.fugitive() "{{{1
   let s = fugitive#head()
   if empty(s)
     return ''
   endif
-  return { 's' : s, 'c': s == 'master'
-        \ ?  ['gray18', 'gray61']
-        \ :  ['red4', 'gray61']
-        \ }
-        " \ ?  ['red4', 'gray61']
+  return { 's' : s, 'c': (s != 'master') ? s:c.plug_WARNING : '' }
 endfunction
-" function! u._filter(layout) "{{{1
-  " echo len(a:layout)
-" endfunction
 
-let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
-unlet u
+let g:ezbar.parts = extend(ezbar#parts#default#new(), s:u)
+unlet! s:u
 
 " echo ezbar#string()
-nnoremap <F9> :<C-u>EzBarUpdate<CR>
+" nnoremap <F9> :<C-u>EzBarUpdate<CR>
 

@@ -66,6 +66,7 @@ function! s:ez.color_of(win, part)
 endfunction
 
 function! s:ez.string(win) "{{{1
+  let self.current_sec = 'left'
   let layout = self.prepare(a:win)
   let r = ''
   let max_idx = len(layout)
@@ -77,13 +78,20 @@ function! s:ez.string(win) "{{{1
 
     if part.s ==# '%='
       let r .= s
+      let self.current_sec = 'right'
       continue
     endif
 
     let next = idx + 1
     if next != max_idx
       if color == self.color_of(a:win, layout[next])
-        let sep = ' |'
+        if self.current_sec == 'left'
+          let sep = ' |'
+          " let sep = ' ＞'
+        else
+          let sep = ' |'
+          " let sep = ' ＜'
+        endif
       else
         let sep = ' '
       endif

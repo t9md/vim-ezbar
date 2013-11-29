@@ -42,7 +42,6 @@ function! s:h.refresh() "{{{1
   let colors = deepcopy(self.hls)
   call self.reset()
   for [hlname, defstr] in items(colors)
-    echo [hlname, defstr]
     call self.define(hlname, defstr)
   endfor
 endfunction
@@ -134,7 +133,5 @@ function! ezbar#highlighter#new(hl_prefix) "{{{1
   return o
 endfunction "}}}
 " call s:h.init()
-" echo s:h.get_name('SmallsCurrent')
-" echo s:h.get_name(['snow', 'DarkSlateGray'])
 
 " vim: foldmethod=marker

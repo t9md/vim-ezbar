@@ -1,5 +1,6 @@
 # DON't USE THIS
 Very experimental stage.
+Many many bug!
 
 # What's this?
 statusline configuration helper for minimalist.

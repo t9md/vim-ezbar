@@ -74,7 +74,7 @@ function! s:ez.string(win) "{{{1
     unlet! part
     let part = layout[idx]
     let color = self.color_of(a:win, part)
-    let s = '%#'. color . '# ' . part.s
+    let s = '%#'. color . '#' . part.s
 
     if part.s ==# '%='
       let r .= s
@@ -86,17 +86,17 @@ function! s:ez.string(win) "{{{1
     if next != max_idx
       if color == self.color_of(a:win, layout[next])
         if self.current_sec == 'left'
-          let sep = ' |'
+          let sep = ''
           " let sep = ' ＞'
         else
-          let sep = ' |'
+          let sep = ''
           " let sep = ' ＜'
         endif
       else
-        let sep = ' '
+        let sep = ''
       endif
     else
-      let sep = ' '
+      let sep = ''
     endif
     let r .= s
     let r .= sep
@@ -152,6 +152,11 @@ endfunction "}}}
 
 call s:ez.init()
 
-" echo s:ez.string('active')
+if expand("%:p") !=# expand("<sfile>:p")
+  finish
+endif
+
+" call s:runtest()
+echo s:ez.string('active')
 " echo s:ez.string('inactive')
 " vim: foldmethod=marker

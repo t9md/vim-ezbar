@@ -1,4 +1,7 @@
 " GUARD:
+if expand("%:p") !=# expand("<sfile>:p")
+  unlet! g:loaded_ezbar
+endif
 if exists('g:loaded_ezbar')
   finish
 endif

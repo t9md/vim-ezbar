@@ -25,7 +25,7 @@ function! s:f.mode(_) "{{{1
 endfunction
 
 function! s:f.percent(_) "{{{1
-  let s  = ' %3p%% '
+  let s  = '%3p%%'
   return { 's': s, 'ac' : { 'gui': ['gray40', 'gray95'] }}
 endfunction
 
@@ -42,7 +42,7 @@ function! s:f.line_col(_) "{{{1
 endfunction
 
 function! s:f.line(_) "{{{1
-  return ' %l/%L '
+  return '%l/%L'
 endfunction
 
 function! s:f.encoding(_) "{{{1
@@ -69,5 +69,5 @@ endfunction
 function! ezbar#parts#default#list()
   return keys(s:f)
 endfunction
-" vim: foldmethod=marker
 
+" vim: foldmethod=marker

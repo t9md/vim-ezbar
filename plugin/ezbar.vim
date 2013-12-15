@@ -26,7 +26,7 @@ call s:set_options(s:options)
 
 " AutoCmd:
 if !empty(g:ezbar)
-  augroup EzBar
+  augroup plugin-ezbar
     autocmd!
     autocmd WinEnter,BufWinEnter,FileType,ColorScheme * call ezbar#set()
     autocmd ColorScheme,SessionLoadPost * call ezbar#hl_refresh()
@@ -37,8 +37,7 @@ endif
 command! EzBarUpdate  call ezbar#update()
 command! EzBarSet     call ezbar#set()
 command! EzBarDisable call ezbar#disable()
-command! -range EzBarColorPreview
-      \ :call ezbar#hl_preview(<line1>, <line2>)
+" command! -range EzBarColorPreview :call ezbar#hl_preview(<line1>, <line2>)
 
 " Finish:
 let &cpo = s:old_cpo

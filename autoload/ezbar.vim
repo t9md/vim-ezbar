@@ -3,7 +3,6 @@ function! s:plog(msg) "{{{1
 endfunction "}}}
 
 let s:ez = {}
-
 function! s:ez.init() "{{{1
   let self.default_color = {}
   let self.default_color.active   = 'StatusLine'
@@ -11,14 +10,14 @@ function! s:ez.init() "{{{1
   let self.hl = ezbar#highlighter#new('EzBar')
 endfunction
 
-function! s:ez.prepare(win) "{{{1
+function! s:ez.prepare(win, winnum) "{{{1
   let g:ezbar.parts.__is_active = ( a:win ==# 'active' )
   if exists('*g:ezbar.parts._init')
     call g:ezbar.parts._init()
   endif
 
   let layout = map( deepcopy(g:ezbar[a:win]),
-        \ 'self.normalize_part(a:win, v:val)')
+        \ 'self.normalize_part(a:win, v:val, a:winnum)')
 
   call filter(layout, '!empty(v:val)')
   call filter(layout, '!empty(v:val.s)')
@@ -29,7 +28,7 @@ function! s:ez.prepare(win) "{{{1
   return layout
 endfunction
 
-function! s:ez.normalize_part(win, part_name) "{{{1
+function! s:ez.normalize_part(win, part_name, winnum) "{{{1
   if type(a:part_name) ==# type({})
     if has_key(a:part_name, 'chg_color')
       let self.default_color[a:win] = a:part_name['chg_color']
@@ -40,7 +39,7 @@ function! s:ez.normalize_part(win, part_name) "{{{1
       return
     endif
   elseif type(a:part_name) ==# type('')
-    let part = g:ezbar.parts[a:part_name]()
+    let part = g:ezbar.parts[a:part_name](a:winnum)
   endif
 
   if type(part) == type({})
@@ -65,16 +64,16 @@ function! s:ez.color_of(win, part)
   return self.hl.register(color)
 endfunction
 
-function! s:ez.string(win) "{{{1
+function! s:ez.string(win, winnum) "{{{1
   let self.current_sec = 'left'
-  let layout = self.prepare(a:win)
+  let layout = self.prepare(a:win, a:winnum)
   let r = ''
   let max_idx = len(layout)
   for idx in range(max_idx)
     unlet! part
     let part = layout[idx]
     let color = self.color_of(a:win, part)
-    let s = '%#'. color . '#' . part.s
+    let s = '%#'. color . '# ' . part.s
 
     if part.s ==# '%='
       let r .= s
@@ -85,46 +84,35 @@ function! s:ez.string(win) "{{{1
     let next = idx + 1
     if next != max_idx
       if color == self.color_of(a:win, layout[next])
-        if self.current_sec == 'left'
-          let sep = ''
-          " let sep = ' ＞'
-        else
-          let sep = ''
-          " let sep = ' ＜'
-        endif
+        let sep = ' |'
       else
-        let sep = ''
+        let sep = ' '
       endif
     else
-      let sep = ''
+      let sep = ' '
     endif
     let r .= s
     let r .= sep
   endfor
   return r
 endfunction
-" PP g:ezbar['active']
 
-function! s:ez.dump() "{{{1
-  return PP(self)
-endfunction
-
-function! ezbar#string(win) "{{{1
-  return s:ez.string(a:win)
+function! ezbar#string(win, winnum) "{{{1
+  return s:ez.string(a:win, a:winnum)
 endfunction
 
 function! ezbar#set() "{{{1
   for n in range(1, winnr('$'))
     if n ==# winnr()
-      call setwinvar(n, '&statusline', '%!ezbar#string("active")')
+      call setwinvar(n, '&statusline', '%!ezbar#string("active", ' . n . ')')
     else
-      call setwinvar(n, '&statusline', '%!ezbar#string("inactive")')
+      call setwinvar(n, '&statusline', '%!ezbar#string("inactive", ' . n . ')')
     endif
   endfor
 endfunction
 
 function! ezbar#update() "{{{1
-  call setwinvar(winnr(), '&statusline', '%!ezbar#string("active")')
+  call setwinvar(winnr(), '&statusline', '%!ezbar#string("active", ' . winnr() . ')')
 endfunction
 
 function! ezbar#hl_refresh() "{{{1
@@ -145,7 +133,7 @@ function! ezbar#disable() "{{{1
     call setwinvar(n, '&statusline', &statusline)
   endfor
 
-  augroup EzBar
+  augroup plugin-ezbar
     autocmd!
   augroup END
 endfunction "}}}
@@ -156,7 +144,8 @@ if expand("%:p") !=# expand("<sfile>:p")
   finish
 endif
 
-" call s:runtest()
-echo s:ez.string('active')
+echo s:ez.string('active', winnr())
 " echo s:ez.string('inactive')
+
+
 " vim: foldmethod=marker

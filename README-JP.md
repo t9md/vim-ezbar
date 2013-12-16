@@ -57,14 +57,17 @@ each parts function take one argment, it is windownumber(`n`) of each statusline
   endfunction
   ```
 NOTE: for variable that is vary from each buffer or windows, you need to use `getwinvar()`, otherwise all statusline parts result in showing value of active windows variable, lets say if you define above `my_encoding()` like bellow
+
+NOTE: ウィンドウ、バッファローカルのあ変数は `getwinvar()` を使う必要がある。さもなければ全てのウィンドウのステータスラインの該当パーツがアクティブウィンドウの変数の値を表示することになるだろう。例えば、上記の例の `my_encoding()` を以下の様に定義してしまうと
+
   ```Vim
   function! g:ezbar.parts.my_encoding(n)
     return &encoding
   endfunction
   ```
-Result in all statusline shows active windows `&encoding` which is not what you wanted.
+インアクティヴ・ウィンドウの encoding パートもアクティブ・ウィンドウの `&encoding` を表示してしまう。これはやりたい事では無いはずだ。
 
-* しかし、全関数を自分自身で設定するのは面倒な場合もある。その場合は、他のユーザーが書いたパーツ(partの集合)辞書をマージすれば良い。
+* 全関数を自分自身で設定するのは面倒な場合もある。その場合は、他のユーザーが書いたパーツ(partの集合)辞書をマージすれば良い。
   ```Vim
   let u = {}
   function! u.my_encoding(n)

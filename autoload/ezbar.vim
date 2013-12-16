@@ -29,72 +29,71 @@ function! s:ez.prepare(win, winnum) "{{{1
 endfunction
 
 function! s:ez.normalize_part(win, part_name, winnum) "{{{1
-  if type(a:part_name) ==# type({})
+  if type(a:part_name) ==# type('')
+    let part = g:ezbar.parts[a:part_name](a:winnum)
+
+  elseif type(a:part_name) ==# type({})
     if has_key(a:part_name, 'chg_color')
       let self.default_color[a:win] = a:part_name['chg_color']
       return
     elseif has_key(a:part_name, '__SEP__')
-      let part =  { 'name': '__SEP__', 's': '%=', 'c': a:part_name['__SEP__'] }
+      let part = { 'name': '__SEP__', 's': '%=', 'c': a:part_name['__SEP__'] }
     else
       return
     endif
-  elseif type(a:part_name) ==# type('')
-    let part = g:ezbar.parts[a:part_name](a:winnum)
   endif
 
+  " not supported if part type is not Dict nor String.
   if type(part) == type({})
-    let d = part
+    let DICT = part
+  elseif type(part) == type('')
+    let DICT = { 's' : part }
   else
-    let s = type(part) == type('') ? part : ''
-    let d = { 's' : s }
+    return
   endif
 
-  if empty(get(d, 'c'))
-    let d.c = self.default_color[a:win]
+  if empty(get(DICT, 'c')) 
+    let DICT.c = self.default_color[a:win]
   endif
-  if !has_key(d, 'name')
-    let d.name = a:part_name
+  if !has_key(DICT, 'name')
+    let DICT.name = a:part_name
   endif
-  return d
+
+  return DICT
 endfunction
 
 function! s:ez.color_of(win, part)
-  let wc = a:win ==# 'active' ? 'ac' : 'ic'
-  let color = has_key(a:part,  wc) ? a:part[wc] : a:part.c
+  let color = get(a:part, (a:win ==# 'active' ? 'ac' : 'ic' ), a:part.c)
   return self.hl.register(color)
 endfunction
 
 function! s:ez.string(win, winnum) "{{{1
+  let RESULT = ''
+
   let self.current_sec = 'left'
   let layout = self.prepare(a:win, a:winnum)
-  let r = ''
-  let max_idx = len(layout)
-  for idx in range(max_idx)
+  let layout_len = len(layout)
+
+  for idx in range(layout_len)
     unlet! part
-    let part = layout[idx]
-    let color = self.color_of(a:win, part)
-    let s = '%#'. color . '# ' . part.s
+    let part    = layout[idx]
+    let color   = self.color_of(a:win, part)
+    let color_s = '%#' . color . '#'
+    let s = color_s . ' ' . part.s . ' '
 
     if part.s ==# '%='
-      let r .= s
       let self.current_sec = 'right'
+      let RESULT .= s
       continue
     endif
 
     let next = idx + 1
-    if next != max_idx
-      if color == self.color_of(a:win, layout[next])
-        let sep = ' |'
-      else
-        let sep = ' '
-      endif
-    else
-      let sep = ' '
+    if next != layout_len && color ==# self.color_of(a:win, layout[next])
+      let s .= '|'
     endif
-    let r .= s
-    let r .= sep
+    let RESULT .= s
   endfor
-  return r
+  return RESULT
 endfunction
 
 function! ezbar#string(win, winnum) "{{{1
@@ -112,6 +111,7 @@ function! ezbar#set() "{{{1
 endfunction
 
 function! ezbar#update() "{{{1
+  " for test purpose
   call setwinvar(winnr(), '&statusline', '%!ezbar#string("active", ' . winnr() . ')')
 endfunction
 
@@ -138,14 +138,21 @@ function! ezbar#disable() "{{{1
   augroup END
 endfunction "}}}
 
+function! ezbar#enable() "{{{1
+  augroup plugin-ezbar
+    autocmd!
+    autocmd WinEnter,BufWinEnter,FileType,ColorScheme * call ezbar#set()
+    autocmd ColorScheme,SessionLoadPost * call ezbar#hl_refresh()
+  augroup END
+endfunction
+"}}}
+
 call s:ez.init()
 
 if expand("%:p") !=# expand("<sfile>:p")
   finish
 endif
-
-echo s:ez.string('active', winnr())
+" echo s:ez.string('active', winnr())
 " echo s:ez.string('inactive')
-
 
 " vim: foldmethod=marker

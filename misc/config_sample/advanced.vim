@@ -28,20 +28,21 @@ let g:ezbar.inactive = [
       \ ]
 
 let s:u = {}
-function! s:u.textmanip() "{{{1
+
+function! s:u.textmanip(_) "{{{1
   return toupper(g:textmanip_current_mode[0])
 endfunction
-function! s:u.smalls() "{{{1
+
+function! s:u.smalls(_) "{{{1
   let s = toupper(g:smalls_current_mode[0])
   if empty(s)
     return ''
   endif
   let self.__smalls_active = 1
-  let color = s == 'E' ? 'SmallsCurrent' : 'SmallsCandidate'
-  return { 's' : 's', 'c': color }
+  return { 's' : 's', 'c': s == 'E' ? 'SmallsCurrent' : 'SmallsCandidate' }
 endfunction
 
-function! s:u.fugitive() "{{{1
+function! s:u.fugitive(_) "{{{1
   return fugitive#head()
 endfunction
 
@@ -65,7 +66,7 @@ function! s:u._filter(layout) "{{{1
     if part.name == 'fugitive'
       let part.c = part.s == 'master' ? s:GUI('gray18', 'gray61') : s:GUI('red4', 'gray61')
     elseif part.name == 'textmanip'
-      let part.c = part.s == 'R' ? s:GUI( s:bg, 'HotPink1') : s:GUI( s:bg, 'PaleGreen1')
+      let part.c = part.s == 'R' ? s:GUI(s:bg, 'HotPink1') : s:GUI(s:bg, 'PaleGreen1')
     endif
     call add(r, part)
   endfor

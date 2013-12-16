@@ -1,5 +1,5 @@
 " GUARD:
-if expand("%:p") !=# expand("<sfile>:p")
+if expand("%:p") ==# expand("<sfile>:p")
   unlet! g:loaded_ezbar
 endif
 if exists('g:loaded_ezbar')
@@ -12,6 +12,7 @@ set cpo&vim
 " Main:
 let s:options = {
       \ 'g:ezbar' : {},
+      \ 'g:ezbar_enable' : 1,
       \ }
 
 function! s:set_options(options) "{{{
@@ -25,18 +26,15 @@ endfunction "}}}
 call s:set_options(s:options)
 
 " AutoCmd:
-if !empty(g:ezbar)
-  augroup plugin-ezbar
-    autocmd!
-    autocmd WinEnter,BufWinEnter,FileType,ColorScheme * call ezbar#set()
-    autocmd ColorScheme,SessionLoadPost * call ezbar#hl_refresh()
-  augroup END
+if g:ezbar_enable && !empty(g:ezbar)
+  call ezbar#enable()
 endif
 
 " Command:
 command! EzBarUpdate  call ezbar#update()
 command! EzBarSet     call ezbar#set()
 command! EzBarDisable call ezbar#disable()
+command! EzBarEnable  call ezbar#enable()
 " command! -range EzBarColorPreview :call ezbar#hl_preview(<line1>, <line2>)
 
 " Finish:

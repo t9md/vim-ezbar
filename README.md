@@ -40,7 +40,7 @@ statusline configuration helper for minimalist.
         \ ]
   ```
 
-* Layout consists of `part`. Each part is mapped to result of `g:ezbar.parts[{part}]()`.
+* Layout consists of `part`. Each part is mapped to result of `g:ezbar.parts[{part}](n)`.
   ```Vim
   let g:ezbar.active = [
         \ 'mode',        <-- g:ezbar.parts.mode()

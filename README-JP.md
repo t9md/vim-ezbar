@@ -56,8 +56,6 @@
     return getwinvar(a:n, '&encoding')
   endfunction
   ```
-NOTE: for variable that is vary from each buffer or windows, you need to use `getwinvar()`, otherwise all statusline parts result in showing value of active windows variable, lets say if you define above `my_encoding()` like bellow
-
 NOTE: ウィンドウ、バッファローカルのあ変数は `getwinvar()` を使う必要がある。さもなければ全てのウィンドウのステータスラインの該当パーツがアクティブウィンドウの変数の値を表示することになるだろう。例えば、上記の例の `my_encoding()` を以下の様に定義してしまうと
 
   ```Vim

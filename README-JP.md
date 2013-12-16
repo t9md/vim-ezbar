@@ -41,31 +41,39 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
         \ ]
   ```
 
-* レイアウトは、パート(`part`) で構成される。各パートは `g:ezbar.parts[{part}]()` 関数の呼び出し結果に対応する。
+* レイアウトは、パート(`part`) で構成される。各パートは `g:ezbar.parts[{part}](n)` 関数の呼び出し結果に対応する。
+each parts function take one argment, it is windownumber(`n`) of each statusline reside.
   ```Vim
   let g:ezbar.active = [
-        \ 'mode',        <-- g:ezbar.parts.mode()
-        \ 'filetype',    <-- g:ezbar.parts.filetype()
-        \ 'encoding',    <-- g:ezbar.parts.encoding()
-        \ 'percent',     <-- g:ezbar.parts.percent()
+        \ 'mode',        <-- g:ezbar.parts.mode(n)
+        \ 'filetype',    <-- g:ezbar.parts.filetype(n)
+        \ 'encoding',    <-- g:ezbar.parts.encoding(n)
+        \ 'percent',     <-- g:ezbar.parts.percent(n)
         \ ]
   ```
 
 * したがって、ユーザーが設定することは、自分のパート関数を書き、その関数名をレイアウトの中で使うこと。
   ```Vim
   let g:ezbar.active = [
-        \ 'my_encoding', <-- g:ezbar.parts.my_encoding()
+        \ 'my_encoding', <-- g:ezbar.parts.my_encoding(n)
         \ ]
-  function! g:ezbar.parts.my_encoding()
+  function! g:ezbar.parts.my_encoding(n)
+    return getwinvar(a:n, '&encoding')
+  endfunction
+  ```
+NOTE: for variable that is vary from each buffer or windows, you need to use `getwinvar()`, otherwise all statusline parts result in showing value of active windows variable, lets say if you define above `my_encoding()` like bellow
+  ```Vim
+  function! g:ezbar.parts.my_encoding(n)
     return &encoding
   endfunction
   ```
+Result in all statusline shows active windows `&encoding` which is not what you wanted.
 
 * しかし、全関数を自分自身で設定するのは面倒な場合もある。その場合は、他のユーザーが書いたパーツ(partの集合)辞書をマージすれば良い。
   ```Vim
   let u = {}
-  function! u.my_encoding()
-    return &encoding
+  function! u.my_encoding(n)
+    return getwinvar(a:n, '&encoding')
   endfunction
   let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
   unlet u
@@ -74,33 +82,33 @@ CUIモードのカラー設定は、Predefined なカラーのみサポート(�
 * 各パート関数は、単なる文字列か辞書を返さなければならない。
   ```Vim
   " 単なる文字列
-  function! u.my_encoding()
-    return &encoding
+  function! u.my_encoding(n)
+    return getwinvar(a:n, '&encoding')
   endfunction
 
   " 辞書。git ブランチが 'master' でない場合には色を変える。
-  function! u.fugitive() "{{{1
+  function! u.fugitive(n) "{{{1
     let s = fugitive#head()
     if empty(s)
       return ''
     endif
-    return { 's' : s, 'c': s == 'master'
-          \ ?  ['gray18', 'gray61']
-          \ :  ['red4', 'gray61']
-          \ }
+    return { 's' : s,
+          \ 'c': s !=# 'master' ? { 'gui': ['red4', 'gray61'] } : '' }
   endfunction
   let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
   unlet u
   ```
 
-パート関数が「 空の文字列、空の辞書、's' フィールドが空の辞書 」のいずれかを返した場合、そのパートはステータスラインに表示されない。
+以下のパートはステータスラインには表示されない。(表示させたくなければ以下の値を返せば良い)
+* 空の文字列、辞書(つまり `empty()` が `1` を返す値
+* 's' キー(=フィールド)が空の辞書
 
 * 上の例で見たように、パートの中で色を直接指定することが出来る。
 色は以下のディクショナリで表現される。
   ```Vim
   {'gui': [guibg, guifg, gui], 'cterm': [ctermbg, ctermbg, cterm] }
   ```
-GUI の bold のみ指定したい場合、以下の様に他の部分を空にする。
+使用しない色は省略出来る。例えば gui しか使わない場合は、gui のみ定義すれば良い
   ```Vim
   {'gui': ['', '', 'bold'] }
   ```
@@ -115,10 +123,16 @@ GUI の bold のみ指定したい場合、以下の様に他の部分を空に�
 
   " オプショナルとして使用可能な色に 'ac'(アクティブウィンドウ用)と 'ic'(非アクティブなウィンドウ用)がある。
   " ** どの色が適用されるかは以下の優先度で決まる。
-  "   アクティブウィンドウ:   'ac' => 'c' => g:ezbar.active.default_color
-  "   非アクティブウィンドウ: 'ic' => 'c' => g:ezbar.inactive.default_color
+  "   アクティブウィンドウ:   'ac' => 'c' => default_color
+  "   非アクティブウィンドウ: 'ic' => 'c' => default_color
   { 's': 'bar', 'ac' : {'gui': ['gray40', 'gray95'] }}
   ```
+
+上の `default_color` については、以下の特別なパートを使用して、変更することが出来る。
+
+```Vim
+  { 'chg_color': {'gui': [ s:bg, 'gray61'] }}
+```
 
 * どの色が利用できるか調べるには？  
 `:help rgb.txt`  
@@ -127,7 +141,7 @@ GUI の bold のみ指定したい場合、以下の様に他の部分を空に�
 
 * パート関数の中では、`self.__is_active` がアクティブ、非アクティブの判断に使用可能。
 ```Vim
-  function! f.percent() "{{{1
+  function! f.percent(n) "{{{1
     let s  = '%3p%%'
     " アクティブの場合のみ色をつける。
     if self.__is_active
@@ -156,62 +170,76 @@ GUI の bold のみ指定したい場合、以下の様に他の部分を空に�
         \ ]
 ```
 
+# パート関数の制限事項
+各パート関数はアクティヴ・ウィンドウのコンテキストで評価される。  
+これが、インアクティブ・ウィンドウに表示させたいパート関数内で、`getwinvar()` を使用しなければならない理由である。  
+しかし、ウィンドウ/バッファローカルではない変数以外では `getwinvar()` は使えない。  
+
+これは `ezbar` 及び Vim 自体の制限事項が関連している。
+* `ezbar` 側の制限
+`&statusline` は `%{}` という表記を提供しており、この中の式は各ウィンドウのコンテキストで評価される。  
+しかし `ezbar` はこれを使用していない。値によって動的に色(ハイライト)を変更するには、`&statusline` 文字列が生成されるタイミングで、色を決めておく必要がある。  
+`%{}` の評価結果の文字列によって色を変える事は出来ない。ezbar 作成の主目的は値によって色を変えることにあり、`%{}` は ezbar の場合は選択肢足り得ない。  
+
+* Vim 側の制限
+`statusline` はサンドボックス環境で評価される。サンドボックス内での別Window に移動することは出来ない。  
+これはセキュリティのためだが、この制限により`getwinvar()` 以外の方法ではインアクティヴウィンドウの情報を取ることが出来ない。  
+例えば `:wincmd w`でウィンドウを移動した後、プラグインの関数を呼ぶといった方法で情報を取ることが出来ない。  
+
 # 設定サンプル
 サンプルの設定ファイルは[ここ](https://github.com/t9md/vim-ezbar/tree/master/misc/config_sample)にある。
 
 設定を試行錯誤する時は以下のコマンドが助けになるかもしれない。  
 * `:EzBarUpdate` で現在のウィンドウ(アクティブウィンドウ)のステータスラインを更新する。  
 * `:EzBarDisable` は EzBar が設定する autocmd を削除する。  
+* `:EzBarEnable` を有効にする。
 * `:EzBarSet` 全ウィンドウのステータスラインを設定する。  
-* `:'<,'>EzBarColorPreview` 選択した行を `matchadd()` でハイライトする。色のプレビューに使う。  
 * `:echo ezbar#string('active')` or `:echo ezbar#string('inactive')` 最終的に設定されるステータスラインの文字列を返す。  
 
 ## ベーシック
   ```Vim
+
   let s:bg = 'gray25'
   let s:c = {
-        \ 'act_L':         { 'gui': [ s:bg,     'gray61']     },
-        \ 'act_SEP':       { 'gui': [ 'gray22', 'gray61']     },
-        \ 'inact_L':       { 'gui': [ 'gray22', 'gray57']    },
-        \ 'inact_SEP':     { 'gui': [ 'gray23', 'gray61']     },
-        \ 'plug_STANDOUT': { 'gui': [ s:bg,     'HotPink1']   },
-        \ 'plug_NORMAL':   { 'gui': [ s:bg,     'PaleGreen1'] },
-        \ 'plug_WARNING':  { 'gui': ['red4',    'gray61']     },
+        \ 'L_act':    { 'gui': [ s:bg,     'gray61']     },
+        \ 'L_inact':  { 'gui': [ 'gray22', 'gray57']     },
+        \ 'SEP_act':  { 'gui': [ 'gray22', 'gray61']     },
+        \ 'SEP_inact':{ 'gui': [ 'gray23', 'gray61']     },
+        \ 'STANDOUT': { 'gui': [ s:bg,     'HotPink1']   },
+        \ 'NORMAL':   { 'gui': [ s:bg,     'PaleGreen1'] },
+        \ 'WARNING':  { 'gui': ['red4',    'gray61']     },
         \ }
-
 
   let g:ezbar = {}
   let g:ezbar.active = [
-        \ { 'chg_color': s:c.act_L} ,
+        \ { 'chg_color': s:c.L_act} ,
         \ 'mode',
         \ 'textmanip',
         \ 'smalls',
         \ 'modified',
         \ 'filetype',
         \ 'fugitive',
-        \ { '__SEP__': s:c.act_SEP },
+        \ { '__SEP__': s:c.SEP_act },
         \ 'encoding',
         \ 'percent',
         \ 'line_col',
         \ ]
   let g:ezbar.inactive = [
-        \ {'chg_color': s:c.inact_L },
+        \ {'chg_color': s:c.L_inact },
         \ 'modified',
         \ 'filename',
-        \ { '__SEP__': s:c.inact_SEP },
+        \ { '__SEP__': s:c.SEP_inact },
         \ 'encoding',
         \ 'percent',
         \ ]
 
   let s:u = {}
-  function! s:u.textmanip() "{{{1
+  function! s:u.textmanip(_) "{{{1
     let s = toupper(g:textmanip_current_mode[0])
-    return { 's' : s, 'c': s == 'R'
-          \ ? s:c.plug_STANDOUT
-          \ : s:c.plug_NORMAL }
+    return { 's' : s, 'c': s == 'R' ? s:c.STANDOUT : s:c.NORMAL }
   endfunction
 
-  function! s:u.smalls() "{{{1
+  function! s:u.smalls(_) "{{{1
     let s = toupper(g:smalls_current_mode[0])
     if empty(s)
       return ''
@@ -220,19 +248,13 @@ GUI の bold のみ指定したい場合、以下の様に他の部分を空に�
           \ s == 'E' ? 'SmallsCurrent' : 'Function' }
   endfunction
 
-  function! s:u.fugitive() "{{{1
+  function! s:u.fugitive(_) "{{{1
     let s = fugitive#head()
-    if empty(s)
-      return ''
-    endif
-    return { 's' : s, 'c': (s != 'master') ? s:c.plug_WARNING : '' }
+    return { 's': s, 'c': s !=# 'master' ? s:c.WARNING : ''  }
   endfunction
 
   let g:ezbar.parts = extend(ezbar#parts#default#new(), s:u)
-  unlet! s:u
-
-  " echo ezbar#string()
-  " nnoremap <F9> :<C-u>EzBarUpdate<CR>
+  unlet s:u
   ```
 
 ## 応用
@@ -267,31 +289,32 @@ GUI の bold のみ指定したい場合、以下の様に他の部分を空に�
         \ ]
 
   let s:u = {}
-  function! s:u.textmanip() "{{{1
+
+  function! s:u.textmanip(_) "{{{1
     return toupper(g:textmanip_current_mode[0])
   endfunction
-  function! s:u.smalls() "{{{1
+
+  function! s:u.smalls(_) "{{{1
     let s = toupper(g:smalls_current_mode[0])
     if empty(s)
       return ''
     endif
     let self.__smalls_active = 1
-    let color = s == 'E' ? 'SmallsCurrent' : 'SmallsCandidate'
-    return { 's' : 's', 'c': color }
+    return { 's' : 's', 'c': s == 'E' ? 'SmallsCurrent' : 'SmallsCandidate' }
   endfunction
 
-  function! s:u.fugitive() "{{{1
+  function! s:u.fugitive(_) "{{{1
     return fugitive#head()
   endfunction
 
   " `_init()` は特別な関数。`g:ezbar.parts._init` が関数であれば呼ばれる。
-  " 状態管理に使うフィールドを定義する場合に使う。
+  " use this to define some field to store state.
   function! s:u._init() "{{{1
     let self.__smalls_active = 0
   endfunction
 
   " `_filter()` は特別な関数。`g:ezbar.parts._filter` が関数であれば呼ばれる。
-  " ezbar は標準化した(辞書化して 'name' フィールドを定義) レイアウトを引数として呼び出す。
+  " ezbar は標準化した(辞書化して 'name' フィールドを定義) レイアウトを引数として呼び出す。(必要に応じて加工して)レイアウトを返さなければならない。
   function! s:u._filter(layout) "{{{1
     if self.__smalls_active && self.__is_active
       " fill statusline when smalls is active
@@ -304,7 +327,7 @@ GUI の bold のみ指定したい場合、以下の様に他の部分を空に�
       if part.name == 'fugitive'
         let part.c = part.s == 'master' ? s:GUI('gray18', 'gray61') : s:GUI('red4', 'gray61')
       elseif part.name == 'textmanip'
-        let part.c = part.s == 'R' ? s:GUI( s:bg, 'HotPink1') : s:GUI( s:bg, 'PaleGreen1')
+        let part.c = part.s == 'R' ? s:GUI(s:bg, 'HotPink1') : s:GUI(s:bg, 'PaleGreen1')
       endif
       call add(r, part)
     endfor

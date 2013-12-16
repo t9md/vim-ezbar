@@ -37,7 +37,7 @@
   ```
 
 * レイアウトは、パート(`part`) で構成される。各パートは `g:ezbar.parts[{part}](n)` 関数の呼び出し結果に対応する。
-each parts function take one argment, it is windownumber(`n`) of each statusline reside.
+各パーツ関数は引数を一つだけとる。その引数は、各ステータスラインがあるウィンドウのウィンドウ番号である。
   ```Vim
   let g:ezbar.active = [
         \ 'mode',        <-- g:ezbar.parts.mode(n)

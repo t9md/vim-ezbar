@@ -1,4 +1,4 @@
-Japanese README is [here](https://github.com/t9md/vim-ezbar/blob/master/README-JP.md)
+[日本語はこちら](https://github.com/t9md/vim-ezbar/blob/master/README-JP.md)
 
 # What's this?
 statusline configuration helper for minimalist.

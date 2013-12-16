@@ -4,9 +4,11 @@ endfunction "}}}
 
 let s:ez = {}
 function! s:ez.init() "{{{1
-  let self.default_color = {}
-  let self.default_color.active   = 'StatusLine'
-  let self.default_color.inactive = 'StatusLineNC'
+  let self.color = {}
+  let self.color.active   = 'StatusLine'
+  let self.color.inactive = 'StatusLineNC'
+  let self.separator_left  = get(g:ezbar, 'separator_left', '|')
+  let self.separator_right = get(g:ezbar, 'separator_right', '|') 
   let self.hl = ezbar#highlighter#new('EzBar')
 endfunction
 
@@ -34,7 +36,7 @@ function! s:ez.normalize_part(win, part_name, winnum) "{{{1
 
   elseif type(a:part_name) ==# type({})
     if has_key(a:part_name, 'chg_color')
-      let self.default_color[a:win] = a:part_name['chg_color']
+      let self.color[a:win] = a:part_name['chg_color']
       return
     elseif has_key(a:part_name, '__SEP__')
       let part = { 'name': '__SEP__', 's': '%=', 'c': a:part_name['__SEP__'] }
@@ -53,7 +55,7 @@ function! s:ez.normalize_part(win, part_name, winnum) "{{{1
   endif
 
   if empty(get(DICT, 'c')) 
-    let DICT.c = self.default_color[a:win]
+    let DICT.c = self.color[a:win]
   endif
   if !has_key(DICT, 'name')
     let DICT.name = a:part_name
@@ -70,7 +72,7 @@ endfunction
 function! s:ez.string(win, winnum) "{{{1
   let RESULT = ''
 
-  let self.current_sec = 'left'
+  let self.current_section = 'left'
   let layout = self.prepare(a:win, a:winnum)
   let layout_len = len(layout)
 
@@ -82,14 +84,14 @@ function! s:ez.string(win, winnum) "{{{1
     let s = color_s . ' ' . part.s . ' '
 
     if part.s ==# '%='
-      let self.current_sec = 'right'
+      let self.current_section = 'right'
       let RESULT .= s
       continue
     endif
 
     let next = idx + 1
     if next != layout_len && color ==# self.color_of(a:win, layout[next])
-      let s .= '|'
+      let s .= self['separator_' . self.current_section]
     endif
     let RESULT .= s
   endfor

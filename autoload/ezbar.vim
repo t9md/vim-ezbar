@@ -1,19 +1,27 @@
+" Utility:
 function! s:plog(msg) "{{{1
   cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vim.log')
 endfunction "}}}
+function! s:gather_matchid_for(hlgroup) "{{{1
+  return map(filter(getmatches(), "v:val.group =~# '". a:hlgroup . "'"),
+        \ 'v:val.id')
+endfunction
+"}}}
 
+" Main:
 let s:ez = {}
+
 function! s:ez.init() "{{{1
-  let self.color = {}
-  let self.color.active   = 'StatusLine'
-  let self.color.inactive = 'StatusLineNC'
-  let self.separator_left  = get(g:ezbar, 'separator_left', '|')
-  let self.separator_right = get(g:ezbar, 'separator_right', '|') 
+  let self.color_active   = 'StatusLine'
+  let self.color_inactive = 'StatusLineNC'
+  let self.separator_L    = get(g:ezbar, 'separator_L',  '|')
+  let self.separator_R    = get(g:ezbar, 'separator_R', '|')
   let self.hl = ezbar#highlighter#new('EzBar')
 endfunction
 
 function! s:ez.prepare(win, winnum) "{{{1
   let g:ezbar.parts.__is_active = ( a:win ==# 'active' )
+
   if exists('*g:ezbar.parts._init')
     call g:ezbar.parts._init()
   endif
@@ -30,13 +38,20 @@ function! s:ez.prepare(win, winnum) "{{{1
   return layout
 endfunction
 
+function! s:ez.color_set(win, color) "{{{1
+  let self['color_' . a:win] = a:color
+endfunction
+
+function! s:ez.color_get(win) "{{{1
+  return self['color_' . a:win]
+endfunction
+
 function! s:ez.normalize_part(win, part_name, winnum) "{{{1
   if type(a:part_name) ==# type('')
     let part = g:ezbar.parts[a:part_name](a:winnum)
-
   elseif type(a:part_name) ==# type({})
     if has_key(a:part_name, 'chg_color')
-      let self.color[a:win] = a:part_name['chg_color']
+      call self.color_set(a:win, a:part_name['chg_color'])
       return
     elseif has_key(a:part_name, '__SEP__')
       let part = { 'name': '__SEP__', 's': '%=', 'c': a:part_name['__SEP__'] }
@@ -55,16 +70,16 @@ function! s:ez.normalize_part(win, part_name, winnum) "{{{1
   endif
 
   if empty(get(DICT, 'c')) 
-    let DICT.c = self.color[a:win]
+    let DICT.c = self.color_get(a:win)
   endif
+
   if !has_key(DICT, 'name')
     let DICT.name = a:part_name
   endif
-
   return DICT
 endfunction
 
-function! s:ez.color_of(win, part)
+function! s:ez.color_of(win, part) "{{{1
   let color = get(a:part, (a:win ==# 'active' ? 'ac' : 'ic' ), a:part.c)
   return self.hl.register(color)
 endfunction
@@ -72,7 +87,7 @@ endfunction
 function! s:ez.string(win, winnum) "{{{1
   let RESULT = ''
 
-  let self.current_section = 'left'
+  let self.section = 'L'
   let layout = self.prepare(a:win, a:winnum)
   let layout_len = len(layout)
 
@@ -81,23 +96,25 @@ function! s:ez.string(win, winnum) "{{{1
     let part    = layout[idx]
     let color   = self.color_of(a:win, part)
     let color_s = '%#' . color . '#'
-    let s = color_s . ' ' . part.s . ' '
+    let s = printf('%%#%s# %s ', color, part.s)
 
     if part.s ==# '%='
-      let self.current_section = 'right'
+      let self.section = 'R'
       let RESULT .= s
       continue
     endif
 
     let next = idx + 1
     if next != layout_len && color ==# self.color_of(a:win, layout[next])
-      let s .= self['separator_' . self.current_section]
+      let s .= self['separator_' . self.section]
     endif
     let RESULT .= s
   endfor
   return RESULT
 endfunction
+"}}}
 
+" Public:
 function! ezbar#string(win, winnum) "{{{1
   return s:ez.string(a:win, a:winnum)
 endfunction
@@ -138,8 +155,7 @@ function! ezbar#disable() "{{{1
   augroup plugin-ezbar
     autocmd!
   augroup END
-endfunction "}}}
-
+endfunction
 function! ezbar#enable() "{{{1
   augroup plugin-ezbar
     autocmd!
@@ -160,11 +176,6 @@ function! ezbar#check_highlight() range "{{{1
       call matchadd(hlname, '\V' . color)
     endif
   endfor
-endfunction
-
-function! s:gather_matchid_for(hlgroup) "{{{1
-  return map(filter(getmatches(), "v:val.group =~# '". a:hlgroup . "'"),
-        \ 'v:val.id')
 endfunction
 "}}}
 

@@ -16,7 +16,7 @@ function! s:ez.init() "{{{1
   let self.color_inactive = 'StatusLineNC'
   let self.separator_L    = get(g:ezbar, 'separator_L',  '|')
   let self.separator_R    = get(g:ezbar, 'separator_R', '|')
-  let self.hl = ezbar#highlighter#new('EzBar')
+  let self.highlight = ezbar#highlighter#new('EzBar')
 endfunction
 
 function! s:ez.prepare(win, winnum) "{{{1
@@ -81,7 +81,7 @@ endfunction
 
 function! s:ez.color_of(win, part) "{{{1
   let color = get(a:part, (a:win ==# 'active' ? 'ac' : 'ic' ), a:part.c)
-  return self.hl.register(color)
+  return self.highlight.register(color)
 endfunction
 
 function! s:ez.string(win, winnum) "{{{1
@@ -135,15 +135,11 @@ function! ezbar#update() "{{{1
 endfunction
 
 function! ezbar#hl_refresh() "{{{1
-  call s:ez.hl.refresh()
-endfunction
-
-function! ezbar#hl_preview(first, last) "{{{1
-  call s:ez.hl.preview(a:first, a:last)
+  call s:ez.highlight.refresh()
 endfunction
 
 function! ezbar#get_highlighter() "{{{1
-  return s:ez.hl
+  return s:ez.highlight
 endfunction
 
 function! ezbar#disable() "{{{1
@@ -172,7 +168,7 @@ function! ezbar#check_highlight() range "{{{1
   for n in range(a:firstline, a:lastline)
     let color = matchstr(getline(n), '\v\{\s*''(gui|cterm)''\s*:\s*\[.{-}\]\s*}')
     if !empty(color)
-      let hlname = s:ez.hl.register(eval(color))
+      let hlname = s:ez.highlight.register(eval(color))
       call matchadd(hlname, '\V' . color)
     endif
   endfor

@@ -33,8 +33,10 @@ endif
 " Command:
 command! EzBarUpdate  call ezbar#update()
 command! EzBarSet     call ezbar#set()
+
 command! EzBarDisable call ezbar#disable()
 command! EzBarEnable  call ezbar#enable()
+
 command! -range EzBarCheckHighlight  :<line1>,<line2>call ezbar#check_highlight()
 
 " Finish:

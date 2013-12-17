@@ -114,7 +114,7 @@ function! s:h.hl_defstr(color) "{{{1
     let color = a:color[key]
     if !empty(color[0])      | call add(r, key . 'bg=' . color[0]) | endif
     if !empty(color[1])      | call add(r, key . 'fg=' . color[1]) | endif
-    if !empty(get(color, 2)) | call add(r, key . '=' . color[2])   | endif
+    if !empty(get(color, 2)) | call add(r, key . '='   . color[2]) | endif
   endfor
   return join(r)
 endfunction "}}}

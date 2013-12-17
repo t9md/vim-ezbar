@@ -147,6 +147,25 @@ function! ezbar#enable() "{{{1
     autocmd ColorScheme,SessionLoadPost * call ezbar#hl_refresh()
   augroup END
 endfunction
+
+function! ezbar#check_highlight() range "{{{1
+  for id in s:gather_matchid_for('EzBar')
+    call matchdelete(id)
+  endfor
+
+  for n in range(a:firstline, a:lastline)
+    let color = matchstr(getline(n), '\v\{\s*''(gui|cterm)''\s*:\s*\[.{-}\]\s*}')
+    if !empty(color)
+      let hlname = s:ez.hl.register(eval(color))
+      call matchadd(hlname, '\V' . color)
+    endif
+  endfor
+endfunction
+
+function! s:gather_matchid_for(hlgroup) "{{{1
+  return map(filter(getmatches(), "v:val.group =~# '". a:hlgroup . "'"),
+        \ 'v:val.id')
+endfunction
 "}}}
 
 call s:ez.init()

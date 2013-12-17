@@ -35,7 +35,7 @@ command! EzBarUpdate  call ezbar#update()
 command! EzBarSet     call ezbar#set()
 command! EzBarDisable call ezbar#disable()
 command! EzBarEnable  call ezbar#enable()
-" command! -range EzBarColorPreview :call ezbar#hl_preview(<line1>, <line2>)
+command! -range EzBarCheckHighlight  :<line1>,<line2>call ezbar#check_highlight()
 
 " Finish:
 let &cpo = s:old_cpo

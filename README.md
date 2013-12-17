@@ -106,7 +106,7 @@ Merge parts other user provide with a portion you added.
 As you see in above example you can set color directly.
 Color is expressed as dictionary with following form.
   ```Vim
-  {'gui': [guibg, guifg, gui], 'cterm': [ctermbg, ctermbg, cterm] }
+  {'gui': [guibg, guifg, gui], 'cterm': [ctermbg, ctermfg, cterm] }
   ```
 
 You can omit color that you dont use.

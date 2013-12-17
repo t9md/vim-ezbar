@@ -6,12 +6,12 @@ endfunction "}}}
 " Use your own parts based on this sample.
 let s:f = {}
 let s:mode_map = {
-      \ 'n':      { 's': 'N ', 'c': { 'gui': ['SkyBlue3',      'Black'] }},
-      \ 'i':      { 's': 'I ', 'c': { 'gui': ['PaleGreen3',    'Black'] }},
-      \ 'R':      { 's': 'R ', 'c': { 'gui': ['tomato1',       'Black'] }},
-      \ 'v':      { 's': 'V ', 'c': { 'gui': ['PaleVioletRed', 'Black'] }},
-      \ 'V':      { 's': 'VL', 'c': { 'gui': ['PaleVioletRed', 'Black'] }},
-      \ "\<C-v>": { 's': 'VB', 'c': { 'gui': ['PaleVioletRed', 'Black'] }},
+      \ 'n':      { 's': 'N ', 'c': { 'gui': ['SkyBlue3',      'Black'], 'cterm': [33, 16] }},
+      \ 'i':      { 's': 'I ', 'c': { 'gui': ['PaleGreen3',    'Black'], 'cterm': [10, 16] }},
+      \ 'R':      { 's': 'R ', 'c': { 'gui': ['tomato1',       'Black'], 'cterm': [ 1, 16] }},
+      \ 'v':      { 's': 'V ', 'c': { 'gui': ['PaleVioletRed', 'Black'], 'cterm': [ 9, 16] }},
+      \ 'V':      { 's': 'VL', 'c': { 'gui': ['PaleVioletRed', 'Black'], 'cterm': [ 9, 16] }},
+      \ "\<C-v>": { 's': 'VB', 'c': { 'gui': ['PaleVioletRed', 'Black'], 'cterm': [ 9, 16] }},
       \ 'c':      { 's': 'C ', 'c': 'Type' },
       \ 's':      { 's': 'S ', 'c': 'Type' },
       \ 'S':      { 's': 'SL', 'c': 'Type' },
@@ -26,7 +26,7 @@ endfunction
 
 function! s:f.percent(_) "{{{1
   let s  = '%3p%%'
-  return { 's': s, 'ac' : { 'gui': ['gray40', 'gray95'] }}
+  return { 's': s, 'ac' : { 'gui': ['gray40', 'gray95'], 'cterm': [ 241, 255] }}
 endfunction
 
 function! s:f.modified(_) "{{{1
@@ -38,7 +38,7 @@ function! s:f.readonly(_) "{{{1
 endfunction
 
 function! s:f.line_col(_) "{{{1
-  return { 's': '%3l:%-2c', 'ac' : { 'gui': ['gray58', 'Black'] }}
+  return { 's': '%3l:%-2c', 'ac' : { 'gui': ['gray58', 'Black'], 'cterm': [247, 16] }}
 endfunction
 
 function! s:f.line(_) "{{{1

@@ -195,7 +195,7 @@ While preparing configuration, following command might help.
 * `:EzBarSet` set all window's statusline  
 * `:echo ezbar#string('active')` or `:echo ezbar#string('inactive')`  
 
-* Basic
+## Basic
   ```Vim
 
   let s:bg = 'gray25'
@@ -256,9 +256,8 @@ While preparing configuration, following command might help.
   unlet s:u
   ```
 
-* Advanced
+## Advanced
   ```Vim
-
   let s:bg = 'gray25'
 
   function! s:GUI(...)
@@ -270,6 +269,7 @@ While preparing configuration, following command might help.
         \ { 'chg_color': s:GUI( s:bg, 'gray61') },
         \ 'mode',
         \ 'textmanip',
+        \ 'filename',
         \ 'smalls',
         \ 'modified',
         \ 'filetype',
@@ -314,8 +314,9 @@ While preparing configuration, following command might help.
   endfunction
 
   " `_filter()` is special function, if `g:ezbar.parts._filter` is function.
-  " ezbar call this function with normalized layout as argument.
-  function! s:u._filter(layout) "{{{1
+  " ezbar call this function with normalized layout and parts dictionary as argument.
+  " use whichever usefull to modify result
+  function! s:u._filter(layout, parts) "{{{1
     if self.__smalls_active && self.__is_active
       " fill statusline when smalls is active
       return filter(a:layout, 'v:val.name == "smalls"')
@@ -331,6 +332,15 @@ While preparing configuration, following command might help.
       endif
       call add(r, part)
     endfor
+
+    " use parts dictionary which is usefull when you directry select one parts
+    " for modification.
+    if self.__is_active
+          \ && has_key(a:parts, 'filename')
+          \ && a:parts.filename.s =~# 'tryit\.'
+      let a:parts.filename.c.gui = ["ForestGreen", "white", "bold"]
+    endif
+
     return r
   endfunction
 

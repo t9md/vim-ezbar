@@ -32,8 +32,13 @@ function! s:ez.prepare(win, winnum) "{{{1
   call filter(layout, '!empty(v:val)')
   call filter(layout, '!empty(v:val.s)')
 
+  let parts = {}
+  for part in layout
+    let parts[part.name] = part
+  endfor
+
   if exists('*g:ezbar.parts._filter')
-    let layout = g:ezbar.parts._filter(layout)
+    let layout = g:ezbar.parts._filter(layout, parts)
   endif
   return layout
 endfunction

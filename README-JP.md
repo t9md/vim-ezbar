@@ -266,6 +266,7 @@ NOTE: ウィンドウ、バッファローカルのあ変数は `getwinvar()` �
         \ { 'chg_color': s:GUI( s:bg, 'gray61') },
         \ 'mode',
         \ 'textmanip',
+        \ 'filename',
         \ 'smalls',
         \ 'modified',
         \ 'filetype',
@@ -310,8 +311,11 @@ NOTE: ウィンドウ、バッファローカルのあ変数は `getwinvar()` �
   endfunction
 
   " `_filter()` は特別な関数。`g:ezbar.parts._filter` が関数であれば呼ばれる。
-  " ezbar は標準化した(辞書化して 'name' フィールドを定義) レイアウトを引数として呼び出す。(必要に応じて加工して)レイアウトを返さなければならない。
-  function! s:u._filter(layout) "{{{1
+  " ezbar は標準化した(辞書化して 'name' フィールドを定義)
+  " レイアウトと、パーツ辞書を引数として呼び出す。
+  " この関数はレイアウトを返さなければならない。
+  " どちらか便利な方を変更して結果を加工出来る。
+  function! s:u._filter(layout, parts) "{{{1
     if self.__smalls_active && self.__is_active
       " fill statusline when smalls is active
       return filter(a:layout, 'v:val.name == "smalls"')
@@ -327,6 +331,16 @@ NOTE: ウィンドウ、バッファローカルのあ変数は `getwinvar()` �
       endif
       call add(r, part)
     endfor
+
+    " 一つのパーツを狙い撃ちで変更したい場合には、parts 辞書を使うと便利
+    " use parts dictionary which is usefull when you directry select one parts
+    " for modification.
+    if self.__is_active
+          \ && has_key(a:parts, 'filename')
+          \ && a:parts.filename.s =~# 'tryit\.'
+      let a:parts.filename.c.gui = ["ForestGreen", "white", "bold"]
+    endif
+
     return r
   endfunction
 

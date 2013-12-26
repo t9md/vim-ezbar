@@ -61,6 +61,10 @@ function! s:f.filename(_) "{{{1
   return fnamemodify(bufname(winbufnr(a:_)), ':t')
 endfunction "}}}
 
+function! s:f.winnr(_) "{{{1
+  return a:_
+endfunction "}}}
+
 " Public:
 function! ezbar#parts#default#new()
   return deepcopy(s:f)

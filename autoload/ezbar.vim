@@ -43,7 +43,7 @@ function! s:ez.color_set(win, color) "{{{1
 endfunction
 
 function! s:ez.color_get(win) "{{{1
-  return self['color_' . a:win]
+  return copy(self['color_' . a:win])
 endfunction
 
 function! s:ez.normalize_part(win, part_name, winnum) "{{{1
@@ -63,7 +63,7 @@ function! s:ez.normalize_part(win, part_name, winnum) "{{{1
   " not supported if part type is not Dict nor String.
   if type(part) == type({})
     let DICT = part
-  elseif type(part) == type('')
+  elseif type(part) == type('') || type(part) == type(0)
     let DICT = { 's' : part }
   else
     return

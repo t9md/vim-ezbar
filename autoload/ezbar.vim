@@ -9,6 +9,10 @@ endfunction
 "}}}
 
 " Main:
+let s:TYPE_STRING     = type('')
+let s:TYPE_DICTIONARY = type({})
+let s:TYPE_NUMBER     = type(0)
+
 let s:ez = {}
 
 function! s:ez.init() "{{{1
@@ -52,9 +56,9 @@ function! s:ez.color_get(win) "{{{1
 endfunction
 
 function! s:ez.normalize_part(win, part_name, winnum) "{{{1
-  if type(a:part_name) ==# type('')
+  if type(a:part_name) is s:TYPE_STRING
     let part = g:ezbar.parts[a:part_name](a:winnum)
-  elseif type(a:part_name) ==# type({})
+  elseif type(a:part_name) is s:TYPE_DICTIONARY
     if has_key(a:part_name, 'chg_color')
       call self.color_set(a:win, a:part_name['chg_color'])
       return
@@ -66,9 +70,9 @@ function! s:ez.normalize_part(win, part_name, winnum) "{{{1
   endif
 
   " not supported if part type is not Dict nor String.
-  if type(part) == type({})
+  if type(part) is s:TYPE_DICTIONARY
     let DICT = part
-  elseif type(part) == type('') || type(part) == type(0)
+  elseif type(part) is s:TYPE_STRING || type(part) is s:TYPE_NUMBER
     let DICT = { 's' : part }
   else
     return

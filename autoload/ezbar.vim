@@ -56,9 +56,10 @@ function! s:ez.color_get(win) "{{{1
 endfunction
 
 function! s:ez.normalize_part(win, part_name, winnum) "{{{1
-  if type(a:part_name) is s:TYPE_STRING
+  let TYPE_part_name = type(a:part_name)
+  if TYPE_part_name is s:TYPE_STRING
     let part = g:ezbar.parts[a:part_name](a:winnum)
-  elseif type(a:part_name) is s:TYPE_DICTIONARY
+  elseif TYPE_part_name is s:TYPE_DICTIONARY
     if has_key(a:part_name, 'chg_color')
       call self.color_set(a:win, a:part_name['chg_color'])
       return
@@ -69,10 +70,11 @@ function! s:ez.normalize_part(win, part_name, winnum) "{{{1
     endif
   endif
 
+  let TYPE_part = type(part)
   " not supported if part type is not Dict nor String.
-  if type(part) is s:TYPE_DICTIONARY
+  if TYPE_part is s:TYPE_DICTIONARY
     let DICT = part
-  elseif type(part) is s:TYPE_STRING || type(part) is s:TYPE_NUMBER
+  elseif TYPE_part is s:TYPE_STRING || TYPE_part is s:TYPE_NUMBER
     let DICT = { 's' : part }
   else
     return

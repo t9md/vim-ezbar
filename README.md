@@ -308,8 +308,9 @@ While preparing configuration, following command might help.
   endfunction
 
   " `_init()` is special function, if `g:ezbar.parts._init` is function.
+  " arg is `winnum()`
   " use this to define some field to store state.
-  function! s:u._init() "{{{1
+  function! s:u._init(_) "{{{1
     let self.__smalls_active = 0
   endfunction
 

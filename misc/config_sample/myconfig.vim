@@ -94,6 +94,6 @@ function! s:u._filter(layout, parts) "{{{3
   return a:layout
 endfunction
 
-function! s:u._init() "{{{3
+function! s:u._init(_) "{{{3
   let self.__smalls_active = 0
 endfunction "}}}

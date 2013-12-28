@@ -2,9 +2,9 @@
 function! s:plog(msg) "{{{1
   cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vim.log')
 endfunction "}}}
-function! s:gather_matchid_for(hlgroup) "{{{1
-  return map(filter(getmatches(), "v:val.group =~# '". a:hlgroup . "'"),
-        \ 'v:val.id')
+
+function! s:extract_color_definition(string) "{{{1
+  return matchstr(a:string, '\v\{\s*''(gui|cterm)''\s*:\s*\[.{-}\]\s*}')
 endfunction
 "}}}
 
@@ -16,23 +16,22 @@ let s:TYPE_NUMBER     = type(0)
 let s:ez = {}
 
 function! s:ez.init() "{{{1
-  let self.color_active   = 'StatusLine'
-  let self.color_inactive = 'StatusLineNC'
-  let self.separator_L    = get(g:ezbar, 'separator_L',  '|')
-  let self.separator_R    = get(g:ezbar, 'separator_R', '|')
   let self.highlight = ezbar#highlighter#new('EzBar')
 endfunction
 
 function! s:ez.prepare(win, winnum) "{{{1
   let g:ezbar.parts.__is_active = ( a:win ==# 'active' )
 
+  " Init:
   if exists('*g:ezbar.parts._init')
-    call g:ezbar.parts._init()
+    call g:ezbar.parts._init(a:winnum)
   endif
 
+  " Normalize:
   let layout = map( deepcopy(g:ezbar[a:win]),
         \ 'self.normalize_part(a:win, v:val, a:winnum)')
 
+  " Eliminate:
   call filter(layout, '!empty(v:val)')
   call filter(layout, '!empty(v:val.s)')
 
@@ -41,6 +40,7 @@ function! s:ez.prepare(win, winnum) "{{{1
     let parts[part.name] = part
   endfor
 
+  " Filter:
   if exists('*g:ezbar.parts._filter')
     let layout = g:ezbar.parts._filter(layout, parts)
   endif
@@ -96,6 +96,11 @@ function! s:ez.color_of(win, part) "{{{1
 endfunction
 
 function! s:ez.string(win, winnum) "{{{1
+  let self.color_active   = 'StatusLine'
+  let self.color_inactive = 'StatusLineNC'
+  let self.separator_L    = get(g:ezbar, 'separator_L', '|')
+  let self.separator_R    = get(g:ezbar, 'separator_R', '|')
+
   let RESULT = ''
 
   let self.section = 'L'
@@ -149,20 +154,21 @@ function! ezbar#hl_refresh() "{{{1
   call s:ez.highlight.refresh()
 endfunction
 
-function! ezbar#get_highlighter() "{{{1
-  return s:ez.highlight
-endfunction
 
 function! ezbar#disable() "{{{1
   silent set statusline&
-  for n in range(1, winnr('$'))
-    call setwinvar(n, '&statusline', &statusline)
+
+  for tab in range(1, tabpagenr('$'))
+    for win in range(1, tabpagewinnr(tab, '$'))
+      call settabwinvar(tab, win, '&statusline', &statusline)
+    endfor
   endfor
 
   augroup plugin-ezbar
     autocmd!
   augroup END
 endfunction
+
 function! ezbar#enable() "{{{1
   augroup plugin-ezbar
     autocmd!
@@ -172,16 +178,15 @@ function! ezbar#enable() "{{{1
 endfunction
 
 function! ezbar#check_highlight() range "{{{1
-  for id in s:gather_matchid_for('EzBar')
-    call matchdelete(id)
-  endfor
+  " clear
+  call map(
+        \ filter(getmatches(), 'v:val.group =~# "EzBar"'),
+        \ 'matchdelete((v:val.id)')
 
   for n in range(a:firstline, a:lastline)
-    let color = matchstr(getline(n), '\v\{\s*''(gui|cterm)''\s*:\s*\[.{-}\]\s*}')
-    if !empty(color)
-      let hlname = s:ez.highlight.register(eval(color))
-      call matchadd(hlname, '\V' . color)
-    endif
+    let color = s:extract_color_definition(getline(n))
+    if empty(color) | continue | endif
+    call matchadd(s:ez.highlight.register(eval(color)), '\V' . color)
   endfor
 endfunction
 "}}}

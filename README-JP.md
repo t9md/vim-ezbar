@@ -304,9 +304,8 @@ NOTE: ウィンドウ、バッファローカルのあ変数は `getwinvar()` �
     return fugitive#head()
   endfunction
 
-  " `_init()` は特別な関数。`g:ezbar.parts._init` が関数であれば呼ばれる。
-  " use this to define some field to store state.
-  function! s:u._init() "{{{1
+  " `_init()` は特別な関数。`g:ezbar.parts._init` が関数であれば呼ばれる。引数は `winnum()`
+  function! s:u._init(_) "{{{1
     let self.__smalls_active = 0
   endfunction
 

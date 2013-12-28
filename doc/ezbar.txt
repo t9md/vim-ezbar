@@ -1,0 +1,148 @@
+*ezbar.txt* statusline configuration helper for minimalist.
+
+Version: 0.1
+Author : t9md <taqumd@gmail.com>
+GitHub : https://github.com/t9md/vim-ezbar
+==============================================================================
+CONTENTS					*ezbar-contents*
+
+Introduction				    |ezbar-introduction|
+Mapping					    |ezbar-mapping|
+Commands				    |ezbar-commands|
+Variables				    |ezbar-variables|
+Functions				    |ezbar-functions|
+Configuration Example			    |ezbar-example|
+Bug					    |ezbar-bug|
+Todo					    |ezbar-todo|
+Changelog				    |ezbar-changelog|
+
+==============================================================================
+INTRODUCTION					*ezbar-introduction*
+
+What's this?~
+statusline configuration helper for minimalist.
+
+Feature~
+- No fancy colorscheme
+- Simple design, easy to configure for vim-scripter(advanced user), no
+  fail-safe guared for begginer
+- Dynamically configure color based on condition.
+- All statusline component(part) is implemented as dictionary function.
+- No precedence to predefined parts, so it's up to you how organize your
+  statusline.
+
+==============================================================================
+MAPPINGS					*ezbar-mappings*
+
+==============================================================================
+COMMANDS						*ezbar-commands*
+
+*:EzBarUpdate*
+*:EzBarSet*
+*:EzBarDisable*
+*:EzBarEnable*
+	See corresponding |ezbar-functions|.
+
+							*:EzBarCheckHighlight*
+{range}:EzBarCheckHighlight
+	Useful while you are trying to customize color.
+	Temporarily highlight selected reange of lines like following color
+	coonfiguration. Its' just helper setup helper, not essential part of
+	this plugin.
+>
+      \ { 'chg_color': {'gui': [ s:bg, 'gray61'], 'cterm': [240, 254] }},
+<
+==============================================================================
+VARIABLES						*ezbar-variables*
+
+							      *g:ezbar_enable*
+g:ezbar_enable
+	Default: 1
+	Type:    |Number|
+	Set 0 to disable.
+								     *g:ezbar*
+g:ezbar
+	Default: {}
+	Type:    |Dictionary|
+	All configuration belongs this Dictionary.
+
+							     *g:ezbar._init()*
+g:ezbar._init({winnum})
+	Default: Not Defined
+	Type:    |Function|
+
+	Called at very first timing before each parts-function is called.
+
+							      *g:ezbar._parts*
+g:ezbar._parts
+	Default: Not Defined
+	Type: |Dictionary|
+
+	Each member is |Function|.
+
+							   *g:ezbar._filter()*
+g:ezbar._filter({layout}, {parts})
+	Default: Not Defined
+	MustReturn: modified {layout}
+
+	{layout}:
+		|List| which members are normalized part corresponding each
+		parts-functions.
+	{parts}:
+		|List| which members are normalized part corresponding each
+		parts-functions.
+
+	Used to dynamically modify result.
+	Need to modify passed value in-place for {parts} and return {layout}.
+
+==============================================================================
+FUNCTIONS						*ezbar-functions*
+
+ezbar#enable()
+ezbar#disable()
+	Enable or disable ezbar. Useful while try&error for customizing.
+
+ezbar#string({win}, {winnum})
+	Return string that represent |statusline|.
+	{win}:    'active', 'inactive'
+	{winnum}: |winnum()|for target window.
+
+ezbar#set()
+	Set &satusline with the result of |ezbar#string()|.
+	Called every timing needed to refresh |statusline|.
+
+ezbar#update()
+	Update only active window.
+
+ezbar#update()
+
+==============================================================================
+CONFIGURATION EXAMPLE				    *ezbar-example*
+
+See README.md for complete example.
+
+==============================================================================
+BUG							    *ezbar-bug*
+
+==============================================================================
+TODO							    *ezbar-todo*
+
+[ ] LeafCage: want to change default color in parts-function()
+[x] LeafCage: reduce type() call
+[x] LeafCage: default self.color_active is not used?
+[x] LeafCage: _init(), pass winnum as argument 
+[x] itchyny: care other tab in ezbar#disable()
+
+==============================================================================
+CHANGELOG						*ezbar-changelog*
+2013-12-28:
+	- [bugfix] initalize timing for self.color_active/color_inactive.
+	- [experiment] add new argument to _init() which is |winuum()|of
+	  target window, suggested by LeafCage.
+2013-12-27:
+	- reduce type() call for performance and readability suggested by
+	  LeafCage.
+2013-11-21:
+	- initial release.
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

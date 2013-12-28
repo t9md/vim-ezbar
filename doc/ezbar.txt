@@ -127,7 +127,7 @@ BUG							    *ezbar-bug*
 ==============================================================================
 TODO							    *ezbar-todo*
 
-[ ] LeafCage: want to change default color in parts-function()
+[x] LeafCage: want to change default color in parts-function()
 [x] LeafCage: reduce type() call
 [x] LeafCage: default self.color_active is not used?
 [x] LeafCage: _init(), pass winnum as argument 
@@ -136,6 +136,7 @@ TODO							    *ezbar-todo*
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
 2013-12-28:
+	- [experiment] set __default_color parts variable.
 	- [bugfix] initalize timing for self.color_active/color_inactive.
 	- [experiment] add new argument to _init() which is |winuum()|of
 	  target window, suggested by LeafCage.

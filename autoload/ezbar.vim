@@ -21,6 +21,7 @@ endfunction
 
 function! s:ez.prepare(win, winnum) "{{{1
   let g:ezbar.parts.__is_active = ( a:win ==# 'active' )
+  let g:ezbar.parts.__layout    = deepcopy(g:ezbar[a:win])
   let g:ezbar.parts.__default_color =
         \ ( a:win ==# 'active' ) ? 'StatusLine' : 'StatusLineNC'
 
@@ -30,7 +31,7 @@ function! s:ez.prepare(win, winnum) "{{{1
   endif
 
   " Normalize:
-  let layout = map( deepcopy(g:ezbar[a:win]),
+  let layout = map( deepcopy(g:ezbar.parts.__layout),
         \ 'self.normalize_part(a:win, v:val, a:winnum)')
 
   " Eliminate:

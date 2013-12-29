@@ -67,6 +67,40 @@ g:ezbar
 	All configuration belongs this Dictionary.
 
 							     *g:ezbar._init()*
+
+g:ezbar.__is_active
+	Type: |Number|
+	[NOTE] Automatically set by ezbar.
+	Indicating active window or not.
+
+g:ezbar.__layout
+	Value: copy of g:ezbar.active or g:ezbar.inactive
+	Type: |List|
+	[NOTE] Automatically set by ezbar.
+
+	You can modify this variable to manupilate layout.
+
+	Example: hide some parts when winwidth is narrow~
+>
+	function! g:ezbar._init(_) "{{{3
+	  if self.__is_active
+	    let hide = []
+	    if winwidth(0) < 80
+	      let hide += self.__layout[-3:]
+	    endif
+	    if winwidth(0) < 30
+	      call add(hide, 'filename')
+	    endif
+	    call filter(self.__layout, 'index(hide, v:val) == -1')
+	  endif
+	endfunction "}}}
+<
+
+g:ezbar.__default_color
+	Type: |String| or |Dictionary|
+	[NOTE] Automatically set by ezbar.
+	You can directory set color to change default color.
+
 g:ezbar._init({winnum})
 	Default: Not Defined
 	Type:    |Function|
@@ -136,6 +170,7 @@ TODO							    *ezbar-todo*
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
 2013-12-28:
+	- [experiment] now __layout is to modify in _init()
 	- [experiment] set __default_color parts variable.
 	- [bugfix] initalize timing for self.color_active/color_inactive.
 	- [experiment] add new argument to _init() which is |winuum()|of

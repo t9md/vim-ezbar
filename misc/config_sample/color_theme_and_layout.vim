@@ -42,9 +42,11 @@ let g:ezbar_enable = 1
 let g:ezbar.color_theme = s:color_theme_A
 let g:ezbar.color_theme = s:color_theme_B
 
-" ReadableWay:
-let s:active   = '| mode part1 part1 | part2 = part3 part3 | part4 part4'
-let s:inactive = '| part1 part1      | part2 = part3       | part4'
+" Readable Way:
+" '=|=': separator
+" '|': change color( pick color from color_theme )
+let s:active   = '| mode part1 part1 | part2 =|= part3 part3 | part4 part4'
+let s:inactive = '| part1 part1      | part2 =|= part3       | part4'
 let g:ezbar.active   = split(s:active)
 let g:ezbar.inactive = split(s:inactive)
 unlet s:active
@@ -132,6 +134,7 @@ let s:u['='] = s:u.__SEP
 let s:u['=='] = s:u.__SEP
 let s:u['==='] = s:u.__SEP
 let s:u['===='] = s:u.__SEP
+let s:u['=+='] = s:u.__SEP
 
 let s:u['|'] = s:u.__CHANGE_COLOR
 let s:u['-'] = s:u.__CHANGE_COLOR

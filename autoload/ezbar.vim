@@ -1,8 +1,4 @@
 " Utility:
-function! s:plog(msg) "{{{1
-  cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vim.log')
-endfunction "}}}
-
 function! s:extract_color_definition(string) "{{{1
   return matchstr(a:string, '\v\{\s*''(gui|cterm)''\s*:\s*\[.{-}\]\s*}')
 endfunction
@@ -50,13 +46,6 @@ function! s:ez.prepare(win, winnum) "{{{1
   return layout
 endfunction
 
-" function! s:ez.color_set(win, color) "{{{1
-  " let self['color_' . a:win] = a:color
-" endfunction
-
-" function! s:ez.color_get(win) "{{{1
-  " return copy(self['color_' . a:win])
-" endfunction
 
 function! s:ez.normalize_part(win, part_name, winnum) "{{{1
   let TYPE_part_name = type(a:part_name)
@@ -65,7 +54,6 @@ function! s:ez.normalize_part(win, part_name, winnum) "{{{1
   elseif TYPE_part_name is s:TYPE_DICTIONARY
     if has_key(a:part_name, 'chg_color')
       let g:ezbar.parts.__default_color = a:part_name['chg_color']
-      " call self.color_set(a:win, a:part_name['chg_color'])
       return
     elseif has_key(a:part_name, '__SEP__')
       let part = { 'name': '__SEP__', 's': '%=', 'c': a:part_name['__SEP__'] }
@@ -75,24 +63,23 @@ function! s:ez.normalize_part(win, part_name, winnum) "{{{1
   endif
 
   let TYPE_part = type(part)
-  " not supported if part type is not Dict nor String.
+  let PART = {}
   if TYPE_part is s:TYPE_DICTIONARY
-    let DICT = part
+    let PART = part
   elseif TYPE_part is s:TYPE_STRING || TYPE_part is s:TYPE_NUMBER
-    let DICT = { 's' : part }
+    let PART = { 's' : part }
   else
     return
   endif
 
-  if empty(get(DICT, 'c')) 
-    let DICT.c = copy(g:ezbar.parts.__default_color)
-    " let DICT.c = self.color_get(a:win)
+  if empty(get(PART, 'c')) 
+    let PART.c = copy(g:ezbar.parts.__default_color)
   endif
 
-  if !has_key(DICT, 'name')
-    let DICT.name = a:part_name
+  if !has_key(PART, 'name')
+    let PART.name = a:part_name
   endif
-  return DICT
+  return PART
 endfunction
 
 function! s:ez.color_of(win, part) "{{{1
@@ -101,8 +88,6 @@ function! s:ez.color_of(win, part) "{{{1
 endfunction
 
 function! s:ez.string(win, winnum) "{{{1
-  " let self.color_active   = 'StatusLine'
-  " let self.color_inactive = 'StatusLineNC'
   let self.separator_L    = get(g:ezbar, 'separator_L', '|')
   let self.separator_R    = get(g:ezbar, 'separator_R', '|')
 
@@ -159,7 +144,6 @@ function! ezbar#hl_refresh() "{{{1
   call s:ez.highlight.refresh()
 endfunction
 
-
 function! ezbar#disable() "{{{1
   silent set statusline&
 
@@ -174,9 +158,6 @@ function! ezbar#disable() "{{{1
   augroup END
 endfunction
 
-" function! ezbar#change_color(win, color) "{{{1
-  " call s:ez.color_set(a:win, a:color)
-" endfunction
 
 function! ezbar#enable() "{{{1
   augroup plugin-ezbar

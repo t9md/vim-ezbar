@@ -82,7 +82,7 @@ g:ezbar.__layout
 
 	Example: hide some parts when winwidth is narrow~
 >
-	function! g:ezbar._init(_) "{{{3
+	function! g:ezbar._init(_)
 	  if self.__is_active
 	    let hide = []
 	    if winwidth(0) < 80
@@ -93,7 +93,7 @@ g:ezbar.__layout
 	    endif
 	    call filter(self.__layout, 'index(hide, v:val) == -1')
 	  endif
-	endfunction "}}}
+	endfunction
 <
 
 g:ezbar.__default_color
@@ -161,6 +161,17 @@ BUG							    *ezbar-bug*
 ==============================================================================
 TODO							    *ezbar-todo*
 
+[ ] Depelicate to store highlight name directry or internaly convert to 
+    dictionary before store, to avoid type mismatch error when modify color.
+    [Strategy] hl#register() if arg is str, cature hl def then convrt to dict.
+    This elminate tedious unlet clause to avioid type error.
+    Need re-capture/redefine when refresh()
+[ ] Can refer total display length from each parts. total len() of s fields.
+    This helps to determine show/hide within each parts.
+[ ] allow access to preceding normalized parts from later parts.
+    this allow right parts decide color, besed on color of left parts
+[ ] introduce way to change partial color like only fg, only bg, reverse
+    like empty field respect default color ['', 'yellow' ] 
 [x] LeafCage: want to change default color in parts-function()
 [x] LeafCage: reduce type() call
 [x] LeafCage: default self.color_active is not used?

@@ -10,7 +10,6 @@ let s:TYPE_DICTIONARY = type({})
 let s:TYPE_NUMBER     = type(0)
 
 let s:ez = {}
-
 function! s:ez.init() "{{{1
   let self.highlight = ezbar#highlighter#new('EzBar')
 endfunction
@@ -30,21 +29,27 @@ function! s:ez.prepare(win, winnum) "{{{1
   endif
 
   " Normalize:
-  let layout = map( deepcopy(g:ezbar.parts.__layout),
+  " let layout = map( deepcopy(g:ezbar.parts.__layout),
+  call map(g:ezbar.parts.__layout,
         \ 'self.normalize_part(a:win, v:val, a:winnum)')
 
   " Eliminate:
-  call filter(layout, '!empty(v:val)')
-  call filter(layout, '!empty(v:val.s)')
+  call filter(g:ezbar.parts.__layout, '!empty(v:val)')
+  call filter(g:ezbar.parts.__layout, '!empty(v:val.s)')
 
   let parts = {}
-  for part in layout
+  for part in g:ezbar.parts.__layout
     let parts[part.name] = part
   endfor
 
   " Filter:
+  " _filter is depelicated in near future
   if exists('*g:ezbar.parts._filter')
-    let layout = g:ezbar.parts._filter(layout, parts)
+    let layout = g:ezbar.parts._filter(g:ezbar.parts.__layout, parts)
+  endif
+
+  if exists('*g:ezbar.parts._finish')
+    let layout = g:ezbar.parts._filter(parts)
   endif
   return layout
 endfunction

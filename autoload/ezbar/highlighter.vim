@@ -1,4 +1,9 @@
 let s:h = {}
+let s:TYPE_STRING     = type('')
+let s:TYPE_DICTIONARY = type({})
+let s:TYPE_NUMBER     = type(0)
+
+let s:gui = has("gui_running") 
 
 function! s:h.init() "{{{1
   let self.hls       = {}
@@ -15,15 +20,73 @@ function! s:h.hlname_for(defstr) "{{{1
   return ''
 endfunction
 
-function! s:h.register(color) "{{{1
-  if type(a:color) == type('')
-    return a:color
+function! s:h.capture(hlname) "{{{1
+  let hlname = a:hlname
+  while 1
+    redir => HL_SAVE
+    execute 'silent! highlight ' . hlname
+    redir END
+    if !empty(matchstr(HL_SAVE, 'xxx cleared$'))
+      return ''
+    endif
+    let ml = matchlist(HL_SAVE, 'xxx links to \zs.*')
+    if !empty(ml)
+      let hlname = ml[0]
+      continue
+    endif
+    break
+  endwhile
+  return matchstr(HL_SAVE, 'xxx \zs.*')
+endfunction
+
+function! s:h.parse(defstr) "{{{1
+  let R = {}
+  if empty(a:defstr)
+    return R
   endif
-  let defstr = self.hl_defstr(a:color)
+  let screen = s:gui ? 'gui' : 'cterm'
+  " let screen = 'cterm'
+  let R[screen] = ['','']
+  for def in split(a:defstr)
+    let [key,val] = split(def, '=')
+    if screen ==# 'gui'
+      if     key ==# 'guibg'   | let R['gui'][0]   = val
+      elseif key ==# 'guifg'   | let R['gui'][1]   = val
+      elseif key ==# 'gui'     | call add(R['gui'],val)
+      endif
+    else
+      if     key ==# 'ctermbg' | let R['cterm'][0] = val
+      elseif key ==# 'ctermfg' | let R['cterm'][1] = val
+      elseif key ==# 'cterm'   | call add(R['cterm'],val) 
+      endif
+    endif
+  endfor
+  return R
+endfunction
+
+function! s:h.register(color) "{{{1
+  if empty(a:color)
+    return ''
+  endif
+
+  if type(a:color) ==# s:TYPE_STRING
+    return a:color
+    if has_key(self.hls, a:color)
+      return a:color
+    endif
+    let parsed = self.parse(self.capture(a:color))
+    if empty(parsed)
+      return ''
+    endif
+    let color = parsed
+  else
+    let color = a:color
+  endif
+  let defstr = self.hl_defstr(color)
 
   let hlname = self.hlname_for(defstr)
   if empty(hlname)
-    let hlname = get(a:color, 'name', self.next_color())
+    let hlname = get(color, 'name', self.next_color())
     call self.define(hlname, defstr)
   endif
   return hlname
@@ -39,6 +102,8 @@ function! s:h.command(hlname, defstr) "{{{1
 endfunction
 
 function! s:h.refresh() "{{{1
+  " FIXME: after color_scheme was changed not re-captured predefined color
+  " which is originally passed as String and converted to color dict form
   let colors = deepcopy(self.hls)
   call self.reset()
   for [hlname, defstr] in items(colors)
@@ -85,7 +150,7 @@ endfunction
 
 function! s:h.matchadd(group, pattern, ...) "{{{1
   let args = [ a:group, a:pattern ]
-  if a:0 && type(a:1) == type(1)
+  if a:0 && type(a:1) ==# s:TYPE_NUMBER
     call add(args, a:1)
   endif
   let id = call('matchadd', args)
@@ -106,17 +171,24 @@ function! s:h.matchdelete_ids(ids) "{{{1
 endfunction
 
 function! s:h.hl_defstr(color) "{{{1
-  let r = []
-  for key in ["gui", "term", "cterm"]
+  let R = []
+  for key in [ s:gui ? 'gui' : 'cterm' ]
     if empty(get(a:color, key))
       continue
     endif
     let color = a:color[key]
-    if !empty(color[0])      | call add(r, key . 'bg=' . color[0]) | endif
-    if !empty(color[1])      | call add(r, key . 'fg=' . color[1]) | endif
-    if !empty(get(color, 2)) | call add(r, key . '='   . color[2]) | endif
+    " [NOTE] empty() is not appropriate, cterm color is specified with number
+    for [n, s] in [[ 0, 'bg=' ], [ 1, 'fg=' ] ,[ 2, '='] ]
+      let c = get(color, n, -1)
+      if type(c) ==# s:TYPE_STRING && empty(c)
+        continue
+      elseif type(c) ==# s:TYPE_NUMBER && c ==# -1
+        break
+      endif
+      call add(R, key . s . color[n])
+    endfor
   endfor
-  return join(r)
+  return join(R)
 endfunction "}}}
 
 function! s:h.dump() "{{{1

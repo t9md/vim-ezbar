@@ -17,7 +17,10 @@ endfunction
 
 function! s:ez.prepare(win, winnum) "{{{1
   let g:ezbar.parts.__is_active = ( a:win ==# 'active' )
-  let g:ezbar.parts.__layout    = deepcopy(g:ezbar[a:win])
+  let g:ezbar.parts.__layout    = type(g:ezbar[a:win]) == s:TYPE_STRING
+        \ ? split(g:ezbar[a:win])
+        \ : deepcopy(g:ezbar[a:win])
+
   let g:ezbar.parts.__default_color =
         \ ( a:win ==# 'active' ) ? 'StatusLine' : 'StatusLineNC'
 
@@ -176,7 +179,29 @@ function! ezbar#check_highlight() range "{{{1
   for n in range(a:firstline, a:lastline)
     let color = s:extract_color_definition(getline(n))
     if empty(color) | continue | endif
+    echo type(color)
+    PP color
     call matchadd(s:ez.highlight.register(eval(color)), '\V' . color)
+  endfor
+endfunction
+
+function! s:extract_airline_color(string) "{{{1
+  return matchstr(a:string, '\v\zs[.*\]\ze')
+endfunction
+
+function! ezbar#check_highlight2() range "{{{1
+  " clear
+  call map(
+        \ filter(getmatches(), 'v:val.group =~# "EzBar"'),
+        \ 'matchdelete((v:val.id)')
+
+  for n in range(a:firstline, a:lastline)
+    let color_s = s:extract_airline_color(getline(n))
+    if empty(color_s) | continue | endif
+    let color = eval(color_s)[0:1]
+    let ezbar_expr = " { 'gui': " . string(color) . " }"
+    let ezbar_color = eval(ezbar_expr)
+    call matchadd(s:ez.highlight.register(ezbar_color), '\V' . color_s)
   endfor
 endfunction
 "}}}

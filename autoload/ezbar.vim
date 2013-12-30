@@ -179,8 +179,6 @@ function! ezbar#check_highlight() range "{{{1
   for n in range(a:firstline, a:lastline)
     let color = s:extract_color_definition(getline(n))
     if empty(color) | continue | endif
-    echo type(color)
-    PP color
     call matchadd(s:ez.highlight.register(eval(color)), '\V' . color)
   endfor
 endfunction

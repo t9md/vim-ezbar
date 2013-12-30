@@ -16,6 +16,7 @@ endfunction
 
 function! s:ez.prepare(win, winnum) "{{{1
   let g:ezbar.parts.__is_active = ( a:win ==# 'active' )
+  let g:ezbar.parts.__parts     = {}
   let g:ezbar.parts.__layout    = type(g:ezbar[a:win]) == s:TYPE_STRING
         \ ? split(g:ezbar[a:win])
         \ : deepcopy(g:ezbar[a:win])
@@ -44,40 +45,32 @@ function! s:ez.prepare(win, winnum) "{{{1
 
   " Filter:
   " _filter is depelicated in near future
-  if exists('*g:ezbar.parts._filter')
-    let layout = g:ezbar.parts._filter(g:ezbar.parts.__layout, parts)
-  endif
+  " if exists('*g:ezbar.parts._filter')
+    " let layout = g:ezbar.parts._filter(g:ezbar.parts.__layout, parts)
+  " endif
 
   if exists('*g:ezbar.parts._finish')
-    let layout = g:ezbar.parts._filter(parts)
+    call g:ezbar.parts._finish()
   endif
-  return layout
+  return g:ezbar.parts.__layout
 endfunction
 
 
 function! s:ez.normalize_part(win, part_name, winnum) "{{{1
-  let TYPE_part_name = type(a:part_name)
-  if TYPE_part_name is s:TYPE_STRING
+  let PART = {}
+  if type(a:part_name) is s:TYPE_STRING
     let part = g:ezbar.parts[a:part_name](a:winnum)
-  elseif TYPE_part_name is s:TYPE_DICTIONARY
-    if has_key(a:part_name, 'chg_color')
-      let g:ezbar.parts.__default_color = a:part_name['chg_color']
-      return
-    elseif has_key(a:part_name, '__SEP__')
-      let part = { 'name': '__SEP__', 's': '%=', 'c': a:part_name['__SEP__'] }
-    else
-      return
-    endif
+  else
+    return PART
   endif
 
   let TYPE_part = type(part)
-  let PART = {}
   if TYPE_part is s:TYPE_DICTIONARY
     let PART = part
   elseif TYPE_part is s:TYPE_STRING || TYPE_part is s:TYPE_NUMBER
     let PART = { 's' : part }
   else
-    return
+    return PART
   endif
 
   if empty(get(PART, 'c')) 
@@ -86,6 +79,9 @@ function! s:ez.normalize_part(win, part_name, winnum) "{{{1
 
   if !has_key(PART, 'name')
     let PART.name = a:part_name
+  endif
+  if !empty(PART.s)
+    let g:ezbar.parts.__parts[PART.name] = PART
   endif
   return PART
 endfunction

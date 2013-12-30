@@ -161,6 +161,9 @@ BUG							    *ezbar-bug*
 ==============================================================================
 TODO							    *ezbar-todo*
 
+[ ] arg type passed to parts function should |Dictionary| since its resilient
+    to change. adding another argument as new dict field is not affect to
+    existing user.
 [ ] Depelicate to store highlight name directry or internaly convert to 
     dictionary before store, to avoid type mismatch error when modify color.
     [Strategy] hl#register() if arg is str, cature hl def then convrt to dict.

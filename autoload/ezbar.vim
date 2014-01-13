@@ -11,7 +11,7 @@ let s:TYPE_NUMBER     = type(0)
 
 let s:ez = {}
 function! s:ez.init() "{{{1
-  let self.highlight = ezbar#highlighter#new('EzBar')
+  let self.hlmanager = ezbar#hlmanager#new('EzBar')
 endfunction
 
 function! s:ez.prepare(win, winnum) "{{{1
@@ -19,7 +19,7 @@ function! s:ez.prepare(win, winnum) "{{{1
   let g:ezbar.parts.__parts     = {}
   let g:ezbar.parts.__layout    = type(g:ezbar[a:win]) == s:TYPE_STRING
         \ ? split(g:ezbar[a:win])
-        \ : deepcopy(g:ezbar[a:win])
+        \ : copy(g:ezbar[a:win])
 
   let g:ezbar.parts.__default_color =
         \ ( a:win ==# 'active' ) ? 'StatusLine' : 'StatusLineNC'
@@ -30,7 +30,6 @@ function! s:ez.prepare(win, winnum) "{{{1
   endif
 
   " Normalize:
-  " let layout = map( deepcopy(g:ezbar.parts.__layout),
   call map(g:ezbar.parts.__layout,
         \ 'self.normalize_part(a:win, v:val, a:winnum)')
 
@@ -38,65 +37,37 @@ function! s:ez.prepare(win, winnum) "{{{1
   call filter(g:ezbar.parts.__layout, '!empty(v:val)')
   call filter(g:ezbar.parts.__layout, '!empty(v:val.s)')
 
-  let parts = {}
-  for part in g:ezbar.parts.__layout
-    let parts[part.name] = part
-  endfor
-
-  " Filter:
-  " _filter is depelicated in near future
-  " if exists('*g:ezbar.parts._filter')
-    " let layout = g:ezbar.parts._filter(g:ezbar.parts.__layout, parts)
-  " endif
-
   if exists('*g:ezbar.parts._finish')
     call g:ezbar.parts._finish()
   endif
   return g:ezbar.parts.__layout
 endfunction
 
-
-function! s:ez.normalize_part(win, part_name, winnum) "{{{1
-  let PART = {}
-  if type(a:part_name) is s:TYPE_STRING
-    let part = g:ezbar.parts[a:part_name](a:winnum)
-  else
-    return PART
-  endif
-
-  let TYPE_part = type(part)
-  if TYPE_part is s:TYPE_DICTIONARY
-    let PART = part
-  elseif TYPE_part is s:TYPE_STRING || TYPE_part is s:TYPE_NUMBER
-    let PART = { 's' : part }
-  else
-    return PART
-  endif
+function! s:ez.normalize_part(win, name, winnum) "{{{1
+  let R = g:ezbar.parts[a:name](a:winnum)
+  let PART = type(R) isnot s:TYPE_DICTIONARY ? { 's' : R } : R
 
   if empty(get(PART, 'c')) 
     let PART.c = copy(g:ezbar.parts.__default_color)
   endif
 
-  if !has_key(PART, 'name')
-    let PART.name = a:part_name
-  endif
+  let PART.name = a:name
   if !empty(PART.s)
-    let g:ezbar.parts.__parts[PART.name] = PART
+    let g:ezbar.parts.__parts[a:name] = PART
   endif
   return PART
 endfunction
 
 function! s:ez.color_of(win, part) "{{{1
   let color = get(a:part, (a:win ==# 'active' ? 'ac' : 'ic' ), a:part.c)
-  return self.highlight.register(color)
+  return self.hlmanager.register(color)
 endfunction
 
 function! s:ez.string(win, winnum) "{{{1
-  let self.separator_L    = get(g:ezbar, 'separator_L', '|')
-  let self.separator_R    = get(g:ezbar, 'separator_R', '|')
+  let self.separator_L = get(g:ezbar, 'separator_L', '|')
+  let self.separator_R = get(g:ezbar, 'separator_R', '|')
 
   let RESULT = ''
-
   let self.section = 'L'
   let layout = self.prepare(a:win, a:winnum)
   let layout_len = len(layout)
@@ -108,13 +79,14 @@ function! s:ez.string(win, winnum) "{{{1
     let color_s = '%#' . color . '#'
     let s = printf('%%#%s# %s ', color, part.s)
 
-    if part.s ==# '%='
+    let next = idx + 1
+
+    if next != layout_len && layout[next].s ==# '%='
       let self.section = 'R'
       let RESULT .= s
       continue
     endif
 
-    let next = idx + 1
     if next != layout_len && color ==# self.color_of(a:win, layout[next])
       let s .= self['separator_' . self.section]
     endif
@@ -145,7 +117,7 @@ function! ezbar#update() "{{{1
 endfunction
 
 function! ezbar#hl_refresh() "{{{1
-  call s:ez.highlight.refresh()
+  call s:ez.hlmanager.refresh()
 endfunction
 
 function! ezbar#disable() "{{{1
@@ -180,7 +152,7 @@ function! ezbar#check_highlight() range "{{{1
   for n in range(a:firstline, a:lastline)
     let color = s:extract_color_definition(getline(n))
     if empty(color) | continue | endif
-    call matchadd(s:ez.highlight.register(eval(color)), '\V' . color)
+    call matchadd(s:ez.hlmanager.register(eval(color)), '\V' . color)
   endfor
 endfunction
 
@@ -200,7 +172,7 @@ function! ezbar#check_highlight2() range "{{{1
     let color = eval(color_s)[0:1]
     let ezbar_expr = " { 'gui': " . string(color) . " }"
     let ezbar_color = eval(ezbar_expr)
-    call matchadd(s:ez.highlight.register(ezbar_color), '\V' . color_s)
+    call matchadd(s:ez.hlmanager.register(ezbar_color), '\V' . color_s)
   endfor
 endfunction
 "}}}

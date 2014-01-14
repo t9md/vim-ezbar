@@ -18,11 +18,12 @@ function! s:ez.prepare(win, winnum) "{{{1
   let g:ezbar.parts.__active = ( a:win ==# 'active' )
   let g:ezbar.parts.__is_active = g:ezbar.parts.__active  " compatibly
   let g:ezbar.parts.__parts  = {}
+  let g:ezbar.parts.__utils  = s:util
   let g:ezbar.parts.__layout = type(g:ezbar[a:win]) == s:TYPE_STRING
         \ ? split(g:ezbar[a:win])
         \ : copy(g:ezbar[a:win])
 
-  let g:ezbar.parts.__default_color =
+  let g:ezbar.parts.__color =
         \ ( a:win ==# 'active' ) ? 'StatusLine' : 'StatusLineNC'
   " Init:
   if exists('*g:ezbar.parts._init')
@@ -54,7 +55,7 @@ function! s:ez.normalize_part(win, part, winnum) "{{{1
   let PART.name = a:part
 
   if empty(get(PART, 'c')) 
-    let PART.c = copy(g:ezbar.parts.__default_color)
+    let PART.c = copy(g:ezbar.parts.__color)
   endif
   let g:ezbar.parts.__parts[a:part] = PART
 
@@ -98,6 +99,25 @@ function! s:ez.string(win, winnum) "{{{1
   return RESULT
 endfunction
 "}}}
+
+" Util:
+let s:util = {}
+function! s:util.invert_color(color) "{{{1
+  let R = {}
+  for screen in ['gui', 'cterm']
+    if has_key(a:color, screen)
+      let R[screen] = [ a:color[screen][1], a:color[screen][0] ]
+      if len(a:color[screen]) ==# 3
+        call add(R[screen], a:color[screen][2])
+      endif
+    endif
+  endfor
+  return R
+endfunction
+
+function! s:util.gui() "{{{1
+  return has("gui_running")
+endfunction
 
 " Public:
 function! ezbar#string(win, winnum) "{{{1

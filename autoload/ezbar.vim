@@ -102,17 +102,38 @@ endfunction
 
 " Util:
 let s:util = {}
-function! s:util.invert_color(color) "{{{1
+function! s:util.color_reverse(color) "{{{1
   let R = {}
-  for screen in ['gui', 'cterm']
-    if has_key(a:color, screen)
-      let R[screen] = [ a:color[screen][1], a:color[screen][0] ]
-      if len(a:color[screen]) ==# 3
-        call add(R[screen], a:color[screen][2])
-      endif
-    endif
-  endfor
+  let screen = self.screen()
+  let R[screen] = [ a:color[screen][1], a:color[screen][0] ]
+  if len(a:color[screen]) ==# 3
+    call add(R[screen], a:color[screen][2])
+  endif
   return R
+endfunction
+
+function! s:util.color_change_bg(color, bg) "{{{1
+  let R = {}
+  let screen = self.screen()
+  let R[screen] = [ a:bg, a:color[screen][1] ]
+  if len(a:color[screen]) ==# 3
+    call add(R[screen], a:color[screen][2])
+  endif
+  return R
+endfunction
+
+function! s:util.color_change_fg(color, fg) "{{{1
+  let R = {}
+  let screen = self.screen()
+  let R[screen] = [ a:color[screen][0], a:fg ]
+  if len(a:color[screen]) ==# 3
+    call add(R[screen], a:color[screen][2])
+  endif
+  return R
+endfunction
+
+function! s:util.screen() "{{{1
+  return has('gui_running') ? 'gui' : 'cterm'
 endfunction
 
 function! s:util.gui() "{{{1

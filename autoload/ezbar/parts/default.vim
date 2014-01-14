@@ -1,9 +1,12 @@
-function! s:plog(msg) "{{{1
-  cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vim.log')
-endfunction "}}}
 " This is merely sample configration to show concept.
 " If you want to improve or don't like this.
 " Use your own parts based on this sample.
+
+" map <SID>xx <SID>xx
+" let s:sid = maparg("<SID>xx")
+" unmap <SID>xx
+" let s:SID = substitute(s:sid, 'xx', '', '')
+
 let s:u = {}
 let s:mode_map = {
       \ 'n':      { 's': 'N ', 'c': { 'gui': ['SkyBlue3',      'Black'], 'cterm': [33, 16] }},
@@ -54,19 +57,31 @@ endfunction
 
 function! s:u.filetype(_) "{{{1
   return getwinvar(a:_, '&filetype')
-endfunction "}}}
+endfunction
 
 function! s:u.filename(_) "{{{1
   return fnamemodify(bufname(winbufnr(a:_)), ':t')
-endfunction "}}}
+endfunction
 
 function! s:u.winnr(_) "{{{1
   return a:_
-endfunction "}}}
+endfunction
+"}}}
 
 " Public:
-function! ezbar#parts#default#new()
+function! ezbar#parts#default#new() "{{{1
   return deepcopy(s:u)
+endfunction
+
+function! ezbar#parts#default#use(list) "{{{1
+  if !exists('s:all')
+    let s:all = ezbar#parts#default#new()
+  endif
+  let R = {}
+  for part in a:list
+    let R[part] = s:all[part]
+  endfor
+  return R
 endfunction
 
 function! ezbar#parts#default#list()

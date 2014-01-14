@@ -161,9 +161,9 @@ BUG							    *ezbar-bug*
 ==============================================================================
 TODO							    *ezbar-todo*
 
-[ ] arg type passed to parts function should |Dictionary| since its resilient
-    to change. adding another argument as new dict field is not affect to
-    existing user.
+[ ] arg type passed to parts function should |Dictionary|? 
+    Its resilient to change. adding another argument as new dict field is not
+    affect to existing user.
 [ ] Depelicate to store highlight name directry or internaly convert to 
     dictionary before store, to avoid type mismatch error when modify color.
     [Strategy] hl#register() if arg is str, cature hl def then convrt to dict.
@@ -183,6 +183,11 @@ TODO							    *ezbar-todo*
 
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
+2014-01-14:
+	- [change] '__is_active' now '__active'
+	- [behaveChange] disastrous behavior change eliminate { 'chg_color': }
+	  , { '__SEP__': }
+	- [new] add _parts_missing() special hook
 2013-12-28:
 	- [experiment] now __layout is to modify in _init()
 	- [experiment] set __default_color parts variable.

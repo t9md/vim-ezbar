@@ -15,15 +15,15 @@ function! s:ez.init() "{{{1
 endfunction
 
 function! s:ez.prepare(win, winnum) "{{{1
-  let g:ezbar.parts.__is_active = ( a:win ==# 'active' )
-  let g:ezbar.parts.__parts     = {}
-  let g:ezbar.parts.__layout    = type(g:ezbar[a:win]) == s:TYPE_STRING
+  let g:ezbar.parts.__active = ( a:win ==# 'active' )
+  let g:ezbar.parts.__is_active = g:ezbar.parts.__active  " compatibly
+  let g:ezbar.parts.__parts  = {}
+  let g:ezbar.parts.__layout = type(g:ezbar[a:win]) == s:TYPE_STRING
         \ ? split(g:ezbar[a:win])
         \ : copy(g:ezbar[a:win])
 
   let g:ezbar.parts.__default_color =
         \ ( a:win ==# 'active' ) ? 'StatusLine' : 'StatusLineNC'
-
   " Init:
   if exists('*g:ezbar.parts._init')
     call g:ezbar.parts._init(a:winnum)
@@ -34,6 +34,7 @@ function! s:ez.prepare(win, winnum) "{{{1
         \ 'self.normalize_part(a:win, v:val, a:winnum)')
 
   " Eliminate:
+  call filter(g:ezbar.parts.__parts, '!empty(v:val.s)')
   call filter(g:ezbar.parts.__layout, '!empty(v:val)')
   call filter(g:ezbar.parts.__layout, '!empty(v:val.s)')
 
@@ -43,18 +44,20 @@ function! s:ez.prepare(win, winnum) "{{{1
   return g:ezbar.parts.__layout
 endfunction
 
-function! s:ez.normalize_part(win, name, winnum) "{{{1
-  let R = g:ezbar.parts[a:name](a:winnum)
+function! s:ez.normalize_part(win, part, winnum) "{{{1
+  " using call() below is workaround to avoid strange missing ':' after '?' error
+  let R = has_key(g:ezbar.parts, a:part)
+        \ ? call(g:ezbar.parts[a:part], [a:winnum], g:ezbar.parts)
+        \ : g:ezbar.parts._parts_missing(a:winnum, a:part)
+
   let PART = type(R) isnot s:TYPE_DICTIONARY ? { 's' : R } : R
+  let PART.name = a:part
 
   if empty(get(PART, 'c')) 
     let PART.c = copy(g:ezbar.parts.__default_color)
   endif
+  let g:ezbar.parts.__parts[a:part] = PART
 
-  let PART.name = a:name
-  if !empty(PART.s)
-    let g:ezbar.parts.__parts[a:name] = PART
-  endif
   return PART
 endfunction
 
@@ -133,7 +136,6 @@ function! ezbar#disable() "{{{1
     autocmd!
   augroup END
 endfunction
-
 
 function! ezbar#enable() "{{{1
   augroup plugin-ezbar

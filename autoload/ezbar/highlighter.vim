@@ -3,7 +3,7 @@ let s:TYPE_STRING     = type('')
 let s:TYPE_DICTIONARY = type({})
 let s:TYPE_NUMBER     = type(0)
 
-let s:gui = has("gui_running") 
+let s:gui = has("gui_running")
 
 function! s:h.init() "{{{1
   let self.hls       = {}
@@ -57,7 +57,7 @@ function! s:h.parse(defstr) "{{{1
     else
       if     key ==# 'ctermbg' | let R['cterm'][0] = val
       elseif key ==# 'ctermfg' | let R['cterm'][1] = val
-      elseif key ==# 'cterm'   | call add(R['cterm'],val) 
+      elseif key ==# 'cterm'   | call add(R['cterm'],val)
       endif
     endif
   endfor

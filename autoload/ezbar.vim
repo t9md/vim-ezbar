@@ -186,7 +186,8 @@ function! ezbar#color_check() range "{{{1
   for n in range(a:firstline, a:lastline)
     let color = s:extract_color_definition(getline(n))
     if empty(color) | continue | endif
-    call matchadd(s:ez.hlmanager.register(eval(color)), '\V' . color) endfor
+    call matchadd(s:ez.hlmanager.register(eval(color)), '\V' . color)
+  endfor
 endfunction
 
 function! ezbar#color_capture(color) "{{{1

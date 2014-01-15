@@ -19,6 +19,21 @@ statusline configuration helper for minimalist.
 ![Fill-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill1.png)  
 ![Fill-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill2.png)  
 
+
+# OLD VERSION USER
+
+Big behavior change was made in v1.0.
+Here are summary of change
+
+* hook change
+deleted `_filter()`
+
+| Old Name        | New Name   |
+| --------------- | ---------- |
+| __default_color | __color    |
+| __is_active     | __active   |
+| _filter         | _finish    |
+
 # CONCEPT
 * user configuration is stored under `g:ezbar` dictionary
 * part shown is controlled with `g:ezbar.active`, `g:ezbar.inactive` array.

@@ -8,58 +8,75 @@ endfunction
 let s:TYPE_STRING     = type('')
 let s:TYPE_DICTIONARY = type({})
 let s:TYPE_NUMBER     = type(0)
+let s:LR_SEPARATOR    = '^=\+'
+let s:COLOR_SETTER    = '\v^[-=]+\s*\zs\S*'
 
 let s:ez = {}
 function! s:ez.init() "{{{1
   let self.hlmanager = ezbar#hlmanager#new('EzBar')
+  let self.color     = {
+        \ 'StatusLine':   self.hlmanager.convert('StatusLine'),
+        \ 'StatusLineNC': self.hlmanager.convert('StatusLineNC'),
+        \ }
 endfunction
 
 function! s:ez.prepare(win, winnum) "{{{1
-  let g:ezbar.parts.__active = ( a:win ==# 'active' )
-  let g:ezbar.parts.__is_active = g:ezbar.parts.__active  " compatibly
-  let g:ezbar.parts.__parts  = {}
-  let g:ezbar.parts.__utils  = s:util
-  let g:ezbar.parts.__layout = type(g:ezbar[a:win]) == s:TYPE_STRING
-        \ ? split(g:ezbar[a:win])
-        \ : copy(g:ezbar[a:win])
+  let [EB, PARTS]    = [ g:ezbar, g:ezbar.parts ]
+  let active         = a:win ==# 'active'
+  let PARTS          = EB.parts
+  let PARTS.__active = active
+  let PARTS.__parts  = {}
+  let PARTS.__layout = copy(EB[a:win])
+  let PARTS.__color  = self.color[ active ? 'StatusLine' : 'StatusLineNC']
+  let PARTS.__       = ezbar#util#get()
 
-  let g:ezbar.parts.__color =
-        \ ( a:win ==# 'active' ) ? 'StatusLine' : 'StatusLineNC'
   " Init:
-  if exists('*g:ezbar.parts._init')
-    call g:ezbar.parts._init(a:winnum)
-  endif
-
+  if exists('*PARTS._init') | call PARTS._init(a:winnum) | endif
   " Normalize:
-  call map(g:ezbar.parts.__layout,
-        \ 'self.normalize_part(a:win, v:val, a:winnum)')
-
+  call map(PARTS.__layout, 'self.part_normalize(a:win, v:val, a:winnum)')
   " Eliminate:
-  call filter(g:ezbar.parts.__parts, '!empty(v:val.s)')
-  call filter(g:ezbar.parts.__layout, '!empty(v:val)')
-  call filter(g:ezbar.parts.__layout, '!empty(v:val.s)')
+  call filter(PARTS.__parts,  '!empty(v:val.s)')
+  call filter(PARTS.__layout, '!empty(v:val.s)')
 
-  if exists('*g:ezbar.parts._finish')
-    call g:ezbar.parts._finish()
+  if exists('*PARTS._finish')
+    call PARTS._finish()
   endif
-  return g:ezbar.parts.__layout
+  return PARTS.__layout
 endfunction
 
-function! s:ez.normalize_part(win, part, winnum) "{{{1
-  " using call() below is workaround to avoid strange missing ':' after '?' error
-  let R = has_key(g:ezbar.parts, a:part)
-        \ ? call(g:ezbar.parts[a:part], [a:winnum], g:ezbar.parts)
-        \ : g:ezbar.parts._parts_missing(a:winnum, a:part)
+function! s:ez.part_normalize(win, part, winnum) "{{{1
+  let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
+  try
+    " using call() below is workaround to avoid strange missing ':' after '?' error
+    let R =
+          \ has_key(PARTS, a:part) ? call(PARTS[a:part], [a:winnum], PARTS) :
+          \ a:part =~# '^[-=]' ? self.color_or_separator(a:part) :
+          \ PARTS._parts_missing(a:winnum, a:part)
+  catch
+    if !exists(R)
+      let R = printf('ERR: in %s', a:part)
+    endif
+  endtry
 
-  let PART = type(R) isnot s:TYPE_DICTIONARY ? { 's' : R } : R
-  let PART.name = a:part
+  let part = type(R) isnot s:TYPE_DICTIONARY ? { 's' : R } : R
+  let part.name = a:part
 
-  if empty(get(PART, 'c')) 
-    let PART.c = copy(g:ezbar.parts.__color)
+  if empty(get(part, 'c'))
+    let part.c = copy(PARTS.__color)
   endif
-  let g:ezbar.parts.__parts[a:part] = PART
+  let PARTS.__parts[a:part] = part
 
-  return PART
+  return part
+endfunction
+
+function! s:ez.color_or_separator(part) "{{{1
+  let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
+  let color = matchstr(a:part, s:COLOR_SETTER)
+  if !empty(color)
+    let PARTS.__color = EB.color[color]
+  endif
+  let R = { 's': (a:part =~# s:LR_SEPARATOR ) ? '%=' : '' }
+  return R
 endfunction
 
 function! s:ez.color_of(win, part) "{{{1
@@ -71,10 +88,11 @@ function! s:ez.string(win, winnum) "{{{1
   let self.separator_L = get(g:ezbar, 'separator_L', '|')
   let self.separator_R = get(g:ezbar, 'separator_R', '|')
 
-  let RESULT = ''
+  let RESULT       = ''
   let self.section = 'L'
-  let layout = self.prepare(a:win, a:winnum)
-  let layout_len = len(layout)
+  let layout       = self.prepare(a:win, a:winnum)
+  let layout_len   = len(layout)
+  let last_idx = layout_len - 1
 
   for idx in range(layout_len)
     unlet! part
@@ -83,15 +101,17 @@ function! s:ez.string(win, winnum) "{{{1
     let color_s = '%#' . color . '#'
     let s = printf('%%#%s# %s ', color, part.s)
 
-    let next = idx + 1
+    if idx ==# last_idx
+      let RESULT .= s | continue
+    endif
 
-    if next != layout_len && layout[next].s ==# '%='
+    let next = idx + 1
+    if layout[next].s ==# '%='
       let self.section = 'R'
       let RESULT .= s
       continue
     endif
-
-    if next != layout_len && color ==# self.color_of(a:win, layout[next])
+    if color ==# self.color_of(a:win, layout[next])
       let s .= self['separator_' . self.section]
     endif
     let RESULT .= s
@@ -100,49 +120,16 @@ function! s:ez.string(win, winnum) "{{{1
 endfunction
 "}}}
 
-" Util:
-let s:util = {}
-function! s:util.color_reverse(color) "{{{1
-  let R = {}
-  let screen = self.screen()
-  let R[screen] = [ a:color[screen][1], a:color[screen][0] ]
-  if len(a:color[screen]) ==# 3
-    call add(R[screen], a:color[screen][2])
-  endif
-  return R
-endfunction
-
-function! s:util.color_change_bg(color, bg) "{{{1
-  let R = {}
-  let screen = self.screen()
-  let R[screen] = [ a:bg, a:color[screen][1] ]
-  if len(a:color[screen]) ==# 3
-    call add(R[screen], a:color[screen][2])
-  endif
-  return R
-endfunction
-
-function! s:util.color_change_fg(color, fg) "{{{1
-  let R = {}
-  let screen = self.screen()
-  let R[screen] = [ a:color[screen][0], a:fg ]
-  if len(a:color[screen]) ==# 3
-    call add(R[screen], a:color[screen][2])
-  endif
-  return R
-endfunction
-
-function! s:util.screen() "{{{1
-  return has('gui_running') ? 'gui' : 'cterm'
-endfunction
-
-function! s:util.gui() "{{{1
-  return has("gui_running")
-endfunction
-
 " Public:
 function! ezbar#string(win, winnum) "{{{1
-  return s:ez.string(a:win, a:winnum)
+  let s = ''
+  try
+    let s = s:ez.string(a:win, a:winnum)
+  catch
+    echom v:exception
+  finally
+    return s
+  endtry
 endfunction
 
 function! ezbar#set() "{{{1
@@ -162,6 +149,10 @@ endfunction
 
 function! ezbar#hl_refresh() "{{{1
   call s:ez.hlmanager.refresh()
+endfunction
+
+function! ezbar#hlmanager() "{{{1
+  return s:ez.hlmanager
 endfunction
 
 function! ezbar#disable() "{{{1
@@ -186,17 +177,21 @@ function! ezbar#enable() "{{{1
   augroup END
 endfunction
 
-function! ezbar#check_highlight() range "{{{1
-  " clear
+function! ezbar#color_check() range "{{{1
+  " clear color
   call map(
         \ filter(getmatches(), 'v:val.group =~# "EzBar"'),
-        \ 'matchdelete((v:val.id)')
+        \ 'matchdelete(v:val.id)')
 
   for n in range(a:firstline, a:lastline)
     let color = s:extract_color_definition(getline(n))
     if empty(color) | continue | endif
-    call matchadd(s:ez.hlmanager.register(eval(color)), '\V' . color)
-  endfor
+    call matchadd(s:ez.hlmanager.register(eval(color)), '\V' . color) endfor
+endfunction
+
+function! ezbar#color_capture(color) "{{{1
+  let R = s:ez.hlmanager.convert_full(a:color)
+  call setreg(v:register, string(R), 'V')
 endfunction
 
 function! s:extract_airline_color(string) "{{{1
@@ -225,7 +220,5 @@ call s:ez.init()
 if expand("%:p") !=# expand("<sfile>:p")
   finish
 endif
-" echo s:ez.string('active', winnr())
-" echo s:ez.string('inactive')
 
 " vim: foldmethod=marker

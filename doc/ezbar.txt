@@ -183,6 +183,8 @@ TODO							    *ezbar-todo*
 
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
+2014-01-15:
+	- change command name of :EzBarCheckHighlight to :EzBarColorCheck
 2014-01-14:
 	- [change] '__is_active' now '__active'
 	- [behaveChange] disastrous behavior change eliminate { 'chg_color': }

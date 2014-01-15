@@ -28,7 +28,7 @@ function! s:u.mode(_) "{{{1
 endfunction
 
 function! s:u.percent(_) "{{{1
-  return '%3p%%'
+  return '%p%%'
 endfunction
 
 function! s:u.modified(_) "{{{1

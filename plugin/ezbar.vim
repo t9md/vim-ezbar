@@ -31,16 +31,17 @@ if g:ezbar_enable && !empty(g:ezbar)
 endif
 
 " Command:
-command! EzBarUpdate  call ezbar#update()
-command! EzBarSet     call ezbar#set()
+" command! EzBarUpdate  call ezbar#update()
+" command! EzBarSet     call ezbar#set()
 
 command! EzBarDisable call ezbar#disable()
 command! EzBarEnable  call ezbar#enable()
 
-command! -range EzBarCheckHighlight 
-      \ :<line1>,<line2>call ezbar#check_highlight()
-command! -range EzBarCheckHighlight2
-      \ :<line1>,<line2>call ezbar#check_highlight2()
+command! -range EzBarColorCheck
+      \ :<line1>,<line2>call ezbar#color_check()
+" command! -range EzBarCheckHighlight2
+      " \ :<line1>,<line2>call ezbar#check_highlight2()
+command! -nargs=1 -complete=highlight EzBarColorCapture call ezbar#color_capture(<f-args>)
 
 " Finish:
 let &cpo = s:old_cpo

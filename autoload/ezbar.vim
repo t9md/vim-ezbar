@@ -82,17 +82,29 @@ function! s:ez.part_finalize(part) "{{{1
   return printf('%%#%s# %s', color, a:part.s)
 endfunction
 
-function! s:ez.specialvar_setup(win) "{{{1
-  let active           = a:win ==# 'active'
-  let s:PARTS.__active = active
+function! s:ez.specialvar_setup(active) "{{{1
+  let s:PARTS.__active = a:active
   let s:PARTS.__parts  = {}
-  let s:PARTS.__layout = copy(s:EB[a:win])
-  let s:PARTS.__color  = self.color[ active ? 'StatusLine' : 'StatusLineNC']
+  let s:PARTS.__layout = copy(s:EB[ a:active ? 'active' : 'inactive'])
+  let s:PARTS.__color  = self.color[ a:active ? 'StatusLine' : 'StatusLineNC']
   let s:PARTS.__       = ezbar#util#get()
 endfunction
 
-function! s:ez.string(win, winnum) "{{{1
-  call self.specialvar_setup(a:win)
+function! s:ez.theme_load() "{{{1
+  if !get(s:EB, 'theme_loaded')
+    if type(get(s:EB, 'color')) isnot s:TYPE_DICTIONARY
+      let s:EB.color = {}
+    endif
+    call extend(s:EB.color, ezbar#theme#load(s:EB.theme))
+    let s:EB.theme_loaded = 1
+  endif
+endfunction
+" let s:EB    = g:ezbar
+" let s:PARTS = g:ezbar.parts
+
+function! s:ez.string(active, winnum) "{{{1
+  call self.theme_load()
+  call self.specialvar_setup(a:active)
   let self.separator_L = get(g:ezbar, 'separator_L', '|')
   let self.separator_R = get(g:ezbar, 'separator_R', '|')
   let RESULT       = ''
@@ -100,7 +112,7 @@ function! s:ez.string(win, winnum) "{{{1
   let layout_len   = len(layout)
   let last_idx     = layout_len - 1
 
-  " let S = map(layout, 'self.part_finalize(v:val, a:win)')
+  " let S = map(layout, 'self.part_finalize(v:val, a:active)')
   " call g:plog(S)
   " let RESULT .= join(S, ' ')
 
@@ -127,12 +139,12 @@ endfunction
 "}}}
 
 " Public:
-function! ezbar#string(win, winnum) "{{{1
+function! ezbar#string(active, winnum) "{{{1
   let s:EB    = g:ezbar
   let s:PARTS = g:ezbar.parts
   try
     let s = ''
-    let s = s:ez.string(a:win, a:winnum)
+    let s = s:ez.string(a:active, a:winnum)
   catch
     echom v:exception
   finally
@@ -140,26 +152,26 @@ function! ezbar#string(win, winnum) "{{{1
   endtry
 endfunction
 
-function! ezbar#nop(...)
+function! ezbar#nop(...) "{{{1
 endfunction
 
 function! ezbar#set() "{{{1
-  let active_winnr = winnr()
-  for n in range(1, winnr('$'))
-    if n is active_winnr
-      call setwinvar(n, '&statusline', '%!ezbar#string("active", ' . n . ')')
-    else
-      call setwinvar(n, '&statusline', '%!ezbar#string("inactive", ' . n . ')')
-    endif
-  endfor
+  let winnr_active = winnr()
+  " setup each window's &statusline to
+  "   %!ezbar#string(num is winnr_active, winnr())
+  call map(range(1, winnr('$')), '
+        \ setwinvar(v:val, "&statusline",
+        \ "%!ezbar#string(". (v:val is winnr_active) . ", " . v:val . ")")
+        \ ')
 endfunction
 
 " function! ezbar#update() "{{{1
   " " for test purpose
-  " call setwinvar(winnr(), '&statusline', '%!ezbar#string("active", ' . winnr() . ')')
+  " call setwinvar(winnr(), '&statusline', '%!ezbar#string(1, ' . winnr() . ')')
 " endfunction
 
 function! ezbar#hl_refresh() "{{{1
+  let s:EB.theme_loaded = 0
   call s:ez.hlmanager.refresh()
 endfunction
 

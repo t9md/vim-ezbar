@@ -8,6 +8,7 @@ endfunction
 let s:TYPE_STRING     = type('')
 let s:TYPE_DICTIONARY = type({})
 let s:TYPE_NUMBER     = type(0)
+let s:SCREEN          = has('gui_running') ? 'gui' : 'cterm'
 let s:LR_SEPARATOR    = '^=\+'
 let s:COLOR_SETTER    = '\v^[-=]+\s*\zs\S*'
 
@@ -20,101 +21,106 @@ function! s:ez.init() "{{{1
         \ }
 endfunction
 
-function! s:ez.prepare(win, winnum) "{{{1
-  let [EB, PARTS]    = [ g:ezbar, g:ezbar.parts ]
-  let active         = a:win ==# 'active'
-  let PARTS          = EB.parts
-  let PARTS.__active = active
-  let PARTS.__parts  = {}
-  let PARTS.__layout = copy(EB[a:win])
-  let PARTS.__color  = self.color[ active ? 'StatusLine' : 'StatusLineNC']
-  let PARTS.__       = ezbar#util#get()
-
+function! s:ez.prepare(winnum) "{{{1
   " Init:
-  if exists('*PARTS._init') | call PARTS._init(a:winnum) | endif
-  " Normalize:
-  call map(PARTS.__layout, 'self.part_normalize(a:win, v:val, a:winnum)')
-  " Eliminate:
-  call filter(PARTS.__parts,  '!empty(v:val.s)')
-  call filter(PARTS.__layout, '!empty(v:val.s)')
-
-  if exists('*PARTS._finish')
-    call PARTS._finish()
+  if exists('*s:PARTS._init')
+    call s:PARTS._init(a:winnum)
   endif
-  return PARTS.__layout
+
+  " Normalize:
+  call map(s:PARTS.__layout, 'self.part_normalize(v:val, a:winnum)')
+
+  " Eliminate:
+  call filter(s:PARTS.__parts,  '!empty(v:val.s)')
+  call filter(s:PARTS.__layout, '!empty(v:val.s)')
+
+  " Finalize:
+  if exists('*s:PARTS._finish')
+    call s:PARTS._finish()
+  endif
+  return s:PARTS.__layout
 endfunction
 
-function! s:ez.part_normalize(win, part, winnum) "{{{1
-  let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
+function! s:ez.part_normalize(part, winnum) "{{{1
   try
     " using call() below is workaround to avoid strange missing ':' after '?' error
     let R =
-          \ has_key(PARTS, a:part) ? call(PARTS[a:part], [a:winnum], PARTS) :
+          \ has_key(s:PARTS, a:part) ? call(s:PARTS[a:part], [a:winnum], s:PARTS) :
           \ a:part =~# '^[-=]' ? self.color_or_separator(a:part) :
-          \ PARTS._parts_missing(a:winnum, a:part)
+          \ s:PARTS._parts_missing(a:winnum, a:part)
   catch
-    if !exists(R)
-      let R = printf('ERR: in %s', a:part)
-    endif
+    let R = { 's': printf('[%s]', a:part), 'c': 'WarningMsg' }
   endtry
 
   let part = type(R) isnot s:TYPE_DICTIONARY ? { 's' : R } : R
   let part.name = a:part
 
   if empty(get(part, 'c'))
-    let part.c = copy(PARTS.__color)
+    let part.c = copy(s:PARTS.__color)
   endif
-  let PARTS.__parts[a:part] = part
+  let s:PARTS.__parts[a:part] = part
 
   return part
 endfunction
 
 function! s:ez.color_or_separator(part) "{{{1
-  let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
   let color = matchstr(a:part, s:COLOR_SETTER)
   if !empty(color)
-    let PARTS.__color = EB.color[color]
+    let s:PARTS.__color = s:EB.color[color]
   endif
   let R = { 's': (a:part =~# s:LR_SEPARATOR ) ? '%=' : '' }
   return R
 endfunction
 
-function! s:ez.color_of(win, part) "{{{1
-  let color = get(a:part, (a:win ==# 'active' ? 'ac' : 'ic' ), a:part.c)
+function! s:ez.color_of(part) "{{{1
+  let color = get(a:part, ( s:PARTS.__active ? 'ac' : 'ic' ), a:part.c)
   return self.hlmanager.register(color)
 endfunction
 
+function! s:ez.part_finalize(part) "{{{1
+  let color   = self.color_of(a:part)
+  return printf('%%#%s# %s', color, a:part.s)
+endfunction
+
+function! s:ez.specialvar_setup(win) "{{{1
+  let active           = a:win ==# 'active'
+  let s:PARTS.__active = active
+  let s:PARTS.__parts  = {}
+  let s:PARTS.__layout = copy(s:EB[a:win])
+  let s:PARTS.__color  = self.color[ active ? 'StatusLine' : 'StatusLineNC']
+  let s:PARTS.__       = ezbar#util#get()
+endfunction
+
 function! s:ez.string(win, winnum) "{{{1
+  call self.specialvar_setup(a:win)
   let self.separator_L = get(g:ezbar, 'separator_L', '|')
   let self.separator_R = get(g:ezbar, 'separator_R', '|')
-
   let RESULT       = ''
-  let self.section = 'L'
-  let layout       = self.prepare(a:win, a:winnum)
+  let layout       = self.prepare(a:winnum)
   let layout_len   = len(layout)
-  let last_idx = layout_len - 1
+  let last_idx     = layout_len - 1
 
+  " let S = map(layout, 'self.part_finalize(v:val, a:win)')
+  " call g:plog(S)
+  " let RESULT .= join(S, ' ')
+
+  let section = 'L'
   for idx in range(layout_len)
     unlet! part
     let part    = layout[idx]
-    let color   = self.color_of(a:win, part)
-    let color_s = '%#' . color . '#'
-    let s = printf('%%#%s# %s ', color, part.s)
+    let color   = self.color_of(part)
+    let RESULT .= printf('%%#%s# %s ', color, part.s)
 
-    if idx ==# last_idx
-      let RESULT .= s | continue
-    endif
-
-    let next = idx + 1
-    if layout[next].s ==# '%='
-      let self.section = 'R'
-      let RESULT .= s
+    if idx ==# last_idx | continue | endif
+    let idx_next = idx + 1
+    if layout[idx_next].s ==# '%='
+      let section = 'R'
       continue
     endif
-    if color ==# self.color_of(a:win, layout[next])
-      let s .= self['separator_' . self.section]
+
+    if color ==# self.color_of(layout[idx_next])
+      let RESULT .= self['separator_' . section]
     endif
-    let RESULT .= s
   endfor
   return RESULT
 endfunction
@@ -122,8 +128,10 @@ endfunction
 
 " Public:
 function! ezbar#string(win, winnum) "{{{1
-  let s = ''
+  let s:EB    = g:ezbar
+  let s:PARTS = g:ezbar.parts
   try
+    let s = ''
     let s = s:ez.string(a:win, a:winnum)
   catch
     echom v:exception
@@ -132,9 +140,13 @@ function! ezbar#string(win, winnum) "{{{1
   endtry
 endfunction
 
+function! ezbar#nop(...)
+endfunction
+
 function! ezbar#set() "{{{1
+  let active_winnr = winnr()
   for n in range(1, winnr('$'))
-    if n ==# winnr()
+    if n is active_winnr
       call setwinvar(n, '&statusline', '%!ezbar#string("active", ' . n . ')')
     else
       call setwinvar(n, '&statusline', '%!ezbar#string("inactive", ' . n . ')')
@@ -142,10 +154,10 @@ function! ezbar#set() "{{{1
   endfor
 endfunction
 
-function! ezbar#update() "{{{1
-  " for test purpose
-  call setwinvar(winnr(), '&statusline', '%!ezbar#string("active", ' . winnr() . ')')
-endfunction
+" function! ezbar#update() "{{{1
+  " " for test purpose
+  " call setwinvar(winnr(), '&statusline', '%!ezbar#string("active", ' . winnr() . ')')
+" endfunction
 
 function! ezbar#hl_refresh() "{{{1
   call s:ez.hlmanager.refresh()

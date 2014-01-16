@@ -183,6 +183,8 @@ TODO							    *ezbar-todo*
 
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
+2014-01-16:
+	- catch error in parts and notify within parts.
 2014-01-15:
 	- change command name of :EzBarCheckHighlight to :EzBarColorCheck
 2014-01-14:

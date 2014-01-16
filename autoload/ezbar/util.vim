@@ -47,18 +47,12 @@ function! s:util.invert_deco(color, decorate) "{{{1
   return R
 endfunction
 
-function! s:util.bg(color, color_new) "{{{1
-  return self._color_change(a:color, a:color_new, 0)
+function! s:util.bg(...) "{{{1
+  return call(self._color_change, [0] + a:000, self)
 endfunction
 
 function! s:util.fg(...) "{{{1
-  let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
-  if a:0 ==# 1
-    let [color, color_new ] = [ PARTS.__color, a:1 ]
-  elseif a:0 ==# 2
-    let [color, color_new ] = a:000
-  endif
-  return self._color_change(color, color_new, 1)
+  return call(self._color_change, [1] + a:000, self)
 endfunction
 
 function! s:util.s(part) "{{{1
@@ -79,11 +73,19 @@ function! s:util.c(part) "{{{1
   endif
 endfunction
 
-function! s:util._color_change(color, color_new, index)
+function! s:util._color_change(...) "{{{1
+  let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
+
+  if a:0 ==# 2
+    let [index, color, color_new ] = [ a:1, PARTS.__color, a:2 ]
+  elseif a:0 ==# 3
+    let [index, color, color_new ] = a:000
+  endif
+
   let screen = self.screen()
-  let R = deepcopy(a:color)
-  if !has_key(a:color_new, screen) | return R | endif
-  let R[screen][a:index] = a:color_new[screen]
+  let R = deepcopy(color)
+  if !has_key(color_new, screen) | return R | endif
+  let R[screen][index] = color_new[screen]
   return R
 endfunction
 

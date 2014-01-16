@@ -59,11 +59,11 @@ See `autoload/ezbar/config/t9md.vim` which is my config.
 * Help
 See `:help ezbar`
 
-## Color prepalation tips
+## TIPS for color preparation
 
-- Capture with command `:EzBarColorCapture Constant`
-- paste to buffer with `p`. here is result of my environment.
+1. Capture with command `:EzBarColorCapture Constant`
+2. paste to buffer with `p`. here is result of my environment.
 ```Vim
 {'gui': ['', '#e5786d'], 'cterm': ['', '13']}
 ```
-- select that line edit and check color with `:EzbarColorCheck`
+3. select that line edit and check color with `:EzbarColorCheck`

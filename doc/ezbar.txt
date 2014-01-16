@@ -54,8 +54,8 @@ COMMANDS						*ezbar-commands*
 EzBarColorCapture {highlight}
 	Capture specified highlight as ezbar color dictionary form to v:register.
 	You can paste with |p| after capture.
-Example >
-	:EzBarColorCapture Constant
+	Example >
+		:EzBarColorCapture Constant
 <
 ==============================================================================
 VARIABLES						*ezbar-variables*

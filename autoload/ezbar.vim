@@ -87,7 +87,7 @@ function! s:ez.specialvar_setup(active) "{{{1
   let s:PARTS.__parts  = {}
   let s:PARTS.__layout = copy(s:EB[ a:active ? 'active' : 'inactive'])
   let s:PARTS.__color  = self.color[ a:active ? 'StatusLine' : 'StatusLineNC']
-  let s:PARTS.__       = ezbar#util#get()
+  let s:PARTS.__       = ezbar#helper#get()
 endfunction
 
 function! s:ez.theme_load() "{{{1

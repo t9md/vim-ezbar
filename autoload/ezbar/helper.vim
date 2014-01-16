@@ -1,7 +1,7 @@
-" Util:
-let s:util = {}
+" Helper:
+let s:helper = {}
 
-function! s:util.merge(color1, color2) "{{{1
+function! s:helper.merge(color1, color2) "{{{1
   let screen = self.screen()
   let color1 = copy(a:color1[screen])
   let color2 = a:color2[screen]
@@ -20,14 +20,14 @@ function! s:util.merge(color1, color2) "{{{1
   return R
 endfunction
 
-function! s:util.reverse(color) "{{{1
+function! s:helper.reverse(color) "{{{1
   let R = deepcopy(a:color)
   let screen = self.screen()
   let [ R[screen][0], R[screen][1] ] = [ R[screen][1], R[screen][0] ]
   return R
 endfunction
 
-function! s:util.invert_deco(color, decorate) "{{{1
+function! s:helper.invert_deco(color, decorate) "{{{1
   let screen = self.screen()
   let R = deepcopy(a:color)
   let deco = split(get(R[screen], 2, ''), ',')
@@ -47,15 +47,15 @@ function! s:util.invert_deco(color, decorate) "{{{1
   return R
 endfunction
 
-function! s:util.bg(...) "{{{1
+function! s:helper.bg(...) "{{{1
   return call(self._color_change, [0] + a:000, self)
 endfunction
 
-function! s:util.fg(...) "{{{1
+function! s:helper.fg(...) "{{{1
   return call(self._color_change, [1] + a:000, self)
 endfunction
 
-function! s:util.s(part) "{{{1
+function! s:helper.s(part) "{{{1
   let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
   if has_key(PARTS.__parts, a:part)
     return PARTS.__parts[a:part].s
@@ -64,7 +64,7 @@ function! s:util.s(part) "{{{1
   endif
 endfunction
 
-function! s:util.c(part) "{{{1
+function! s:helper.c(part) "{{{1
   let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
   if has_key(PARTS.__parts, a:part)
     return PARTS.__parts[a:part].c
@@ -73,7 +73,7 @@ function! s:util.c(part) "{{{1
   endif
 endfunction
 
-function! s:util._color_change(...) "{{{1
+function! s:helper._color_change(...) "{{{1
   let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
 
   if a:0 ==# 2
@@ -89,12 +89,12 @@ function! s:util._color_change(...) "{{{1
   return R
 endfunction
 
-function! s:util.screen() "{{{1
+function! s:helper.screen() "{{{1
   return has('gui_running') ? 'gui' : 'cterm'
 endfunction
 
-function! ezbar#util#get() "{{{1
-  return s:util
+function! ezbar#helper#get() "{{{1
+  return s:helper
 endfunction
 "}}}
 

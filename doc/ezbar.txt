@@ -1,6 +1,6 @@
 *ezbar.txt* statusline configuration helper for minimalist.
 
-Version: 0.1
+Version: 0.2
 Author : t9md <taqumd@gmail.com>
 GitHub : https://github.com/t9md/vim-ezbar
 ==============================================================================
@@ -180,7 +180,7 @@ TODO							    *ezbar-todo*
 
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
-2013-12-28:
+2013-12-28: v0.2
 	- [experiment] now __layout is to modify in _init()
 	- [experiment] set __default_color parts variable.
 	- [bugfix] initalize timing for self.color_active/color_inactive.

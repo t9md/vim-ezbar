@@ -36,9 +36,6 @@ if g:ezbar_enable
 endif
 
 " Command:
-" command! EzBarUpdate  call ezbar#update()
-" command! EzBarSet     call ezbar#set()
-
 command! EzBarDisable call ezbar#disable()
 command! EzBarEnable  call ezbar#enable()
 

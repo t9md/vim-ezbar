@@ -1,11 +1,10 @@
 [日本語はこちら](https://github.com/t9md/vim-ezbar/blob/master/README-JP.md)
 
 # What's this?
-statusline configuration helper for minimalist.
+Advanced, customizable statusline plugin for minimalist.
 
 # Feature
-* no fancy colorscheme
-* simple design, easy to configure for vim-scripter(advanced user), no fail-safe guared for begginer
+* simple design, easy to configure for vim-scripter(advanced user)
 * dynamically configure color based on condition.
 * all statusline component(part) is implemented as dictionary function.
 * no precedence to predefined parts, so it's up to you how organize your statusline.
@@ -18,7 +17,6 @@ statusline configuration helper for minimalist.
 * Hide other statusline part when specific plugin active  
 ![Fill-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill1.png)  
 ![Fill-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill2.png)  
-
 
 # OLD VERSION USER
 

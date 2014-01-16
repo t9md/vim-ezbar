@@ -68,8 +68,7 @@ function! s:ez.color_or_separator(part) "{{{1
   if !empty(color)
     let s:PARTS.__color = s:EB.colors[color]
   endif
-  let R = { 's': (a:part =~# s:LR_SEPARATOR ) ? '%=' : '' }
-  return R
+  return { 's': (a:part =~# s:LR_SEPARATOR ) ? '%=' : '' }
 endfunction
 
 function! s:ez.color_of(part) "{{{1
@@ -251,6 +250,13 @@ function! ezbar#color_capture(color) "{{{1
   let R = s:ez.hlmanager.convert_full(a:color)
   call setreg(v:register, string(R), 'V')
 endfunction
+"}}}
+
+call s:ez.init()
+
+if expand("%:p") !=# expand("<sfile>:p")
+  finish
+endif
 
 function! s:extract_airline_color(string) "{{{1
   return matchstr(a:string, '\v\zs[.*\]\ze')
@@ -271,12 +277,4 @@ function! ezbar#check_highlight2() range "{{{1
     call matchadd(s:ez.hlmanager.register(ezbar_color), '\V' . color_s)
   endfor
 endfunction
-"}}}
-
-call s:ez.init()
-
-if expand("%:p") !=# expand("<sfile>:p")
-  finish
-endif
-
 " vim: foldmethod=marker

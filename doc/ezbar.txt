@@ -203,7 +203,8 @@ TODO							    *ezbar-todo*
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
 2014-01-17: v0.8
-	- [bigchange] merge dev branch delete old doc.
+	- [bigchange] many many change, and improve merge dev branch delete
+	  old doc.
 2014-01-16:
 	- catch error in parts and notify within parts.
 2014-01-15:

@@ -2,18 +2,21 @@
 let s:util = {}
 
 function! s:util.merge(color1, color2) "{{{1
-  let R = []
-  let color1 = copy(a:color1)
-  let color2 = a:color2
-  call add(R , (color2[0] isnot '' ) ? color2[0] : color1[0] )
-  call add(R , (color2[1] isnot '' ) ? color2[1] : color1[1] )
+  let screen = self.screen()
+  let color1 = copy(a:color1[screen])
+  let color2 = a:color2[screen]
+
+  let R = {}
+  let R[screen] = []
+  call add(R[screen] , (color2[0] isnot '' ) ? color2[0] : color1[0] )
+  call add(R[screen] , (color2[1] isnot '' ) ? color2[1] : color1[1] )
 
   let c1 = get(color1, 2, '')
   let c2 = get(color2, 2, '')
   if c1 is '' && c2 is ''
     return R
   endif
-  call add(R, (c2 isnot '') ? c2 : c1 )
+  call add(R[screen], (c2 isnot '') ? c2 : c1 )
   return R
 endfunction
 
@@ -48,8 +51,14 @@ function! s:util.bg(color, color_new) "{{{1
   return self._color_change(a:color, a:color_new, 0)
 endfunction
 
-function! s:util.fg(color, color_new) "{{{1
-  return self._color_change(a:color, a:color_new, 1)
+function! s:util.fg(...) "{{{1
+  let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
+  if a:0 ==# 1
+    let [color, color_new ] = [ PARTS.__color, a:1 ]
+  elseif a:0 ==# 2
+    let [color, color_new ] = a:000
+  endif
+  return self._color_change(color, color_new, 1)
 endfunction
 
 function! s:util.s(part) "{{{1

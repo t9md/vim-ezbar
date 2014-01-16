@@ -99,8 +99,6 @@ function! s:ez.theme_load() "{{{1
     let s:EB.theme_loaded = 1
   endif
 endfunction
-" let s:EB    = g:ezbar
-" let s:PARTS = g:ezbar.parts
 
 function! s:ez.string(active, winnum) "{{{1
   call self.theme_load()

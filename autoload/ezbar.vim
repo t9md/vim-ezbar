@@ -15,7 +15,7 @@ let s:COLOR_SETTER    = '\v^[-=]+\s*\zs\S*'
 let s:ez = {}
 function! s:ez.init() "{{{1
   let self.hlmanager = ezbar#hlmanager#new('EzBar')
-  let self.color     = {
+  let self.colors     = {
         \ 'StatusLine':   self.hlmanager.convert('StatusLine'),
         \ 'StatusLineNC': self.hlmanager.convert('StatusLineNC'),
         \ }
@@ -31,12 +31,12 @@ function! s:ez.prepare(winnum) "{{{1
   call map(s:PARTS.__layout, 'self.part_normalize(v:val, a:winnum)')
 
   " Eliminate:
-  call filter(s:PARTS.__parts,  '!empty(v:val.s)')
-  call filter(s:PARTS.__layout, '!empty(v:val.s)')
+  call filter(s:PARTS.__parts,  '!(v:val.s is "")')
+  call filter(s:PARTS.__layout, '!(v:val.s is "")')
 
   " Finalize:
   if exists('*s:PARTS._finish')
-    call s:PARTS._finish()
+    call s:PARTS._finish(a:winnum)
   endif
   return s:PARTS.__layout
 endfunction
@@ -49,7 +49,8 @@ function! s:ez.part_normalize(part, winnum) "{{{1
           \ a:part =~# '^[-=]' ? self.color_or_separator(a:part) :
           \ s:PARTS._parts_missing(a:winnum, a:part)
   catch
-    let R = { 's': printf('[%s]', a:part), 'c': 'WarningMsg' }
+    let s = substitute(a:part, '\v^([-=])+\s*(.*)', '\1 \2','')
+    let R = { 's': printf('[%s]', s), 'c': 'WarningMsg' }
   endtry
 
   let part = type(R) isnot s:TYPE_DICTIONARY ? { 's' : R } : R
@@ -59,14 +60,13 @@ function! s:ez.part_normalize(part, winnum) "{{{1
     let part.c = copy(s:PARTS.__color)
   endif
   let s:PARTS.__parts[a:part] = part
-
   return part
 endfunction
 
 function! s:ez.color_or_separator(part) "{{{1
   let color = matchstr(a:part, s:COLOR_SETTER)
   if !empty(color)
-    let s:PARTS.__color = s:EB.color[color]
+    let s:PARTS.__color = s:EB.colors[color]
   endif
   let R = { 's': (a:part =~# s:LR_SEPARATOR ) ? '%=' : '' }
   return R
@@ -82,27 +82,61 @@ function! s:ez.part_finalize(part) "{{{1
   return printf('%%#%s# %s', color, a:part.s)
 endfunction
 
-function! s:ez.specialvar_setup(active) "{{{1
-  let s:PARTS.__active = a:active
-  let s:PARTS.__parts  = {}
-  let s:PARTS.__layout = copy(s:EB[ a:active ? 'active' : 'inactive'])
-  let s:PARTS.__color  = self.color[ a:active ? 'StatusLine' : 'StatusLineNC']
-  let s:PARTS.__       = ezbar#helper#get()
+function! s:ez.specialvar_setup(active, winnum) "{{{1
+  let s:PARTS.__active   = a:active
+  let s:PARTS.__mode     = mode()
+  let s:PARTS.__width    = winwidth(a:winnum)
+  let s:PARTS.__filetype = getwinvar(a:winnum, '&filetype')
+  let s:PARTS.__buftype  = getwinvar(a:winnum, '&buftype')
+  let s:PARTS.__parts    = {}
+  let s:PARTS.__layout   = copy(s:EB[ a:active ? 'active' : 'inactive'])
+  let s:PARTS.__color    = self.colors[ a:active ? 'StatusLine' : 'StatusLineNC']
+  let s:PARTS.__colors   = s:EB.colors
+  let s:PARTS.__         = ezbar#helper#get()
 endfunction
 
 function! s:ez.theme_load() "{{{1
-  if !get(s:EB, 'theme_loaded')
-    if type(get(s:EB, 'color')) isnot s:TYPE_DICTIONARY
-      let s:EB.color = {}
+  if !get(s:EB, '__theme_loaded')
+    if type(get(s:EB, 'colors')) isnot s:TYPE_DICTIONARY
+      let s:EB.colors = {}
     endif
-    call extend(s:EB.color, ezbar#theme#load(s:EB.theme))
+    call extend(s:EB.colors, ezbar#theme#load(s:EB.theme))
     let s:EB.theme_loaded = 1
   endif
+endfunction
+"}}}
+
+let s:mode2color = {
+      \ 'n':      'm_normal',
+      \ 'i':      'm_insert',
+      \ 'R':      'm_replace',
+      \ 'v':      'm_visual',
+      \ 'V':      'm_visual',
+      \ "\<C-v>": 'm_visual',
+      \ 'c':      'm_other',
+      \ 's':      'm_other',
+      \ 'S':      'm_other',
+      \ "\<C-s>": 'm_other',
+      \ '?':      'm_other',
+      \ }
+
+function! s:ez.mode_color_setup() "{{{1
+  let COLORS          = s:PARTS.__colors
+  let color           = get(s:mode2color, s:PARTS.__mode, 'm_normal')
+  let color_mode      = COLORS[color]
+  let mood3           = s:PARTS.__.reverse(color_mode)
+  let mood2           = s:PARTS.__.bg(mood3, COLORS['_mood2'])
+  let COLORS['mood1'] = color_mode
+  let COLORS['mood2'] = mood2
+  let COLORS['mood3'] = mood3
 endfunction
 
 function! s:ez.string(active, winnum) "{{{1
   call self.theme_load()
-  call self.specialvar_setup(a:active)
+  call self.specialvar_setup(a:active, a:winnum)
+  if s:PARTS.__active
+    call self.mode_color_setup()
+  endif
   let self.separator_L = get(g:ezbar, 'separator_L', '|')
   let self.separator_R = get(g:ezbar, 'separator_R', '|')
   let RESULT       = ''
@@ -123,7 +157,8 @@ function! s:ez.string(active, winnum) "{{{1
 
     if idx ==# last_idx | continue | endif
     let idx_next = idx + 1
-    if layout[idx_next].s ==# '%='
+    " NOTE: CAUTION! (0 ==# '%=') is 1, should use expr-is
+    if layout[idx_next].s is '%='
       let section = 'R'
       continue
     endif
@@ -169,7 +204,7 @@ endfunction
 " endfunction
 
 function! ezbar#hl_refresh() "{{{1
-  let s:EB.theme_loaded = 0
+  let s:EB.__theme_loaded = 0
   call s:ez.hlmanager.refresh()
 endfunction
 

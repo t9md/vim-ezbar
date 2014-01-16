@@ -25,8 +25,13 @@ function! s:set_options(options) "{{{
 endfunction "}}}
 call s:set_options(s:options)
 
+let s:default_config
+      \ = expand('<sfile>:h:h') . '/autoload/ezbar/config/default.vim'
 " AutoCmd:
-if g:ezbar_enable && !empty(g:ezbar)
+if g:ezbar_enable
+  if empty(g:ezbar)
+    execute 'source' s:default_config
+  endif
   call ezbar#enable()
 endif
 

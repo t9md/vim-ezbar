@@ -1,6 +1,6 @@
 *ezbar.txt* statusline configuration helper for minimalist.
 
-Version: 0.1
+Version: 0.8
 Author : t9md <taqumd@gmail.com>
 GitHub : https://github.com/t9md/vim-ezbar
 ==============================================================================
@@ -37,14 +37,12 @@ MAPPINGS					*ezbar-mappings*
 ==============================================================================
 COMMANDS						*ezbar-commands*
 
-*:EzBarUpdate*
-*:EzBarSet*
 *:EzBarDisable*
 *:EzBarEnable*
 	See corresponding |ezbar-functions|.
 
-							*:EzBarCheckHighlight*
-{range}:EzBarCheckHighlight
+							*:EzBarColorCheck*
+{range}:EzBarColorCheck
 	Useful while you are trying to customize color.
 	Temporarily highlight selected reange of lines like following color
 	coonfiguration. Its' just helper setup helper, not essential part of
@@ -68,16 +66,45 @@ g:ezbar
 
 							     *g:ezbar._init()*
 
-g:ezbar.__is_active
-	Type: |Number|
-	[NOTE] Automatically set by ezbar.
-	Indicating active window or not.
+------------------------------------------------------------------------------
+*ezbar-auto-variable*
 
-g:ezbar.__layout
-	Value: copy of g:ezbar.active or g:ezbar.inactive
+Each time ezbar generate &statusline and before calling each parts function.
+ezbar automatically set special variable for convenience.
+All of these automatic variable name began double underscore.
+So user should not use these name as parts name to avoid conflict.
+
+
+ | varname    | brief description                                     | 
+ | ---------- | ----------------------------------------------------- | 
+ | __active   | indicate active window or not                         | 
+ | __mode     | result of mode()                                      | 
+ | __width    | winwidth                                              | 
+ | __filetype | filetype                                              | 
+ | __buftype  | buftype                                               | 
+ | __parts    | normalized part with parts name as key                | 
+ | __layout   | layout specified as g:ezbar.active or inactive        | 
+ | __color    | indicate current default color set to part            | 
+ | __colors   | color collections you specify as g:ezbar.colors       | 
+ | __         | helper function collection                            | 
+
+{PARTS}.__active	|Number|: ( 0 or 1 ). Indicate active window or not.
+{PARTS}.__mode		|String|:  result of |mode()|
+{PARTS}.__width		|Number|: result of |winwidth()|
+{PARTS}.__filetype	|String|: |&filetype|
+{PARTS}.__buftype	|String|: |&buftype|
+{PARTS}.__parts
+	Type: |Dictionary|
+	{key}:		part function name.
+	{value}:	normalized part.
+	usefull to directly access other part's attribute like 's' or 'c'.
+
+{PARTS}.__layout   
 	Type: |List|
-	[NOTE] Automatically set by ezbar.
-
+	Layout is the list you specified in g:ezbar.active or inactive.
+	At start(of each status line refresh), ezbar copy these list and
+	transform each part_name string into normalized part.
+	So you can manupilate this layout within |_init()| hook.
 	You can modify this variable to manupilate layout.
 
 	Example: hide some parts when winwidth is narrow~
@@ -96,38 +123,33 @@ g:ezbar.__layout
 	endfunction
 <
 
-g:ezbar.__default_color
-	Type: |String| or |Dictionary|
-	[NOTE] Automatically set by ezbar.
-	You can directory set color to change default color.
+{PARTS}.__color    
+	Type: |Dictionary| or |String|
+	Represent current color which is used for un colorized part.
 
-g:ezbar._init({winnum})
+{PARTS}.__colors   
+	Type: |Dictionary|
+	Color collection table used to dynamically modify color within
+	part-function.
+
+{PARTS}.__         
+	Type: |Dictionary|
+	Collection of helper function.
+
+
+------------------------------------------------------------------------------
+*ezbar-hook*
+
+{PARTS}._init({winnum})
 	Default: Not Defined
 	Type:    |Function|
 
 	Called at very first timing before each parts-function is called.
 
-							      *g:ezbar._parts*
-g:ezbar._parts
-	Default: Not Defined
-	Type: |Dictionary|
+{PARTS}._parts_missing({winnum}, {partname})
+	called when partname part-function not found.
 
-	Each member is |Function|.
-
-							   *g:ezbar._filter()*
-g:ezbar._filter({layout}, {parts})
-	Default: Not Defined
-	MustReturn: modified {layout}
-
-	{layout}:
-		|List| which members are normalized part corresponding each
-		parts-functions.
-	{parts}:
-		|List| which members are normalized part corresponding each
-		parts-functions.
-
-	Used to dynamically modify result.
-	Need to modify passed value in-place for {parts} and return {layout}.
+{PARTS}._finish({winnum})
 
 ==============================================================================
 FUNCTIONS						*ezbar-functions*
@@ -136,19 +158,14 @@ ezbar#enable()
 ezbar#disable()
 	Enable or disable ezbar. Useful while try&error for customizing.
 
-ezbar#string({win}, {winnum})
+ezbar#string({active}, {winnum})
 	Return string that represent |statusline|.
-	{win}:    'active', 'inactive'
+	{active}: 0 or 1
 	{winnum}: |winnum()|for target window.
 
 ezbar#set()
 	Set &satusline with the result of |ezbar#string()|.
 	Called every timing needed to refresh |statusline|.
-
-ezbar#update()
-	Update only active window.
-
-ezbar#update()
 
 ==============================================================================
 CONFIGURATION EXAMPLE				    *ezbar-example*

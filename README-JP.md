@@ -1,9 +1,8 @@
-# コレは何？
-ミニマリスト向けの statuline 設定ヘルパー。
+# What's this？
+先進的な、カスタマイズが容易な、ミニマリスト向けの statuline プラグイン
 
 # 特徴
-* ファンシーなカラーテーマはなし。
-* シンプルなデザイン。Vim Scripter にとって設定しやすい。親切なエラー回避が無い。
+* シンプルなデザイン。Vim scripter にとって設定しやすい。
 * 条件によって動的に色を変えたり、ステータスラインのレイアウト自体を変えられる。
 * 全てのステータスラインの部品(part)は、辞書関数として実装される。
 * ユーザー関数よりも優先される定義済みの関数はほぼ無く、全てはユーザーの設定次第。
@@ -17,332 +16,49 @@
 ![Fill-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill1.png)  
 ![Fill-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill2.png)  
 
-# コンセプト
-* ユーザーの設定は `g:ezbar` 辞書に保存する。
-* どの部品(part)が表示されるかは、`g:ezbar.active`, `g:ezbar.inactive` 配列で制御する。
-  ```Vim
-  " アクティブウィンドウのステータスライン
-  let g:ezbar.active = [
-        \ 'mode',
-        \ 'filetype',
-        \ 'encoding',
-        \ 'percent',
-        \ ]
-  " 非アクティブウィンドウのステータスライン
-  let g:ezbar.inactive = [
-        \ 'filetype',
-        \ 'encoding',
-        \ 'percent',
-        \ ]
-  ```
-
-* レイアウトは、パート(`part`) で構成される。各パートは `g:ezbar.parts[{part}](n)` 関数の呼び出し結果に対応する。
-各パーツ関数は引数を一つだけとる。その引数は、各ステータスラインがあるウィンドウのウィンドウ番号である。
-  ```Vim
-  let g:ezbar.active = [
-        \ 'mode',        <-- g:ezbar.parts.mode(n)
-        \ 'filetype',    <-- g:ezbar.parts.filetype(n)
-        \ 'encoding',    <-- g:ezbar.parts.encoding(n)
-        \ 'percent',     <-- g:ezbar.parts.percent(n)
-        \ ]
-  ```
-
-* したがって、ユーザーが設定することは、自分のパート関数を書き、その関数名をレイアウトの中で使うこと。
-  ```Vim
-  let g:ezbar.active = [
-        \ 'my_encoding', <-- g:ezbar.parts.my_encoding(n)
-        \ ]
-  function! g:ezbar.parts.my_encoding(n)
-    return getwinvar(a:n, '&encoding')
-  endfunction
-  ```
-NOTE: ウィンドウ、バッファローカルの変数は `getwinvar()` を使う必要がある。さもなければ全てのウィンドウのステータスラインの該当パーツがアクティブウィンドウの変数の値を表示することになるだろう。例えば、上記の例の `my_encoding()` を以下の様に定義してしまうと
-
-  ```Vim
-  function! g:ezbar.parts.my_encoding(n)
-    return &encoding
-  endfunction
-  ```
-インアクティヴ・ウィンドウの encoding パートもアクティブ・ウィンドウの `&encoding` を表示してしまう。これはやりたい事では無いはずだ。
-
-* 全関数を自分自身で設定するのは面倒な場合もある。その場合は、他のユーザーが書いたパーツ(partの集合)辞書をマージすれば良い。
-  ```Vim
-  let u = {}
-  function! u.my_encoding(n)
-    return getwinvar(a:n, '&encoding')
-  endfunction
-  let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
-  unlet u
-  ```
-
-* 各パート関数は、単なる文字列か辞書を返さなければならない。
-  ```Vim
-  " 単なる文字列
-  function! u.my_encoding(n)
-    return getwinvar(a:n, '&encoding')
-  endfunction
-
-  " 辞書。git ブランチが 'master' でない場合には色を変える。
-  function! u.fugitive(n) "{{{1
-    let s = fugitive#head()
-    if empty(s)
-      return ''
-    endif
-    return { 's' : s,
-          \ 'c': s !=# 'master' ? { 'gui': ['red4', 'gray61'] } : '' }
-  endfunction
-  let g:ezbar.parts = extend(ezbar#parts#default#new(), u)
-  unlet u
-  ```
-
-以下のパートはステータスラインには表示されない。(表示させたくなければ以下の値を返せば良い)
-* 空の文字列、辞書(つまり `empty()` が `1` を返す値
-* 's' キー(=フィールド)が空の辞書
-
-上の例で見たように、パートの中で色を直接指定することが出来る。
-色は以下のディクショナリで表現される。
-  ```Vim
-  {'gui': [guibg, guifg, gui], 'cterm': [ctermbg, ctermfg, cterm] }
-  ```
-使用しない色は省略出来る。例えば gui しか使わない場合は、gui のみ定義すれば良い
-  ```Vim
-  {'gui': ['', '', 'bold'] }
-  ```
-
-いくつかの例を示す。
-  ```Vim
-  " 色を直接指定する。['guibg', 'guifg' ]
-  { 's' : "foo", 'c': {'gui': ['gray18', 'gray61'] }}
-
-  " 定義済みの色(ハイライトグループ)を使う。
-  { 's' : "foo", 'c': 'Statement' }
-
-  " オプショナルとして使用可能な色に 'ac'(アクティブウィンドウ用)と 'ic'(非アクティブなウィンドウ用)がある。
-  " ** どの色が適用されるかは以下の優先度で決まる。
-  "   アクティブウィンドウ:   'ac' => 'c' => default_color
-  "   非アクティブウィンドウ: 'ic' => 'c' => default_color
-  { 's': 'bar', 'ac' : {'gui': ['gray40', 'gray95'] }}
-  ```
-
-上の `default_color` については、以下の特別なパートを使用して、変更することが出来る。
+# クイックスタート
 
 ```Vim
-  { 'chg_color': {'gui': [ s:bg, 'gray61'] }}
+let g:ezbar_enable   = 1
 ```
 
-* どの色が利用できるか調べるには？  
-`:help rgb.txt`  
-`:edit misc/colortest/compact.vim` してから `%so`  
-`:so misc/colortest/full.vim` してから `%so`  
+上記のみで、他に何も設定しなければ、起動時にデフォルトの設定が使われる。
+デフォルトの設定は `autoload/ezbar/config/default.vim` にある。
 
-* パート関数の中では、`self.__is_active` がアクティブ、非アクティブの判断に使用可能。
-```Vim
-  function! f.percent(n) "{{{1
-    let s  = '%3p%%'
-    " アクティブの場合のみ色をつける。
-    if self.__is_active
-      return { 's': s, 'c' : { 'gui': ['gray40', 'gray95'] } }
-    else
-      return s
-    endif
-  endfunction
-```
+### カスタマイズ
 
-* レイアウトList の中の特別なメンバー  
-`g:ezbar.active` または `g:ezbar.inactive` のメンバーが `string` の場合は、`g:ezbar.parts` のメンバー関数の結果に対応する。
-
-それ以外の場合、以下のような特別な処理に使われる。
+`autoload/ezbar/config/default.vim` を自分の設定フォルダにコピーして、`.vimrc` から `:source` する。
 
 ```Vim
-  let g:ezbar.active = [
-        \ { 'chg_color': {'gui': ['gray18', 'gray57']}}, <-- デフォルトの色を変える
-        \ 'mode',
-        \ 'filetype',
-        \ { 'chg_color': {'gui': ['gray18', 'red']}}, <-- 何度でも使える
-        \ 'fugitive',
-        \ { '__SEP__': {'gui':[ 'gray22', 'gray61']}}, <--セパレータとその色の指定
-        \ 'encoding',
-        \ 'line_col',
-        \ ]
+" 簡単に編集出来るようにする。<Space>e で編集
+nnoremap <Space>e  :<C-u>edit $EZBAR_CONFIG<CR>
+
+let g:ezbar_enable   = 1
+
+let $EZBAR_CONFIG = expand("~/.vim/ezbar_config.vim")
+if filereadable($EZBAR_CONFIG)
+  source $EZBAR_CONFIG
+endif
 ```
 
-# パート関数の制限事項
-各パート関数はアクティヴ・ウィンドウのコンテキストで評価される。  
-これが、インアクティブ・ウィンドウに表示させたいパート関数内で、`getwinvar()` を使用しなければならない理由である。  
-しかし、ウィンドウ/バッファローカルではない変数以外では `getwinvar()` は使えない。  
+## カスタマイズに使える仕組み
 
-これは `ezbar` 及び Vim 自体の制限事項が関連している。
-* `ezbar` 側の制限
-`&statusline` は `%{}` という表記を提供しており、この中の式は各ウィンドウのコンテキストで評価される。  
-しかし `ezbar` はこれを使用していない。値によって動的に色(ハイライト)を変更するには、`&statusline` 文字列が生成されるタイミングで、色を決めておく必要がある。  
-`%{}` の評価結果の文字列によって色を変える事は出来ない。ezbar 作成の主目的は値によって色を変えることにあり、`%{}` は ezbar の場合は選択肢足り得ない。  
+* 特別な変数: `__color`, `__filetype` etc.
+* Hook: `_init()`, `_finish()`, `_parts_missing()` etc.
+* カラーテーブル: g:ezbar.colors に保存して使う。
+* ヘルパー関数: 主に色を操作する系の関数群
 
-* Vim 側の制限
-`statusline` はサンドボックス環境で評価される。サンドボックス内での別Window に移動することは出来ない。  
-これはセキュリティのためだが、この制限により`getwinvar()` 以外の方法ではインアクティヴウィンドウの情報を取ることが出来ない。  
-例えば `:wincmd w`でウィンドウを移動した後、プラグインの関数を呼ぶといった方法で情報を取ることが出来ない。  
+* 実例:
+作者の設定が `autoload/ezbar/config/t9md.vim` にある。
 
-# 設定サンプル
-サンプルの設定ファイルは[ここ](https://github.com/t9md/vim-ezbar/tree/master/misc/config_sample)にある。
+* Help
+See `:help ezbar`
 
-設定を試行錯誤する時は以下のコマンドが助けになるかもしれない。  
-* `:EzBarUpdate` で現在のウィンドウ(アクティブウィンドウ)のステータスラインを更新する。  
-* `:EzBarDisable` は EzBar が設定する autocmd を削除する。  
-* `:EzBarEnable` を有効にする。
-* `:EzBarSet` 全ウィンドウのステータスラインを設定する。  
-* `:echo ezbar#string('active')` or `:echo ezbar#string('inactive')` 最終的に設定されるステータスラインの文字列を返す。  
+## 色設定時のTIPS
 
-## ベーシック
-  ```Vim
-
-  let s:bg = 'gray25'
-  let s:c = {
-        \ 'L_act':    { 'gui': [ s:bg,     'gray61']     },
-        \ 'L_inact':  { 'gui': [ 'gray22', 'gray57']     },
-        \ 'SEP_act':  { 'gui': [ 'gray22', 'gray61']     },
-        \ 'SEP_inact':{ 'gui': [ 'gray23', 'gray61']     },
-        \ 'STANDOUT': { 'gui': [ s:bg,     'HotPink1']   },
-        \ 'NORMAL':   { 'gui': [ s:bg,     'PaleGreen1'] },
-        \ 'WARNING':  { 'gui': ['red4',    'gray61']     },
-        \ }
-
-  let g:ezbar = {}
-  let g:ezbar.active = [
-        \ { 'chg_color': s:c.L_act} ,
-        \ 'mode',
-        \ 'textmanip',
-        \ 'smalls',
-        \ 'modified',
-        \ 'filetype',
-        \ 'fugitive',
-        \ { '__SEP__': s:c.SEP_act },
-        \ 'encoding',
-        \ 'percent',
-        \ 'line_col',
-        \ ]
-  let g:ezbar.inactive = [
-        \ {'chg_color': s:c.L_inact },
-        \ 'modified',
-        \ 'filename',
-        \ { '__SEP__': s:c.SEP_inact },
-        \ 'encoding',
-        \ 'percent',
-        \ ]
-
-  let s:u = {}
-  function! s:u.textmanip(_) "{{{1
-    let s = toupper(g:textmanip_current_mode[0])
-    return { 's' : s, 'c': s == 'R' ? s:c.STANDOUT : s:c.NORMAL }
-  endfunction
-
-  function! s:u.smalls(_) "{{{1
-    let s = toupper(g:smalls_current_mode[0])
-    if empty(s)
-      return ''
-    endif
-    return { 's' : 'smalls-' . s, 'c':
-          \ s == 'E' ? 'SmallsCurrent' : 'Function' }
-  endfunction
-
-  function! s:u.fugitive(_) "{{{1
-    let s = fugitive#head()
-    return { 's': s, 'c': s !=# 'master' ? s:c.WARNING : ''  }
-  endfunction
-
-  let g:ezbar.parts = extend(ezbar#parts#default#new(), s:u)
-  unlet s:u
-  ```
-
-## 応用
-  ```Vim
-  let s:bg = 'gray25'
-
-  function! s:GUI(...)
-    return { 'gui': a:000 }
-  endfunction
-
-  let g:ezbar = {}
-  let g:ezbar.active = [
-        \ { 'chg_color': s:GUI( s:bg, 'gray61') },
-        \ 'mode',
-        \ 'textmanip',
-        \ 'filename',
-        \ 'smalls',
-        \ 'modified',
-        \ 'filetype',
-        \ 'fugitive',
-        \ { '__SEP__': s:GUI('gray30', 'gray61') },
-        \ 'encoding',
-        \ 'percent',
-        \ 'line_col',
-        \ ]
-  let g:ezbar.inactive = [
-        \ { 'chg_color': s:GUI('gray18', 'gray57')},
-        \ 'modified',
-        \ 'filename',
-        \ { '__SEP__': s:GUI('gray23', 'gray61') },
-        \ 'encoding',
-        \ 'percent',
-        \ ]
-
-  let s:u = {}
-
-  function! s:u.textmanip(_) "{{{1
-    return toupper(g:textmanip_current_mode[0])
-  endfunction
-
-  function! s:u.smalls(_) "{{{1
-    let s = toupper(g:smalls_current_mode[0])
-    if empty(s)
-      return ''
-    endif
-    let self.__smalls_active = 1
-    return { 's' : 's', 'c': s == 'E' ? 'SmallsCurrent' : 'SmallsCandidate' }
-  endfunction
-
-  function! s:u.fugitive(_) "{{{1
-    return fugitive#head()
-  endfunction
-
-  " `_init()` は特別な関数。`g:ezbar.parts._init` が関数であれば呼ばれる。引数は `winnum()`
-  function! s:u._init(_) "{{{1
-    let self.__smalls_active = 0
-  endfunction
-
-  " `_filter()` は特別な関数。`g:ezbar.parts._filter` が関数であれば呼ばれる。
-  " ezbar は標準化した(辞書化して 'name' フィールドを定義)
-  " レイアウトと、パーツ辞書を引数として呼び出す。
-  " この関数はレイアウトを返さなければならない。
-  " どちらか便利な方を変更して結果を加工出来る。
-  function! s:u._filter(layout, parts) "{{{1
-    if self.__smalls_active && self.__is_active
-      " fill statusline when smalls is active
-      return filter(a:layout, 'v:val.name == "smalls"')
-    endif
-
-    let r =  []
-    " 各パート関数の中で色を設定する代わりに、ここで設定することも可能。
-    for part in a:layout
-      if part.name == 'fugitive'
-        let part.c = part.s == 'master' ? s:GUI('gray18', 'gray61') : s:GUI('red4', 'gray61')
-      elseif part.name == 'textmanip'
-        let part.c = part.s == 'R' ? s:GUI(s:bg, 'HotPink1') : s:GUI(s:bg, 'PaleGreen1')
-      endif
-      call add(r, part)
-    endfor
-
-    " 一つのパーツを狙い撃ちで変更したい場合には、parts 辞書を使うと便利
-    " use parts dictionary which is usefull when you directry select one parts
-    " for modification.
-    if self.__is_active
-          \ && has_key(a:parts, 'filename')
-          \ && a:parts.filename.s =~# 'tryit\.'
-      let a:parts.filename.c.gui = ["ForestGreen", "white", "bold"]
-    endif
-
-    return r
-  endfunction
-
-  let g:ezbar.parts = extend(ezbar#parts#default#new(), s:u)
-  unlet s:u
-  ```
+1. `:EzBarColorCapture Constant` 等でハイライトをキャプチャ`Constant`の部分は好きな色。
+2. バッファに `p` で貼付け。作者の環境では以下のようになった。
+```Vim
+{'gui': ['', '#e5786d'], 'cterm': ['', '13']}
+```
+3. 色の値を変更後に色をチェックする場合は、色設定の行を選択して `:EzbarColorCheck` する。

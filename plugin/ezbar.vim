@@ -25,22 +25,25 @@ function! s:set_options(options) "{{{
 endfunction "}}}
 call s:set_options(s:options)
 
+let s:default_config
+      \ = expand('<sfile>:h:h') . '/autoload/ezbar/config/default.vim'
 " AutoCmd:
-if g:ezbar_enable && !empty(g:ezbar)
+if g:ezbar_enable
+  if empty(g:ezbar)
+    execute 'source' s:default_config
+  endif
   call ezbar#enable()
 endif
 
 " Command:
-command! EzBarUpdate  call ezbar#update()
-command! EzBarSet     call ezbar#set()
-
 command! EzBarDisable call ezbar#disable()
 command! EzBarEnable  call ezbar#enable()
 
-command! -range EzBarCheckHighlight 
-      \ :<line1>,<line2>call ezbar#check_highlight()
-command! -range EzBarCheckHighlight2
-      \ :<line1>,<line2>call ezbar#check_highlight2()
+command! -range EzBarColorCheck
+      \ :<line1>,<line2>call ezbar#color_check()
+" command! -range EzBarCheckHighlight2
+      " \ :<line1>,<line2>call ezbar#check_highlight2()
+command! -nargs=1 -complete=highlight EzBarColorCapture call ezbar#color_capture(<f-args>)
 
 " Finish:
 let &cpo = s:old_cpo

@@ -8,7 +8,7 @@ let s:theme.dark = {
       \
       \ 'statusline': {'gui': ['gray23',     'gray68'],    'cterm': [ '','','reverse'] },
       \ 'warn':       {'gui': ['OrangeRed2', 'AliceBlue'], 'cterm': [  9,16 ]          },
-      \ '_section2':  {'gui': ['gray25',     ''],          'cterm': ['gray', '']       },
+      \ '_section2':  {'gui': 'gray25', 'cterm': 'gray' },
       \ }
 let s:theme.light = {
       \ 'm_normal':   {'gui': ['MediumBlue',    'white'], 'cterm': [33, 16] },
@@ -19,7 +19,7 @@ let s:theme.light = {
       \
       \ 'statusline': {'gui': ['#586e75', '#eee8d5'], 'cterm': ['',       '', 'reverse']},
       \ 'warn':       {'gui': ['OrangeRed2', 'AliceBlue'], 'cterm': [          9,  16] },
-      \ '_section2':  {'gui': ['gray88',  ''],        'cterm': [251, '']},
+      \ '_section2':  {'gui': 'gray88', 'cterm': 251 },
       \ }
 
 function! ezbar#themes#default#load()

@@ -10,14 +10,18 @@ Advanced, customizable statusline plugin for minimalist.
 * no precedence to predefined parts, so it's up to you how organize your statusline.
 
 # Screen Capture
+* Mode aware
+![Mode](https://raw.github.com/t9md/t9md/master/img/ezbar/mode_insert.png)
+
+* Change color when filename is XXX in this case begin with `tryit`
+![Filename](https://raw.github.com/t9md/t9md/master/img/ezbar/filename_notify.png)
+
 * Change color when git branch is not master  
-![ConditionalColor-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color1.png)  
-![ConditionalColor-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color2.png)  
+![Git-1](https://raw.github.com/t9md/t9md/master/img/ezbar/git-branch_notify.png)
 
 * Hide other statusline part when specific plugin active  
 ![Fill-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill1.png)  
 ![Fill-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill2.png)  
-
 
 # QuickStart
 

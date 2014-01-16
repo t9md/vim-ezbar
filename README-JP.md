@@ -7,10 +7,15 @@
 * 全てのステータスラインの部品(part)は、辞書関数として実装される。
 * ユーザー関数よりも優先される定義済みの関数はほぼ無く、全てはユーザーの設定次第。
 
-# スクリーン画像
+# 画像
+* モードによって色が変わる
+![Mode](https://raw.github.com/t9md/t9md/master/img/ezbar/mode_insert.png)
+
+* ファイル名が XXX の時に色を変える( この例では `tryit` から始まるファイル )
+![Filename](https://raw.github.com/t9md/t9md/master/img/ezbar/filename_notify.png)
+
 * Gitブランチが master でない場合に色を変える。  
-![ConditionalColor-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color1.png)  
-![ConditionalColor-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_conditional_color2.png)  
+![Git-1](https://raw.github.com/t9md/t9md/master/img/ezbar/git-branch_notify.png)
 
 * 特定のプラグインのモードが発動した場合にステータスラインの他の部品を隠す(easymotion 等で使う。)  
 ![Fill-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill1.png)  

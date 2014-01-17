@@ -66,13 +66,14 @@ endfunction
 function! s:ez.color_or_separator(part) "{{{1
   let color = matchstr(a:part, s:COLOR_SETTER)
   if !empty(color)
-    let s:PARTS.__color = s:EB.colors[color]
+    let s:PARTS.__color = s:COLORS[color]
   endif
   return { 's': (a:part =~# s:LR_SEPARATOR ) ? '%=' : '' }
 endfunction
 
 function! s:ez.color_of(part) "{{{1
-  let color = get(a:part, ( s:PARTS.__active ? 'ac' : 'ic' ), a:part.c)
+  let color = get(a:part,
+        \ ( s:PARTS.__active ? 'ac' : 'ic' ), a:part.c)
   return self.hlmanager.register(color)
 endfunction
 
@@ -90,17 +91,17 @@ function! s:ez.specialvar_setup(active, winnum) "{{{1
   let s:PARTS.__parts    = {}
   let s:PARTS.__layout   = copy(s:EB[ a:active ? 'active' : 'inactive'])
   let s:PARTS.__color    = self.colors[ a:active ? 'StatusLine' : 'StatusLineNC']
-  let s:PARTS.__colors   = s:EB.colors
-  let s:PARTS.__         = ezbar#helper#get()
+  let s:PARTS.__colors   = s:COLORS
+  let s:PARTS.__         = s:HELPER
 endfunction
 
 function! s:ez.theme_load() "{{{1
   if !get(s:EB, '__theme_loaded')
     if type(get(s:EB, 'colors')) isnot s:TYPE_DICTIONARY
-      let s:EB.colors = {}
+      let s:COLORS = {}
     endif
     call extend(s:EB.colors, ezbar#theme#load(s:EB.theme))
-    let s:EB.theme_loaded = 1
+    let s:EB.__theme_loaded = 1
   endif
 endfunction
 "}}}
@@ -119,22 +120,21 @@ let s:mode2color = {
       \ '?':      'm_other',
       \ }
 
-function! s:ez.mode_color_setup() "{{{1
-  let COLORS          = s:PARTS.__colors
-  let color           = get(s:mode2color, s:PARTS.__mode, 'm_normal')
-  let color_mode      = COLORS[color]
-  let mood3           = s:PARTS.__.reverse(color_mode)
-  let mood2           = s:PARTS.__.bg(mood3, COLORS['_mood2'])
-  let COLORS['mood1'] = color_mode
-  let COLORS['mood2'] = mood2
-  let COLORS['mood3'] = mood3
+function! s:ez.color_mood_setup() "{{{1
+  let color             = get(s:mode2color, s:PARTS.__mode, 'm_normal')
+  let mood1             = s:COLORS[color]
+  let mood1_rev         = s:HELPER.reverse(mood1)
+  let mood2             = s:HELPER.bg(mood1_rev, s:COLORS['_mood2'])
+  let s:COLORS['mood1'] = mood1
+  let s:COLORS['mood2'] = mood2
+  let s:COLORS['mood3'] = mood1_rev
 endfunction
 
 function! s:ez.string(active, winnum) "{{{1
   call self.theme_load()
   call self.specialvar_setup(a:active, a:winnum)
   if s:PARTS.__active
-    call self.mode_color_setup()
+    call self.color_mood_setup()
   endif
   let self.separator_L = get(g:ezbar, 'separator_L', '|')
   let self.separator_R = get(g:ezbar, 'separator_R', '|')
@@ -172,8 +172,10 @@ endfunction
 
 " Public:
 function! ezbar#string(active, winnum) "{{{1
-  let s:EB    = g:ezbar
-  let s:PARTS = g:ezbar.parts
+  let s:EB     = g:ezbar
+  let s:PARTS  = s:EB.parts
+  let s:COLORS = s:EB.colors
+  let s:HELPER = ezbar#helper#get()
   try
     let s = ''
     let s = s:ez.string(a:active, a:winnum)

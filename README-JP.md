@@ -48,9 +48,9 @@ endif
 
 ## カスタマイズに使える仕組み
 
-* 特別な変数: `__color`, `__filetype` etc.
+* 特別な変数: `__c`, `__color` , `__filetype` etc.
 * Hook: `_init()`, `_finish()`, `_parts_missing()` etc.
-* カラーテーブル: g:ezbar.colors に保存して使う。
+* カラーテーブル: g:ezbar.color に保存して使う。
 * ヘルパー関数: 主に色を操作する系の関数群
 
 * 実例:
@@ -61,9 +61,9 @@ See `:help ezbar`
 
 ## 色設定時のTIPS
 
-1. `:EzBarColorCapture Constant` 等でハイライトをキャプチャ`Constant`の部分は好きな色。
-2. バッファに `p` で貼付け。作者の環境では以下のようになった。
+1. `:EzBarColorCapture Constant` 等でハイライトをキャプチャ`Constant`の部分は好きな色。  
+2. バッファに `p` で貼付け。作者の環境では以下のようになった。  
 ```Vim
 {'gui': ['', '#e5786d'], 'cterm': ['', '13']}
 ```
-3. 色の値を変更後に色をチェックする場合は、色設定の行を選択して `:EzbarColorCheck` する。
+3. 色の値を変更後に色をチェックする場合は、色設定の行を選択して `:EzbarColorCheck` する。  

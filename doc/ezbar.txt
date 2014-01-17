@@ -91,8 +91,8 @@ So user should not use these name as parts name to avoid conflict.
  | __buftype  | buftype                                               |
  | __parts    | normalized part with parts name as key                |
  | __layout   | layout specified as g:ezbar.active or inactive        |
- | __color    | indicate current default color set to part            |
- | __colors   | color collections you specify as g:ezbar.colors       |
+ | __c        | indicate current default color set to part            |
+ | __color    | color collections you specify as g:ezbar.color        |
  | __         | helper function collection                            |
 
 {PARTS}.__active	|Number|: ( 0 or 1 ). Indicate active window or not.
@@ -130,11 +130,11 @@ So user should not use these name as parts name to avoid conflict.
 	endfunction
 <
 
-{PARTS}.__color
+{PARTS}.__c
 	Type: |Dictionary| or |String|
 	Represent current color which is used for un colorized part.
 
-{PARTS}.__colors
+{PARTS}.__color
 	Type: |Dictionary|
 	Color collection table used to dynamically modify color within
 	part-function.
@@ -202,6 +202,8 @@ TODO							    *ezbar-todo*
 
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
+2014-01-17:
+	- [renamevar] __colors to __color, __color to __c to avoid confusion.
 2014-01-17: v0.8
 	- [bigchange] many many change, and improve merge dev branch delete
 	  old doc.

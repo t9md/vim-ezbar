@@ -77,7 +77,7 @@ function! s:helper._color_change(...) "{{{1
   let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
 
   if a:0 ==# 2
-    let [index, color, color_new ] = [ a:1, PARTS.__color, a:2 ]
+    let [index, color, color_new ] = [ a:1, PARTS.__c, a:2 ]
   elseif a:0 ==# 3
     let [index, color, color_new ] = a:000
   endif

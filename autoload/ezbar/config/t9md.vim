@@ -88,7 +88,7 @@ function! s:u.validate(_) "{{{1
   for F in [ self.trailingWS, self.mixed_indent ]
     let R = call(F, [a:_] , self)
     if !empty(R)
-      return { 's': R, 'c': self.__colors.warn }
+      return { 's': R, 'c': self.__color.warn }
     endif
     unlet R
   endfor
@@ -130,7 +130,7 @@ endfunction
 function! s:u.textmanip(_) "{{{1
   if !exists('g:textmanip_current_mode') | return '' | endif
   return g:textmanip_current_mode[0] is 'r'
-        \ ? { 's' : '[R]', 'c': self.__.fg(self.__colors._pink) }
+        \ ? { 's' : '[R]', 'c': self.__.fg(self.__color._pink) }
         \ : ''
 endfunction
 
@@ -154,7 +154,7 @@ endfunction
 function! s:u.fugitive(_) "{{{1
   let s = fugitive#head()
   if s ==# 'master' | return s | endif
-  return { 's': s, 'c': self.__.fg(self.__colors._warn) }
+  return { 's': s, 'c': self.__.fg(self.__color._warn) }
 endfunction
 
 function! s:u._init(_) "{{{1
@@ -181,7 +181,7 @@ function! s:u._finish(_) "{{{1
     " let self.__layout = [self.__parts.smalls]
   " endif
   if self.__.s('filename') =~# 'tryit\.\|default\.vim'
-    let PARTS.filename.c = self.__.fg(PARTS.filename.c, self.__colors._info)
+    let PARTS.filename.c = self.__.fg(PARTS.filename.c, self.__color._info)
   endif
 endfunction
 

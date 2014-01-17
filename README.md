@@ -52,9 +52,9 @@ endif
 
 ## You can use following tool to customize statusline
 
-* special variable: `__color`, `__filetype` etc.
+* special variable: `__c`, `__color`, `__filetype` etc.
 * hook: `_init()`, `_finish()`, `_parts_missing()` etc.
-* color_table: stored to g:ezbar.colors dictionary.
+* color_table: stored to g:ezbar.color dictionary.
 * helper: collection of function to manupilate color
 
 * Example:

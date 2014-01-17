@@ -26,6 +26,7 @@ function! s:ez.prepare(winnum) "{{{1
   if exists('*s:PARTS._init')
     call s:PARTS._init(a:winnum)
   endif
+  " if s:PARTS.__layout isnot
 
   " Normalize:
   call map(s:PARTS.__layout, 'self.normalize(v:val, a:winnum)')
@@ -57,7 +58,7 @@ function! s:ez.normalize(part, winnum) "{{{1
   let part.name = a:part
 
   if empty(get(part, 'c'))
-    let part.c = copy(s:PARTS.__c)
+    let part.c = deepcopy(s:PARTS.__c)
   endif
   let s:PARTS.__parts[a:part] = part
   return part
@@ -117,21 +118,21 @@ let s:mode2color = {
       \ '?':      'm_other',
       \ }
 
-function! s:ez.color_mood_setup() "{{{1
-  let color             = get(s:mode2color, s:PARTS.__mode, 'm_normal')
-  let mood1             = s:COLOR[color]
-  let mood1_rev         = s:HELPER.reverse(mood1)
-  let mood2             = s:HELPER.bg(mood1_rev, s:COLOR['_mood2'])
-  let s:COLOR['mood1'] = mood1
-  let s:COLOR['mood2'] = mood2
-  let s:COLOR['mood3'] = mood1_rev
+function! s:ez.color_setup() "{{{1
+  let color      = get(s:mode2color, s:PARTS.__mode, 'm_normal')
+  let color1     = s:COLOR[color]
+  let color1_rev = s:HELPER.reverse(color1)
+  let color2     = s:HELPER.bg(color1_rev, s:COLOR['_2'])
+  let s:COLOR.1  = color1
+  let s:COLOR.2  = color2
+  let s:COLOR.3  = color1_rev
 endfunction
 
 function! s:ez.string(active, winnum) "{{{1
   call self.theme_load()
   call self.specialvar_setup(a:active, a:winnum)
   if s:PARTS.__active
-    call self.color_mood_setup()
+    call self.color_setup()
   endif
   let self.separator_L = get(g:ezbar, 'separator_L', '|')
   let self.separator_R = get(g:ezbar, 'separator_R', '|')

@@ -5,18 +5,18 @@ let g:ezbar.theme = 'default'
  " Layout:
  " {{{
 let g:ezbar.active = [
-      \ '----------- mood1',
+      \ '----------- 1',
       \ 'mode',
-      \ '----------- mood2',
+      \ '----------- 2',
       \ 'win_buf',
-      \ '----------- mood3',
+      \ '----------- 3',
       \ 'cwd',
       \ '===========',
       \ 'readonly',
-      \ '----------- mood2',
+      \ '----------- 2',
       \ 'filename',
       \ 'filetype',
-      \ '----------- mood1',
+      \ '----------- 1',
       \ 'modified',
       \ 'encoding',
       \ 'percent',

@@ -55,7 +55,7 @@ function! s:u.fileformat(_) "{{{1
 endfunction
 
 function! s:u.filetype(_) "{{{1
-  return getwinvar(a:_, '&filetype')
+  return self.__filetype
 endfunction
 
 function! s:u.filename(_) "{{{1

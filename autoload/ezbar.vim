@@ -11,7 +11,7 @@ let s:TYPE_DICTIONARY = type({})
 let s:TYPE_NUMBER     = type(0)
 let s:SCREEN          = has('gui_running') ? 'gui' : 'cterm'
 let s:LR_SEPARATOR    = '^=\+'
-let s:COLOR_SETTER    = '\v^[-=]+\s*\zs\S*'
+let s:COLOR_SETTER    = '\v^(-+|\=+|\|)\s*\zs\w*$'
 
 let s:ez = {}
 function! s:ez.init() "{{{1
@@ -24,10 +24,13 @@ endfunction
 
 function! s:ez.prepare(winnum) "{{{1
   " Init:
+  let layout_save = s:PARTS.__layout
   if exists('*s:PARTS._init')
     call s:PARTS._init(a:winnum)
   endif
-  " if s:PARTS.__layout isnot
+  if layout_save isnot s:PARTS.__layout
+    let s:PARTS.__layout = copy(s:PARTS.__layout)
+  endif
 
   " Normalize:
   call map(s:PARTS.__layout, 'self.normalize(v:val, a:winnum)')
@@ -48,7 +51,7 @@ function! s:ez.normalize(part, winnum) "{{{1
     " using call() below is workaround to avoid strange missing ':' after '?' error
     let R =
           \ has_key(s:PARTS, a:part) ? call(s:PARTS[a:part], [a:winnum], s:PARTS) :
-          \ a:part =~# '^[-=]' ? self.color_or_separator(a:part) :
+          \ a:part =~# '^[-=|]' ? self.color_or_separator(a:part) :
           \ s:PARTS._parts_missing(a:winnum, a:part)
   catch
     let s = substitute(a:part, '\v^([-=])+\s*(.*)', '\1 \2','')
@@ -60,6 +63,7 @@ function! s:ez.normalize(part, winnum) "{{{1
 
   if empty(get(part, 'c'))
     let part.c = deepcopy(s:PARTS.__c)
+    " let part.c = copy(s:PARTS.__c)
   endif
   let s:PARTS.__parts[a:part] = part
   return part
@@ -91,13 +95,10 @@ function! s:ez.specialvar_setup(active, winnum) "{{{1
   let s:PARTS.__filetype = getwinvar(a:winnum, '&filetype')
   let s:PARTS.__buftype  = getwinvar(a:winnum, '&buftype')
   let s:PARTS.__parts    = {}
+  let s:PARTS.__layout   = copy(s:EB[ a:active ? 'active' : 'inactive'])
   let s:PARTS.__color    = s:COLOR
   let s:PARTS.__c        = self.color[ a:active ? 'StatusLine' : 'StatusLineNC']
   let s:PARTS.__         = s:HELPER
-
-  let layout = s:EB[ a:active ? 'active' : 'inactive']
-  let s:PARTS.__layout
-        \ = type(layout) is s:TYPE_LIST ? copy(layout) : split(layout)
 endfunction
 
 function! s:ez.theme_load() "{{{1
@@ -203,11 +204,6 @@ function! ezbar#set() "{{{1
         \ "%!ezbar#string(". (v:val is winnr_active) . ", " . v:val . ")")
         \ ')
 endfunction
-
-" function! ezbar#update() "{{{1
-  " " for test purpose
-  " call setwinvar(winnr(), '&statusline', '%!ezbar#string(1, ' . winnr() . ')')
-" endfunction
 
 function! ezbar#hl_refresh() "{{{1
   let s:EB.__theme_loaded = 0

@@ -65,9 +65,9 @@ See `:help ezbar`
 
 ## TIPS for color preparation
 
-1. Capture with command `:EzBarColorCapture Constant`
-2. paste to buffer with `p`. here is result of my environment.
+1. Capture with command `:EzBarColorCapture Constant`  
+2. paste to buffer with `p`. here is result of my environment.  
 ```Vim
 {'gui': ['', '#e5786d'], 'cterm': ['', '13']}
 ```
-3. select that line edit and check color with `:EzbarColorCheck`
+3. select that line edit and check color with `:EzbarColorCheck`  

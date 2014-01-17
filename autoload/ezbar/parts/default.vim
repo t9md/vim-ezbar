@@ -70,22 +70,8 @@ function! s:u.win_buf(_) "{{{1
   return printf('w:%d b:%d', a:_, winbufnr(a:_))
 endfunction
 "}}}
-
-" Public:
 function! ezbar#parts#default#new() "{{{1
   return deepcopy(s:u)
-endfunction
-
-function! ezbar#parts#default#use(list) "{{{1
-  let R = {}
-  for part in a:list
-    let R[part] = s:u[part]
-  endfor
-  return R
-endfunction
-
-function! ezbar#parts#default#list() "{{{1
-  return keys(s:u)
 endfunction
 "}}}
 

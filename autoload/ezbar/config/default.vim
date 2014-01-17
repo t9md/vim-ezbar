@@ -45,7 +45,7 @@ let s:features = [
       \ 'percent',
       \ 'line_col'
       \ ]
-let s:u = ezbar#parts#default#use(s:features)
+let s:u = ezbar#parts#use('default', {'parts': s:features })
 unlet s:features
 
 function! s:u.cwd(_) "{{{1

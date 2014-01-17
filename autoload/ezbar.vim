@@ -6,6 +6,7 @@ endfunction
 
 " Main:
 let s:TYPE_STRING     = type('')
+let s:TYPE_LIST       = type([])
 let s:TYPE_DICTIONARY = type({})
 let s:TYPE_NUMBER     = type(0)
 let s:SCREEN          = has('gui_running') ? 'gui' : 'cterm'
@@ -90,10 +91,13 @@ function! s:ez.specialvar_setup(active, winnum) "{{{1
   let s:PARTS.__filetype = getwinvar(a:winnum, '&filetype')
   let s:PARTS.__buftype  = getwinvar(a:winnum, '&buftype')
   let s:PARTS.__parts    = {}
-  let s:PARTS.__layout   = copy(s:EB[ a:active ? 'active' : 'inactive'])
-  let s:PARTS.__c        = self.color[ a:active ? 'StatusLine' : 'StatusLineNC']
   let s:PARTS.__color    = s:COLOR
+  let s:PARTS.__c        = self.color[ a:active ? 'StatusLine' : 'StatusLineNC']
   let s:PARTS.__         = s:HELPER
+
+  let layout = s:EB[ a:active ? 'active' : 'inactive']
+  let s:PARTS.__layout
+        \ = type(layout) is s:TYPE_LIST ? copy(layout) : split(layout)
 endfunction
 
 function! s:ez.theme_load() "{{{1

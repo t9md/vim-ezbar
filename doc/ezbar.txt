@@ -203,6 +203,7 @@ TODO							    *ezbar-todo*
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
 2014-01-17:
+	- [imporove] introduce more standardized parts import way.
 	- [renamevar] __colors to __color, __color to __c to avoid confusion.
 2014-01-17: v0.8
 	- [bigchange] many many change, and improve merge dev branch delete

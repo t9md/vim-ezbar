@@ -97,9 +97,6 @@ endfunction
 
 function! s:ez.theme_load() "{{{1
   if !get(s:EB, '__theme_loaded')
-    if type(get(s:EB, 'color')) isnot s:TYPE_DICTIONARY
-      let s:COLOR = {}
-    endif
     call extend(s:COLOR, ezbar#themes#{s:EB.theme}#load())
     let s:EB.__theme_loaded = 1
   endif
@@ -174,6 +171,9 @@ endfunction
 function! ezbar#string(active, winnum) "{{{1
   let s:EB     = g:ezbar
   let s:PARTS  = s:EB.parts
+  if type(get(s:EB, 'color')) isnot s:TYPE_DICTIONARY
+    let s:EB.color = {}
+  endif
   let s:COLOR = s:EB.color
   let s:HELPER = ezbar#helper#get()
   try

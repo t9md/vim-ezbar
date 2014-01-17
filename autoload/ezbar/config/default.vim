@@ -1,5 +1,6 @@
 let g:ezbar       = {}
 let g:ezbar.theme = 'default'
+" let g:ezbar.color = {}
 
  " Layout:
  " {{{

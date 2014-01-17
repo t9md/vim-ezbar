@@ -10,7 +10,7 @@
 
 let g:ezbar       = {}
 let g:ezbar.theme = 'default'
-let g:ezbar.colors = {
+let g:ezbar.color = {
       \ '_warn': { 'gui': 'red', 'cterm': 9     },
       \ '_info': { 'gui': 'yellow', 'cterm': 35 },
       \ '_pink': { 'gui': 'DeepPink', 'cterm': '15' },

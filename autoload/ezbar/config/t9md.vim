@@ -7,13 +7,18 @@
 " - customize color within parts
 " - how to use hook
 "
-
 let g:ezbar       = {}
 let g:ezbar.theme = 'default'
 let g:ezbar.color = {
       \ '_warn': { 'gui': 'red', 'cterm': 9     },
       \ '_info': { 'gui': 'yellow', 'cterm': 35 },
       \ '_pink': { 'gui': 'DeepPink', 'cterm': '15' },
+      \ }
+let g:ezbar.hide_rule = {
+      \ 90: ['cwd'],
+      \ 65: ['fugitive'],
+      \ 60: ['encoding', 'filetype'],
+      \ 50: ['percent']
       \ }
 
  " Layout:
@@ -22,6 +27,7 @@ let g:ezbar.active = [
       \ '----------- 1',
       \ 'mode',
       \ '----------- 2',
+      \ 'smalls',
       \ 'readonly',
       \ 'win_buf',
       \ 'fugitive',
@@ -37,11 +43,9 @@ let g:ezbar.active = [
       \ 'encoding',
       \ 'percent',
       \ 'line_col',
-      \ 'choosewin',
+      \ 'winwidth',
       \ 'validate',
       \ ]
-      " \ 'watch_var',
-      " \ 'letval',
 let g:ezbar.inactive = [
       \ '----------- inactive',
       \ 'win_buf',
@@ -50,7 +54,6 @@ let g:ezbar.inactive = [
       \ 'filename',
       \ 'filetype',
       \ 'encoding',
-      \ 'choosewin',
       \ ]
  " }}}
 
@@ -58,7 +61,6 @@ let s:features = ['mode', 'readonly',
       \ 'filename', 'modified', 'filetype', 'win_buf',
       \ 'encoding', 'percent', 'line_col'
       \ ]
-
 let s:u = ezbar#parts#use('default', {'parts': s:features })
 unlet s:features
 
@@ -69,12 +71,13 @@ function! s:u.cfi(_) "{{{1
   return ''
 endfunction
 
+function! s:u.winwidth(_) "{{{1
+  return self.__width
+endfunction
+
 function! s:u.watch_var(_) "{{{1
-  if g:watch_var is ''
-    return ''
-  endif
   try
-    return string(g:watch_var)
+    return (g:watch_var isnot '') ? string(g:watch_var) : ''
   catch
     return ''
   endtry
@@ -96,7 +99,7 @@ function! s:u.validate(_) "{{{1
 endfunction
 
 function! s:u.trailingWS(_) "{{{1
-  if !empty(self.__buftype)
+  if self.__buftype isnot# '' || self.__mode isnot# 'n'
     return ''
   endif
   if index(s:trailingWS_exclude_filetype, self.__filetype) !=# -1
@@ -148,7 +151,7 @@ function! s:u.smalls(_) "{{{1
   let s = g:smalls_current_mode
   if empty(s) | return '' | endif
   return { 's': s,
-        \ 'c': ( s is 'exc') ? 'SmallsCurrent' : ' SmallsCandidate' }
+        \ 'c': ( s is 'exc') ? 'SmallsCurrent' : 'SmallsCandidate' }
 endfunction
 
 function! s:u.fugitive(_) "{{{1
@@ -158,30 +161,38 @@ function! s:u.fugitive(_) "{{{1
 endfunction
 
 function! s:u._init(_) "{{{1
-  let hide = []
-  if get(g:, 'choosewin_active', 0)
-    let hide += [ 'validate' ]
+  if !self.__active
+    return
   endif
-  if self.__width < 90
-    " let hide += ['cwd']
-  endif
-  if self.__width < 70
-    let hide += ['encoding', 'percent', 'filetype']
-  endif
+
   if self.__width < 60
-    let hide += ['fugitive']
+    let self.__layout = self.__layout[2:] + self.__layout[1:1]
   endif
-  call filter(self.__layout, 'index(hide, v:val) ==# -1')
+  if exists('g:smalls_current_mode') && !empty(g:smalls_current_mode)
+    let self.__layout = [ 'smalls' ]
+    return
+  endif
+
+  let self.hide_list = []
+  if get(g:, 'choosewin_active', 0)
+    let self.hide_list += [ 'validate' ]
+  endif
+  call self.hide()
 endfunction
 
+function! s:u.hide() "{{{1
+  for [ limit, parts ] in items(g:ezbar.hide_rule)
+    if self.__width < limit
+      let self.hide_list += parts
+    endif
+  endfor
+  call filter(self.__layout, 'index(self.hide_list, v:val) ==# -1')
+endfunction
 
 function! s:u._finish(_) "{{{1
   let PARTS = self.__parts
-  " if has_key(self.__parts, 'smalls')
-    " let self.__layout = [self.__parts.smalls]
-  " endif
   if self.__.s('filename') =~# 'tryit\.\|default\.vim'
-    let PARTS.filename.c = self.__.fg(PARTS.filename.c, self.__color._info)
+    let PARTS['filename'].c = self.__.fg(PARTS['filename'].c, self.__color._info)
   endif
 endfunction
 

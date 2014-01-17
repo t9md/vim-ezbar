@@ -1,7 +1,7 @@
 " Surely not work as-is in your environment.
 " Since this is my specific configuration
 
-" The purpose for this file put here is show you 
+" The purpose for this file put here is show you
 " how you can
 "
 " - customize color within parts

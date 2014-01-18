@@ -63,7 +63,9 @@ See `:help ezbar`
 
 1. `:EzBarColorCapture Constant` 等でハイライトをキャプチャ`Constant`の部分は好きな色。  
 2. バッファに `p` で貼付け。作者の環境では以下のようになった。  
+
 ```Vim
 {'gui': ['', '#e5786d'], 'cterm': ['', '13']}
 ```
+
 3. 色の値を変更後に色をチェックする場合は、色設定の行を選択して `:EzbarColorCheck` する。  

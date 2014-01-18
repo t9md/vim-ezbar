@@ -43,7 +43,7 @@ function! s:ez.prepare(winnum) "{{{1
   if exists('*s:PARTS._finish')
     call s:PARTS._finish(a:winnum)
   endif
-  return s:PARTS.__layout
+  return self
 endfunction
 
 function! s:ez.normalize(part, winnum) "{{{1
@@ -77,20 +77,20 @@ function! s:ez.color_or_separator(part) "{{{1
   return { 's': (a:part =~# s:LR_SEPARATOR ) ? '%=' : '' }
 endfunction
 
-function! s:ez.color_of(part) "{{{1
+function! s:ez.color_info(part) "{{{1
   let color = get(a:part,
         \ ( s:PARTS.__active ? 'ac' : 'ic' ), a:part.c)
-  return self.hlmanager.register(color)
-endfunction
-
-function! s:ez.part_finalize(part) "{{{1
-  let color   = self.color_of(a:part)
-  return printf('%%#%s# %s', color, a:part.s)
+  let R = {
+        \ 'name':self.hlmanager.register(color),
+        \ 'bg': color[s:SCREEN][0],
+        \ }
+  return R
 endfunction
 
 function! s:ez.specialvar_setup(active, winnum) "{{{1
   let s:PARTS.__active   = a:active
   let s:PARTS.__mode     = mode()
+  " let s:PARTS.__winnr    = a:winnum
   let s:PARTS.__width    = winwidth(a:winnum)
   let s:PARTS.__filetype = getwinvar(a:winnum, '&filetype')
   let s:PARTS.__buftype  = getwinvar(a:winnum, '&buftype')
@@ -139,37 +139,64 @@ function! s:ez.string(active, winnum) "{{{1
   if s:PARTS.__active
     call self.color_setup()
   endif
-  let self.separator_L = get(g:ezbar, 'separator_L', '|')
-  let self.separator_R = get(g:ezbar, 'separator_R', '|')
-  let RESULT       = ''
-  let layout       = self.prepare(a:winnum)
-  let layout_len   = len(layout)
-  let last_idx     = layout_len - 1
+  return self.prepare(a:winnum).insert_separator().join()
+endfunction
 
-  " let S = map(layout, 'self.part_finalize(v:val, a:active)')
-  " call g:plog(S)
-  " let RESULT .= join(S, ' ')
+function! s:ez.join() "{{{1
+  return join(map(s:PARTS.__layout, "printf('%%#%s#%s', v:val.color_name, v:val.s)"), '')
+endfunction
 
-  let section = 'L'
-  for idx in range(layout_len)
-    unlet! part
-    let part    = layout[idx]
-    let color   = self.color_of(part)
-    let RESULT .= printf('%%#%s# %s ', color, part.s)
+function! s:ez.insert_separator() "{{{1
+  let sep_L        = get(g:ezbar, 'separator_L', '|')
+  let sep_R        = get(g:ezbar, 'separator_R', '|')
+  let sep_border_L = get(g:ezbar, 'separator_border_L', '')
+  let sep_border_R = get(g:ezbar, 'separator_border_R', '')
 
-    if idx ==# last_idx | continue | endif
-    let idx_next = idx + 1
-    " NOTE: CAUTION! (0 ==# '%=') is 1, should use expr-is
-    if layout[idx_next].s is '%='
+  let layout    = s:PARTS.__layout
+  let idx_last  = len(layout) - 1
+  let idx_LRsep = self.LR_separator_index(layout)
+  let section   = 'L'
+
+  for [idx, part, is_LRsep] in map(copy(layout), '[v:key, v:val, v:key is idx_LRsep]')
+    let color  = self.color_info(part)
+    if is_LRsep
       let section = 'R'
-      continue
+    endif
+    let part.color_name = color.name
+    if (idx is idx_last) || (idx is 0)
+      let part.s = ' ' . part.s . ' '
+      if idx is idx_last
+        break
+      endif
     endif
 
-    if color ==# self.color_of(layout[idx_next])
-      let RESULT .= self['separator_' . section]
+    let idx_next = idx + 1
+    let part_next = layout[idx_next]
+    let color_next = self.color_info(part_next)
+    let sep = color.bg is color_next.bg
+          \ ? sep_{section}
+          \ : sep_border_{section}
+
+    if section is 'L'
+      if idx_next isnot idx_LRsep
+        let part_next.s = sep . ' ' . part_next.s . ' '
+      endif
+    else
+      let part.s = ' ' . part.s . ' '
+      let part.s .= sep
     endif
   endfor
-  return RESULT
+  return self
+endfunction
+
+function! s:ez.LR_separator_index(layout)
+  for [idx, s] in map(copy(a:layout), '[v:key, v:val.s]')
+    if s is '%=' | return idx | endif
+  endfor
+endfunction
+
+function! s:ez.is_LR_separator(part)
+  return a:part.s is '%='
 endfunction
 "}}}
 

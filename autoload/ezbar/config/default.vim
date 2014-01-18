@@ -1,6 +1,5 @@
 let g:ezbar       = {}
 let g:ezbar.theme = 'default'
-" let g:ezbar.color = {}
 
  " Layout:
  " {{{
@@ -48,7 +47,7 @@ let s:features = [
 let s:u = ezbar#parts#use('default', {'parts': s:features })
 unlet s:features
 
-function! s:u.cwd(_) "{{{1
+function! s:u.cwd() "{{{1
   let cwd = substitute(getcwd(), expand($HOME), '~', '')
   let display =
         \ self.__width < 90 ? -15 :
@@ -56,7 +55,7 @@ function! s:u.cwd(_) "{{{1
   return cwd[ display :  -1 ]
 endfunction
 
-function! s:u._init(_) "{{{1
+function! s:u.__init() "{{{1
   let hide = []
   if self.__width < 70
     let hide += ['encoding', 'percent', 'filetype']

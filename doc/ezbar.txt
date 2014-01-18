@@ -82,18 +82,21 @@ All of these automatic variable name began double underscore.
 So user should not use these name as parts name to avoid conflict.
 
 
- | varname    | brief description                                     |
- | ---------- | ----------------------------------------------------- |
- | __active   | indicate active window or not                         |
- | __mode     | result of mode()                                      |
- | __width    | winwidth                                              |
- | __filetype | filetype                                              |
- | __buftype  | buftype                                               |
- | __parts    | normalized part with parts name as key                |
- | __layout   | layout specified as g:ezbar.active or inactive        |
- | __c        | indicate current default color set to part            |
- | __color    | color collections you specify as g:ezbar.color        |
- | __         | helper function collection                            |
+ | varname        | brief description                                 |
+ | -------------- | ------------------------------------------------- |
+ | __active       | indicate active window or not                     |
+ | __mode         | result of mode()                                  |
+ | __width        | winwidth                                          |
+ | __filetype     | filetype                                          |
+ | __buftype      | buftype                                           |
+ | __parts        | normalized part with parts name as key            |
+ | __layout       | layout specified as g:ezbar.active or inactive    |
+ | __c            | indicate current default color set to part        |
+ | __color        | color collections you specify as g:ezbar.color    |
+ | __winnr        | window number                                     |
+ | __             | helper function collection                        |
+ | __theme_loaded | flag to manage theme is loaded                    |
+
 
 {PARTS}.__active	|Number|: ( 0 or 1 ). Indicate active window or not.
 {PARTS}.__mode		|String|:  result of |mode()|
@@ -143,20 +146,50 @@ So user should not use these name as parts name to avoid conflict.
 	Type: |Dictionary|
 	Collection of helper function.
 
+------------------------------------------------------------------------------
+*ezbar-helper*
+
+Below is the list of helper function which is stored under {PARTS}.__ .
+
+ezbar.parts.__.screen()
+	Return: 'gui' or 'ctem'
+
+ezbar.parts.__.reverse({color})
+	return reversed(swapped background to foreground) {color} dictionary.
+>
+	" within parts function
+	" set reversed color to self.__c (default color)
+	self.__c = self.__.reverse(self.__c)
+<
+
+ezbar.parts.__.getvar({varname})
+	return value of {varname} for current window.
+	this is the simple wrapper of getwinvar({PARTS}.__winnr, {varname})
+>
+	" strait foward way
+	function! g:ezbar.parts.encoding() "{{{1
+	  return getwinvar(self.__winnr, '&encoding')
+	endfunction
+
+	" using this wrapper
+	function! g:ezbar.parts.encoding() "{{{1
+	  return self.__getvar('&encoding')
+	endfunction
+<
 
 ------------------------------------------------------------------------------
 *ezbar-hook*
 
-{PARTS}._init({winnum})
+{PARTS}.__init()
 	Default: Not Defined
 	Type:    |Function|
 
 	Called at very first timing before each parts-function is called.
 
-{PARTS}._parts_missing({winnum}, {partname})
+{PARTS}.__parts_missing({partname})
 	called when partname part-function not found.
 
-{PARTS}._finish({winnum})
+{PARTS}.__finish()
 
 ==============================================================================
 FUNCTIONS						*ezbar-functions*

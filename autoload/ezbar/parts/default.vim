@@ -17,7 +17,7 @@ let s:mode_map_default = {
 
 " Main:
 let s:u = {}
-function! s:u.mode(_) "{{{1
+function! s:u.mode() "{{{1
   let mode = self.__mode
   let [ long, short ] = has_key(g:ezbar, 'mode_map')
         \ ? get(g:ezbar.mode_map,   mode)
@@ -26,48 +26,48 @@ function! s:u.mode(_) "{{{1
   return s
 endfunction
 
-function! s:u.percent(_) "{{{1
+function! s:u.percent() "{{{1
   return '%p%%'
 endfunction
 
-function! s:u.modified(_) "{{{1
-  return getwinvar(a:_, '&modified') ? '+' : ''
+function! s:u.modified() "{{{1
+  return getwinvar(self.__winnr, '&modified') ? '+' : ''
 endfunction
 
-function! s:u.readonly(_) "{{{1
-  return getwinvar(a:_, '&readonly') ? 'RO' : ''
+function! s:u.readonly() "{{{1
+  return getwinvar(self.__winnr, '&readonly') ? 'RO' : ''
 endfunction
 
-function! s:u.line_col(_) "{{{1
+function! s:u.line_col() "{{{1
   return '%l:%c'
 endfunction
 
-function! s:u.line(_) "{{{1
+function! s:u.line() "{{{1
   return '%l/%L'
 endfunction
 
-function! s:u.encoding(_) "{{{1
-  return getwinvar(a:_, '&encoding')
+function! s:u.encoding() "{{{1
+  return getwinvar(self.__winnr, '&encoding')
 endfunction
 
-function! s:u.fileformat(_) "{{{1
-  return getwinvar(a:_, '&fileformat')
+function! s:u.fileformat() "{{{1
+  return getwinvar(self.__winnr, '&fileformat')
 endfunction
 
-function! s:u.filetype(_) "{{{1
+function! s:u.filetype() "{{{1
   return self.__filetype
 endfunction
 
-function! s:u.filename(_) "{{{1
-  return fnamemodify(bufname(winbufnr(a:_)), ':t')
+function! s:u.filename() "{{{1
+  return fnamemodify(bufname(self.__bufnr), ':t')
 endfunction
 
-function! s:u.winnr(_) "{{{1
-  return a:_
+function! s:u.winnr() "{{{1
+  return self.__winnr
 endfunction
 
-function! s:u.win_buf(_) "{{{1
-  return printf('w:%d b:%d', a:_, winbufnr(a:_))
+function! s:u.win_buf() "{{{1
+  return printf('w:%d b:%d', self.__winnr, self.__bufnr)
 endfunction
 "}}}
 function! ezbar#parts#default#new() "{{{1

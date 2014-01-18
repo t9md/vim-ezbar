@@ -7,6 +7,7 @@
 " - customize color within parts
 " - how to use hook
 "
+
 let g:ezbar       = {}
 let g:ezbar.theme = 'default'
 let g:ezbar.color = {
@@ -14,29 +15,40 @@ let g:ezbar.color = {
       \ '_info': { 'gui': 'yellow', 'cterm': 35 },
       \ '_pink': { 'gui': 'DeepPink', 'cterm': '15' },
       \ }
+
+let g:ezbar.separator_L        = '»'
+let g:ezbar.separator_R        = '«'
+let g:ezbar.separator_border_L = ''
+let g:ezbar.separator_border_R = ''
+
+" let g:ezbar.separator_L        = '»'
+" let g:ezbar.separator_R        = '«'
+" let g:ezbar.separator_border_L = '»'
+" let g:ezbar.separator_border_R = '«'
+
 let g:ezbar.hide_rule = {
       \ 90: ['cwd'],
       \ 65: ['fugitive'],
       \ 60: ['encoding', 'filetype'],
-      \ 50: ['percent']
+      \ 50: ['percent'],
+      \ 35: ['mode', 'readonly', 'cwd'],
       \ }
 
  " Layout:
- " {{{
 let g:ezbar.active = [
       \ '----------- 1',
       \ 'mode',
       \ '----------- 2',
+      \ 'fugitive',
+      \ 'win_buf',
       \ 'smalls',
       \ 'readonly',
-      \ 'win_buf',
-      \ 'fugitive',
       \ '----------- 3',
       \ 'textmanip',
       \ 'cwd',
-      \ '===========',
+      \ '=========== ',
       \ '----------- 2',
-      \ 'filename',
+      \ '_filename',
       \ 'modified',
       \ 'filetype',
       \ '----------- 1',
@@ -46,6 +58,7 @@ let g:ezbar.active = [
       \ 'winwidth',
       \ 'validate',
       \ ]
+      " \ 'watch_var',
 let g:ezbar.inactive = [
       \ '----------- inactive',
       \ 'win_buf',
@@ -55,41 +68,54 @@ let g:ezbar.inactive = [
       \ 'filetype',
       \ 'encoding',
       \ ]
- " }}}
+      " \ 'watch_var',
 
 let s:features = ['mode', 'readonly',
       \ 'filename', 'modified', 'filetype', 'win_buf',
       \ 'encoding', 'percent', 'line_col'
       \ ]
+
 let s:u = ezbar#parts#use('default', {'parts': s:features })
 unlet s:features
 
-function! s:u.cfi(_) "{{{1
+function! s:u.cfi() "{{{1
   if exists('*cfi#format')
     return { 's': cfi#format('%.43s()', '') }
   end
   return ''
 endfunction
 
-function! s:u.winwidth(_) "{{{1
+function! s:u._filename()
+  let s = self.filename()
+  let notify_sym = '★'
+  if s =~# 'tryit\.\|default\.vim\|phrase__'
+    return {
+          \ 's' : notify_sym . s,
+          \ 'c'  : self.__.fg(self.__color._info) }
+  else
+    return s
+  endif
+endfunction
+
+function! s:u.winwidth() "{{{1
   return self.__width
 endfunction
 
-function! s:u.watch_var(_) "{{{1
+function! s:u.watch_var() "{{{1
   try
-    return (g:watch_var isnot '') ? string(g:watch_var) : ''
+    return string(get(w:, 'zoom', ''))
   catch
     return ''
   endtry
 endfunction
 
-function! s:u.choosewin(_) "{{{1
-  return g:choosewin_label[a:_ - 1]
+function! s:u.choosewin() "{{{1
+  return g:choosewin_label[self.__winnr - 1]
 endfunction
 
-function! s:u.validate(_) "{{{1
-  for F in [ self.trailingWS, self.mixed_indent ]
-    let R = call(F, [a:_] , self)
+function! s:u.validate() "{{{1
+  for funcname in [ 'trailingWS', 'mixed_indent' ]
+    let R = self[funcname]()
     if !empty(R)
       return { 's': R, 'c': self.__color.warn }
     endif
@@ -98,7 +124,7 @@ function! s:u.validate(_) "{{{1
   return ''
 endfunction
 
-function! s:u.trailingWS(_) "{{{1
+function! s:u.trailingWS() "{{{1
   if self.__buftype isnot# '' || self.__mode isnot# 'n'
     return ''
   endif
@@ -107,13 +133,14 @@ function! s:u.trailingWS(_) "{{{1
   endif
   let line = search(' $', 'nw')
   if !empty(line)
-    return 'trail: ' . line
+    let trail_symbol = 'Ξ'
+    return trail_symbol . line
   endif
 endfunction
 let s:trailingWS_exclude_filetype = ['unite', 'markdown']
 
-function! s:u.mixed_indent(_) "{{{1
-  if getwinvar(a:_, '&ft') == 'help'
+function! s:u.mixed_indent() "{{{1
+  if self.__filetype == 'help'
     return
   endif
   let indents = [
@@ -125,28 +152,28 @@ function! s:u.mixed_indent(_) "{{{1
   let mixed = indents[0] != 0 && indents[1] != 0 && indents[2] != 0 && indents[3] != 0
   if mixed
     let mixnr = indents[0] == indents[1] ? indents[0] : indents[2]
-    return 'indent: ' . mixnr
+    let indent_symbol = '> '
+    return indent_symbol . mixnr
   endif
 endfunction
 
-
-function! s:u.textmanip(_) "{{{1
+function! s:u.textmanip() "{{{1
   if !exists('g:textmanip_current_mode') | return '' | endif
   return g:textmanip_current_mode[0] is 'r'
-        \ ? { 's' : '[R]', 'c': self.__.fg(self.__color._pink) }
+        \ ? { 's' : 'R', 'c': self.__.fg(self.__color._pink) }
         \ : ''
 endfunction
 
-function! s:u.cwd(_) "{{{1
+function! s:u.cwd() "{{{1
   let cwd = substitute(getcwd(), expand($HOME), '~', '')
-  let cwd = substitute(cwd, '\V~/.vim/bundle/', '[bdl]', '')
+  let cwd = substitute(cwd, '\V~/.vim/bundle/', '[Bundle] ', '')
   let display =
         \ self.__width < 90 ? -15 :
         \ self.__width < 45 ? -10 : 0
   return cwd[ display :  -1 ]
 endfunction
 
-function! s:u.smalls(_) "{{{1
+function! s:u.smalls() "{{{1
   if !exists('g:smalls_current_mode') | return '' | endif
   let s = g:smalls_current_mode
   if empty(s) | return '' | endif
@@ -154,30 +181,17 @@ function! s:u.smalls(_) "{{{1
         \ 'c': ( s is 'exc') ? 'SmallsCurrent' : 'SmallsCandidate' }
 endfunction
 
-function! s:u.fugitive(_) "{{{1
+function! s:u.fugitive() "{{{1
   let s = fugitive#head()
-  if s ==# 'master' | return s | endif
-  return { 's': s, 'c': self.__.fg(self.__color._warn) }
-endfunction
-
-function! s:u._init(_) "{{{1
-  if !self.__active
-    return
+  if s is '' | return '' | endif
+  " let branch_symbol = '⎇  '
+  " let branch_symbol = '✓ '
+  let branch_symbol = "\U2713 "
+  if s ==# 'master'
+    return { 's': branch_symbol . s }
+  else
+    return { 's': branch_symbol . s, 'c': self.__.fg(self.__color._warn) }
   endif
-
-  if self.__width < 60
-    let self.__layout = self.__layout[2:] + self.__layout[1:1]
-  endif
-  if exists('g:smalls_current_mode') && !empty(g:smalls_current_mode)
-    let self.__layout = [ 'smalls' ]
-    return
-  endif
-
-  let self.hide_list = []
-  if get(g:, 'choosewin_active', 0)
-    let self.hide_list += [ 'validate' ]
-  endif
-  call self.hide()
 endfunction
 
 function! s:u.hide() "{{{1
@@ -189,14 +203,29 @@ function! s:u.hide() "{{{1
   call filter(self.__layout, 'index(self.hide_list, v:val) ==# -1')
 endfunction
 
-function! s:u._finish(_) "{{{1
-  let PARTS = self.__parts
-  if self.__.s('filename') =~# 'tryit\.\|default\.vim'
-    let PARTS['filename'].c = self.__.fg(PARTS['filename'].c, self.__color._info)
+function! s:u.__init() "{{{1
+  if !self.__active
+    return
   endif
+
+  if self.__width < 60
+    " let self.__layout =  self.__layout[2:] + [ 'mode' ]
+  endif
+  " if exists('g:smalls_current_mode') && !empty(g:smalls_current_mode)
+  " let self.__layout = [ 'smalls' ]
+  " return
+  " endif
+  let self.hide_list = []
+  if get(g:, 'choosewin_active', 0)
+    let self.hide_list += [ 'validate' ]
+  endif
+  call self.hide()
 endfunction
 
-function! s:u._parts_missing(_, part) "{{{1
+function! s:u.__finish() "{{{1
+endfunction
+
+function! s:u.__parts_missing(part) "{{{1
 endfunction
 "}}}
 

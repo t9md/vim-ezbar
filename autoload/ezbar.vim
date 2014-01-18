@@ -15,6 +15,7 @@ let s:COLOR_SETTER    = '\v^(-+|\=+|\|)\s*\zs\w*$'
 
 let s:ez = {}
 function! s:ez.init() "{{{1
+  let s:HELPER = ezbar#helper#get()
   let self.hlmanager = ezbar#hlmanager#new('EzBar')
   let self.color     = {
         \ 'StatusLine':   self.hlmanager.convert('StatusLine'),
@@ -22,18 +23,18 @@ function! s:ez.init() "{{{1
         \ }
 endfunction
 
-function! s:ez.prepare(winnum) "{{{1
+function! s:ez.prepare() "{{{1
   " Init:
   let layout_save = s:PARTS.__layout
   if exists('*s:PARTS._init')
-    call s:PARTS._init(a:winnum)
+    call s:PARTS._init()
   endif
   if layout_save isnot s:PARTS.__layout
     let s:PARTS.__layout = copy(s:PARTS.__layout)
   endif
 
   " Normalize:
-  call map(s:PARTS.__layout, 'self.normalize(v:val, a:winnum)')
+  call map(s:PARTS.__layout, 'self.normalize(v:val)')
 
   " Eliminate:
   call filter(s:PARTS.__parts,  '!(v:val.s is "")')
@@ -41,18 +42,20 @@ function! s:ez.prepare(winnum) "{{{1
 
   " Finalize:
   if exists('*s:PARTS._finish')
-    call s:PARTS._finish(a:winnum)
+    call s:PARTS._finish()
   endif
   return self
 endfunction
 
-function! s:ez.normalize(part, winnum) "{{{1
+function! s:ez.normalize(part) "{{{1
   try
     " using call() below is workaround to avoid strange missing ':' after '?' error
     let R =
-          \ has_key(s:PARTS, a:part) ? call(s:PARTS[a:part], [a:winnum], s:PARTS) :
-          \ a:part =~# '^[-=|]' ? self.color_or_separator(a:part) :
-          \ s:PARTS._parts_missing(a:winnum, a:part)
+          \ has_key(s:PARTS, a:part) ?
+          \ call(s:PARTS[a:part], [], s:PARTS) :
+          \ a:part =~# '^[-=|]' ?
+          \ self.color_or_separator(a:part) :
+          \ s:PARTS._parts_missing(a:part)
   catch
     let s = substitute(a:part, '\v^([-=])+\s*(.*)', '\1 \2','')
     let R = { 's': printf('[%s]', s), 'c': 'WarningMsg' }
@@ -87,13 +90,14 @@ function! s:ez.color_info(part) "{{{1
   return R
 endfunction
 
-function! s:ez.specialvar_setup(active, winnum) "{{{1
+function! s:ez.specialvar_setup(active, winnr) "{{{1
   let s:PARTS.__active   = a:active
   let s:PARTS.__mode     = mode()
-  " let s:PARTS.__winnr    = a:winnum
-  let s:PARTS.__width    = winwidth(a:winnum)
-  let s:PARTS.__filetype = getwinvar(a:winnum, '&filetype')
-  let s:PARTS.__buftype  = getwinvar(a:winnum, '&buftype')
+  let s:PARTS.__winnr    = a:winnr
+  let s:PARTS.__bufnr    = winbufnr(a:winnr)
+  let s:PARTS.__width    = winwidth(a:winnr)
+  let s:PARTS.__filetype = getwinvar(a:winnr, '&filetype')
+  let s:PARTS.__buftype  = getwinvar(a:winnr, '&buftype')
   let s:PARTS.__parts    = {}
   let s:PARTS.__layout   = copy(s:EB[ a:active ? 'active' : 'inactive'])
   let s:PARTS.__color    = s:COLOR
@@ -133,13 +137,13 @@ function! s:ez.color_setup() "{{{1
   let s:COLOR.3  = color1_rev
 endfunction
 
-function! s:ez.string(active, winnum) "{{{1
+function! s:ez.string(active, winnr) "{{{1
   call self.theme_load()
-  call self.specialvar_setup(a:active, a:winnum)
+  call self.specialvar_setup(a:active, a:winnr)
   if s:PARTS.__active
     call self.color_setup()
   endif
-  return self.prepare(a:winnum).insert_separator().join()
+  return self.prepare().insert_separator().join()
 endfunction
 
 function! s:ez.join() "{{{1
@@ -201,17 +205,17 @@ endfunction
 "}}}
 
 " Public:
-function! ezbar#string(active, winnum) "{{{1
+function! ezbar#string(active, winnr) "{{{1
   let s:EB     = g:ezbar
   let s:PARTS  = s:EB.parts
+  call s:HELPER.__init()
   if type(get(s:EB, 'color')) isnot s:TYPE_DICTIONARY
     let s:EB.color = {}
   endif
   let s:COLOR = s:EB.color
-  let s:HELPER = ezbar#helper#get()
   try
     let s = ''
-    let s = s:ez.string(a:active, a:winnum)
+    let s = s:ez.string(a:active, a:winnr)
   catch
     echom v:exception
   finally
@@ -228,7 +232,7 @@ function! ezbar#set() "{{{1
   "   %!ezbar#string(num is winnr_active, winnr())
   call map(range(1, winnr('$')), '
         \ setwinvar(v:val, "&statusline",
-        \ "%!ezbar#string(". (v:val is winnr_active) . ", " . v:val . ")")
+        \ "%!ezbar#string(". (v:val is# winnr_active) . ", " . v:val . ")")
         \ ')
 endfunction
 

@@ -56,28 +56,24 @@ function! s:helper.fg(...) "{{{1
 endfunction
 
 function! s:helper.s(part) "{{{1
-  let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
-  if has_key(PARTS.__parts, a:part)
-    return PARTS.__parts[a:part].s
+  if has_key(s:PARTS, a:part)
+    return s:PARTS[a:part].s
   else
     return ''
   endif
 endfunction
 
 function! s:helper.c(part) "{{{1
-  let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
-  if has_key(PARTS.__parts, a:part)
-    return PARTS.__parts[a:part].c
+  if has_key(s:PARTS, a:part)
+    return s:PARTS[a:part].c
   else
     return {}
   endif
 endfunction
 
 function! s:helper._color_change(...) "{{{1
-  let [EB, PARTS] = [ g:ezbar, g:ezbar.parts ]
-
   if a:0 ==# 2
-    let [index, color, color_new ] = [ a:1, PARTS.__c, a:2 ]
+    let [index, color, color_new ] = [ a:1, s:PARTS.__c, a:2 ]
   elseif a:0 ==# 3
     let [index, color, color_new ] = a:000
   endif
@@ -91,6 +87,15 @@ endfunction
 
 function! s:helper.screen() "{{{1
   return has('gui_running') ? 'gui' : 'cterm'
+endfunction
+
+function! s:helper.getvar(varname) "{{{1
+  return getwinvar(s:PARTS.__winnr, a:varname)
+endfunction
+
+function! s:helper.__init() "{{{1
+  let s:EB    = g:ezbar
+  let s:PARTS = g:ezbar.parts
 endfunction
 
 function! ezbar#helper#get() "{{{1

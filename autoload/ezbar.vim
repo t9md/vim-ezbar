@@ -26,8 +26,8 @@ endfunction
 function! s:ez.prepare() "{{{1
   " Init:
   let layout_save = s:PARTS.__layout
-  if exists('*s:PARTS._init')
-    call s:PARTS._init()
+  if exists('*s:PARTS.__init')
+    call s:PARTS.__init()
   endif
   if layout_save isnot s:PARTS.__layout
     let s:PARTS.__layout = copy(s:PARTS.__layout)
@@ -42,8 +42,8 @@ function! s:ez.prepare() "{{{1
   call filter(s:PARTS.__layout, '!(v:val.s is "")')
 
   " Finalize:
-  if exists('*s:PARTS._finish')
-    call s:PARTS._finish()
+  if exists('*s:PARTS.__finish')
+    call s:PARTS.__finish()
   endif
   return self
 endfunction
@@ -57,7 +57,7 @@ function! s:ez.normalize(part) "{{{1
           \ call(s:PARTS[a:part], [], s:PARTS) :
           \ a:part =~# '^[-=|]' ?
           \ self.color_or_separator(a:part) :
-          \ s:PARTS._parts_missing(a:part)
+          \ s:PARTS.__part_missing(a:part)
   catch
     let s = substitute(a:part, '\v^([-=])+\s*(.*)', '\1 \2','')
     let R = { 's': printf('[%s]', s), 'c': 'WarningMsg' }
@@ -165,13 +165,14 @@ function! s:ez.insert_separator() "{{{1
   let sep_border_L = get(g:ezbar, 'separator_border_L', '')
   let sep_border_R = get(g:ezbar, 'separator_border_R', '')
 
-  let layout    = s:PARTS.__layout
-  let idx_last  = len(layout) - 1
-  let idx_LRsep = self.LR_separator_index(layout)
+  let LAYOUT    = s:PARTS.__layout
+  let idx_last  = len(LAYOUT) - 1
+
+  let idx_LRsep = self.LR_separator_index(LAYOUT)
   let section   = 'L'
 
   let R = []
-  for [idx, part] in map(copy(layout), '[v:key, v:val]')
+  for [idx, part] in map(LAYOUT, '[v:key, v:val]')
     let idx_next        = idx + 1
     let color           = self.color_info(self.color_of(part))
     let part.color_name = color.name
@@ -185,7 +186,7 @@ function! s:ez.insert_separator() "{{{1
     if idx is idx_last       | break    | endif
     if idx_next is idx_LRsep | continue | endif
 
-    let part_next  = layout[idx_next]
+    let part_next  = LAYOUT[idx_next]
     let color_next = self.color_info(self.color_of(part_next))
 
     if color.bg is color_next.bg

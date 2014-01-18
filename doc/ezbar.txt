@@ -186,7 +186,7 @@ ezbar.parts.__.getvar({varname})
 
 	Called at very first timing before each parts-function is called.
 
-{PARTS}.__parts_missing({partname})
+{PARTS}.__part_missing({partname})
 	called when partname part-function not found.
 
 {PARTS}.__finish()

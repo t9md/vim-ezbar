@@ -15,32 +15,23 @@ let s:hlmgr = {}
 
 function! s:hlmgr.init(prefix) "{{{1
   let self._store  = {}
-  let self._prefix  = a:prefix
-  let self.named = empty(a:prefix)
+  let self._namedb = {}
+  let self._prefix = a:prefix
+  let self.named   = empty(a:prefix)
   return self
 endfunction
 
-function! s:hlmgr.register(color, ...) "{{{1
-  " use hlexists() ?
-  if self.named
-    call s:ensure(!empty(a:000), 'HLMANAGER_NEED_COLOR_NAME')
-
-    let name = a:1
-    if has_key(self._store, name) | return name | endif
-    let defstr = self.hl_defstr(a:color)
-  else
-    call s:ensure(empty(a:000), 'HLMANAGER_COLOR_NAME_NOT_ALLOWED')
-    if type(a:color) is s:TYPE_STRING
-      return a:color
-    endif
-
-    let defstr = self.hl_defstr(a:color)
-    let name = self.find_name(defstr)
-    if !empty(name) | return name | endif
-    let name = self.color_name_next()
+function! s:hlmgr.register(color) "{{{1
+  if type(a:color) is s:TYPE_STRING
+    return a:color
   endif
 
-  return self.define(name, { 'data': a:color, 'defstr': defstr })
+  let name = get(self._namedb, string(a:color[s:SCREEN]))
+  if !empty(name)
+    return name
+  endif
+  return self.define(self.color_name_next(), {
+        \ 'data': a:color, 'defstr': self.hl_defstr(a:color) })
 endfunction
 
 " function! s:hlmgr.register_with_capture(color_name) "{{{1
@@ -51,17 +42,9 @@ endfunction
 
 function! s:hlmgr.define(name, data) "{{{1
   let self._store[a:name]  = a:data
+  let self._namedb[string(a:data.data[s:SCREEN])] = a:name
   execute s:hlmgr.command(a:name, a:data.defstr)
   return a:name
-endfunction
-
-function! s:hlmgr.find_name(defstr) "{{{1
-  for [name, color] in items(self._store)
-    if color.defstr ==# a:defstr
-      return name
-    endif
-  endfor
-  return ''
 endfunction
 
 function! s:hlmgr.command(name, defstr) "{{{1

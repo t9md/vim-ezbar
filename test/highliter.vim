@@ -5,8 +5,9 @@ if 0
   let g:hlnames = map(split(CMD_OUT, "\n"), 'split(v:val)[0]')
 endif
 
+" PP g:hlnames
 let hlnames = copy(g:hlnames)
-let g:hlter = ezbar#highlighter#new('Test')
+let g:hlter = ezbar#hlmanager#new('Test')
 
 echom "===START"
 let start = reltime()
@@ -20,10 +21,10 @@ echom reltimestr(reltime(start))
 " echo len(g:hlter.colors())
 
 "# color is defined once.
-let hlter = ezbar#highlighter#new('Test')
+let hlter = ezbar#hlmanager#new('Test')
 let color1 = hlter.register( {'gui': [ 'AntiqueWhite2', 'black'] })
 let color2 = hlter.register( {'gui': [ 'AntiqueWhite2', 'black'] })
 echo color1
 echo color2
-echo hlter.register(color2)
+echo g:hlter.register(color2)
 finish

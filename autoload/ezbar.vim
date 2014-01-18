@@ -33,6 +33,7 @@ function! s:ez.prepare() "{{{1
     let s:PARTS.__layout = copy(s:PARTS.__layout)
   endif
 
+  let self._section_color = {}
   " Normalize:
   call map(s:PARTS.__layout, 'self.normalize(v:val)')
 
@@ -50,6 +51,7 @@ endfunction
 function! s:ez.normalize(part) "{{{1
   try
     " using call() below is workaround to avoid strange missing ':' after '?' error
+    let section_color = copy(s:PARTS.__c)
     let R =
           \ has_key(s:PARTS, a:part) ?
           \ call(s:PARTS[a:part], [], s:PARTS) :
@@ -65,9 +67,12 @@ function! s:ez.normalize(part) "{{{1
   let part.name = a:part
 
   if empty(get(part, 'c'))
-    let part.c = deepcopy(s:PARTS.__c)
-    " let part.c = copy(s:PARTS.__c)
+    " won't deepcopy for performance for ordinary user.
+    let part.c = copy(s:PARTS.__c)
   endif
+  " keep section color info
+  let part.__section_color = section_color
+
   let s:PARTS.__parts[a:part] = part
   return part
 endfunction
@@ -80,12 +85,16 @@ function! s:ez.color_or_separator(part) "{{{1
   return { 's': (a:part =~# s:LR_SEPARATOR ) ? '%=' : '' }
 endfunction
 
-function! s:ez.color_info(part) "{{{1
-  let color = get(a:part,
+function! s:ez.color_of(part) "{{{1
+  return get(a:part,
         \ ( s:PARTS.__active ? 'ac' : 'ic' ), a:part.c)
+endfunction
+
+function! s:ez.color_info(color) "{{{1
   let R = {
-        \ 'name':self.hlmanager.register(color),
-        \ 'bg': color[s:SCREEN][0],
+        \ 'name':self.hlmanager.register(a:color),
+        \ 'bg': a:color[s:SCREEN][0],
+        \ 'fg': a:color[s:SCREEN][1],
         \ }
   return R
 endfunction
@@ -161,35 +170,38 @@ function! s:ez.insert_separator() "{{{1
   let idx_LRsep = self.LR_separator_index(layout)
   let section   = 'L'
 
-  for [idx, part, is_LRsep] in map(copy(layout), '[v:key, v:val, v:key is idx_LRsep]')
-    let color  = self.color_info(part)
-    if is_LRsep
-      let section = 'R'
-    endif
+  let R = []
+  for [idx, part] in map(copy(layout), '[v:key, v:val]')
+    let idx_next        = idx + 1
+    let color           = self.color_info(self.color_of(part))
     let part.color_name = color.name
-    if (idx is idx_last) || (idx is 0)
-      let part.s = ' ' . part.s . ' '
-      if idx is idx_last
-        break
-      endif
-    endif
-
-    let idx_next = idx + 1
-    let part_next = layout[idx_next]
-    let color_next = self.color_info(part_next)
-    let sep = color.bg is color_next.bg
-          \ ? sep_{section}
-          \ : sep_border_{section}
-
-    if section is 'L'
-      if idx_next isnot idx_LRsep
-        let part_next.s = sep . ' ' . part_next.s . ' '
-      endif
+    if idx is idx_LRsep
+      let section = 'R'
     else
       let part.s = ' ' . part.s . ' '
-      let part.s .= sep
     endif
+    call add(R, part)
+
+    if idx is idx_last       | break    | endif
+    if idx_next is idx_LRsep | continue | endif
+
+    let part_next  = layout[idx_next]
+    let color_next = self.color_info(self.color_of(part_next))
+
+    if color.bg is color_next.bg
+      let s = sep_{section}
+      let c = self.color_info(part.__section_color)
+    else
+      let s = sep_border_{section}
+      let _c = {}
+      let _c[s:SCREEN] = section is 'L'
+            \ ? [ color_next.bg, color.bg      ]
+            \ : [ color.bg,      color_next.bg ]
+      let c = self.color_info(_c)
+    endif
+    call add(R, { 's' : s, 'color_name': c.name })
   endfor
+  let s:PARTS.__layout = R
   return self
 endfunction
 

@@ -218,6 +218,8 @@ BUG							    *ezbar-bug*
 ==============================================================================
 TODO							    *ezbar-todo*
 
+[ ] hlmanager should not use hl_defstr to check existence.
+    use string() and store as hash key.
 [?] Depelicate to store highlight name directry or internaly convert to
     dictionary before store, to avoid type mismatch error when modify color.
     [Strategy] hl#register() if arg is str, cature hl def then convrt to dict.
@@ -236,6 +238,7 @@ TODO							    *ezbar-todo*
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
 2014-01-18:
+	- [improve] performance for hlmanager, more neat separator color.
 	- [bigchange] no longer pass argment to parts function.
 	  instead, g:ezbar.parts.__winnr is set automatically.
 	- cleanup, parts separator consider background color of next parts.

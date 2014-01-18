@@ -22,7 +22,7 @@ function! s:u.mode() "{{{1
   let [ long, short ] = has_key(g:ezbar, 'mode_map')
         \ ? get(g:ezbar.mode_map,   mode)
         \ : get(s:mode_map_default, mode)
-  let s = self.__width > 80 ? long : short
+  let s = self.__width > 90 ? long : short
   return s
 endfunction
 

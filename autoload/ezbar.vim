@@ -167,12 +167,11 @@ function! s:ez.insert_separator() "{{{1
 
   let LAYOUT    = s:PARTS.__layout
   let idx_last  = len(LAYOUT) - 1
-
   let idx_LRsep = self.LR_separator_index(LAYOUT)
   let section   = 'L'
 
   let R = []
-  for [idx, part] in map(LAYOUT, '[v:key, v:val]')
+  for [idx, part] in map(copy(LAYOUT), '[v:key, v:val]')
     let idx_next        = idx + 1
     let color           = self.color_info(self.color_of(part))
     let part.color_name = color.name

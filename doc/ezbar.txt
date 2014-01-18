@@ -1,6 +1,6 @@
 *ezbar.txt* statusline configuration helper for minimalist.
 
-Version: 0.8
+Version: 0.9
 Author : t9md <taqumd@gmail.com>
 GitHub : https://github.com/t9md/vim-ezbar
 ==============================================================================
@@ -235,6 +235,10 @@ TODO							    *ezbar-todo*
 
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
+2014-01-18:
+	- [bigchange] no longer pass argment to parts function.
+	  instead, g:ezbar.parts.__winnr is set automatically.
+	- cleanup, parts separator consider background color of next parts.
 2014-01-17:
 	- [imporove] introduce more standardized parts import way.
 	- [renamevar] __colors to __color, __color to __c to avoid confusion.

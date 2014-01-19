@@ -4,6 +4,8 @@ let s:theme.dark = {
       \ 'm_insert':   {'gui': ['PaleGreen3',       'gray14'], 'cterm': [ 10, 16] },
       \ 'm_replace':  {'gui': ['tomato1',          'gray14'], 'cterm': [  1, 16] },
       \ 'm_visual':   {'gui': ['PaleVioletRed',    'gray14'], 'cterm': [  9, 16] },
+      \ 'm_command':  {'gui': ['MediumAquamarine', 'gray14'], 'cterm': [  9, 16] },
+      \ 'm_select':   {'gui': ['MediumAquamarine', 'gray14'], 'cterm': [  9, 16] },
       \ 'm_other':    {'gui': ['MediumAquamarine', 'gray14'], 'cterm': [  9, 16] },
       \
       \ 'inactive': {'gui': ['gray23',     'gray68'],    'cterm': [ '','','reverse'] },
@@ -15,6 +17,8 @@ let s:theme.light = {
       \ 'm_insert':   {'gui': ['LimeGreen',     'white'], 'cterm': [10, 16] },
       \ 'm_replace':  {'gui': ['DeepPink',      'white'], 'cterm': [ 1, 16] },
       \ 'm_visual':   {'gui': ['DarkGoldenrod', 'white'], 'cterm': [ 9, 16] },
+      \ 'm_command':  {'gui': ['LightSeaGreen', 'white'], 'cterm': [ 9, 16] },
+      \ 'm_select':   {'gui': ['LightSeaGreen', 'white'], 'cterm': [ 9, 16] },
       \ 'm_other':    {'gui': ['LightSeaGreen', 'white'], 'cterm': [ 9, 16] },
       \
       \ 'inactive': {'gui': ['#586e75',    '#eee8d5'],   'cterm': ['', '', 'reverse']},

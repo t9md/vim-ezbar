@@ -129,10 +129,10 @@ let s:mode2color = {
       \ 'v':      'm_visual',
       \ 'V':      'm_visual',
       \ "\<C-v>": 'm_visual',
-      \ 'c':      'm_other',
-      \ 's':      'm_other',
-      \ 'S':      'm_other',
-      \ "\<C-s>": 'm_other',
+      \ 'c':      'm_command',
+      \ 's':      'm_select',
+      \ 'S':      'm_select',
+      \ "\<C-s>": 'm_select',
       \ '?':      'm_other',
       \ }
 

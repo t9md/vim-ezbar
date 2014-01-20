@@ -1,10 +1,4 @@
-" Utility:
-function! s:extract_color_definition(string) "{{{1
-  return matchstr(a:string, '\v\{\s*''(gui|cterm)''\s*:\s*\[.{-}\]\s*}')
-endfunction
-"}}}
-
-" Main:
+" Constants:
 let s:TYPE_STRING     = type('')
 let s:TYPE_LIST       = type([])
 let s:TYPE_DICTIONARY = type({})
@@ -13,6 +7,13 @@ let s:SCREEN          = has('gui_running') ? 'gui' : 'cterm'
 let s:LR_SEPARATOR    = '^=\+'
 let s:COLOR_SETTER    = '\v^(-+|\=+|\|)\s*\zs\w*$'
 
+" Utility:
+function! s:extract_color_definition(string) "{{{1
+  return matchstr(a:string, '\v\{\s*''(gui|cterm)''\s*:\s*\[.{-}\]\s*}')
+endfunction
+"}}}
+
+" Main:
 let s:ez = {}
 function! s:ez.init() "{{{1
   let s:HELPER = ezbar#helper#get()
@@ -24,34 +25,32 @@ function! s:ez.init() "{{{1
 endfunction
 
 function! s:ez.prepare() "{{{1
+
   " Init:
-  let layout_save = s:PARTS.__layout
-  if exists('*s:PARTS.__init')
-    call s:PARTS.__init()
-  endif
-  if layout_save isnot s:PARTS.__layout
-    let s:PARTS.__layout = copy(s:PARTS.__layout)
+  if has_key(s:EB, 'alias')
+    call map(s:PARTS.__layout, 'get(g:ezbar.alias, v:val, v:val)')
   endif
 
-  let self._section_color = {}
+  if exists('*s:PARTS.__init')
+    let layout_save = s:PARTS.__layout
+    call s:PARTS.__init()
+    if layout_save isnot s:PARTS.__layout
+      let s:PARTS.__layout = copy(s:PARTS.__layout)
+    endif
+  endif
   " Normalize:
   call map(s:PARTS.__layout, 'self.normalize(v:val)')
-
   " Eliminate:
   call filter(s:PARTS.__parts,  '!(v:val.s is "")')
   call filter(s:PARTS.__layout, '!(v:val.s is "")')
-
   " Finalize:
-  if exists('*s:PARTS.__finish')
-    call s:PARTS.__finish()
-  endif
+  if exists('*s:PARTS.__finish') | call s:PARTS.__finish() | endif
   return self
 endfunction
 
 function! s:ez.normalize(part) "{{{1
   try
     " using call() below is workaround to avoid strange missing ':' after '?' error
-    let section_color = copy(s:PARTS.__c)
     let R =
           \ has_key(s:PARTS, a:part) ?
           \ call(s:PARTS[a:part], [], s:PARTS) :
@@ -71,7 +70,7 @@ function! s:ez.normalize(part) "{{{1
     let part.c = copy(s:PARTS.__c)
   endif
   " keep section color info
-  let part.__section_color = section_color
+  let part.__section_color = copy(s:PARTS.__c)
 
   let s:PARTS.__parts[a:part] = part
   return part
@@ -91,12 +90,11 @@ function! s:ez.color_of(part) "{{{1
 endfunction
 
 function! s:ez.color_info(color) "{{{1
-  let R = {
+  return {
         \ 'name':self.hlmanager.register(a:color),
         \ 'bg': a:color[s:SCREEN][0],
         \ 'fg': a:color[s:SCREEN][1],
         \ }
-  return R
 endfunction
 
 function! s:ez.specialvar_setup(active, winnr) "{{{1
@@ -171,48 +169,35 @@ function! s:ez.insert_separator() "{{{1
   let section   = 'L'
 
   let R = []
-  for [idx, part] in map(copy(LAYOUT), '[v:key, v:val]')
-    let idx_next        = idx + 1
+  for [idx, idx_next, part] in map(copy(LAYOUT), '[v:key, v:key+1, v:val]')
     let color           = self.color_info(self.color_of(part))
     let part.color_name = color.name
-    if idx is idx_LRsep
-      let section = 'R'
-    else
-      let part.s = ' ' . part.s . ' '
-    endif
+
+    if idx isnot idx_LRsep | let part.s = ' ' . part.s . ' ' | endif
     call add(R, part)
 
-    if idx is idx_last       | break    | endif
-    if idx_next is idx_LRsep | continue | endif
-
-    let part_next  = LAYOUT[idx_next]
-    let color_next = self.color_info(self.color_of(part_next))
-
-    if color.bg is color_next.bg
-      let s = sep_{section}
-      let c = self.color_info(part.__section_color)
-    else
-      let s = sep_border_{section}
-      let _c = {}
-      let _c[s:SCREEN] = section is 'L'
-            \ ? [ color_next.bg, color.bg      ]
-            \ : [ color.bg,      color_next.bg ]
-      let c = self.color_info(_c)
+    if idx is idx_last | break | endif
+    if idx_next is idx_LRsep
+      let section = 'R'
+      continue
     endif
-    call add(R, { 's' : s, 'color_name': c.name })
+
+    let color_next = self.color_info(self.color_of(LAYOUT[idx_next]))
+    let [ s, c ] = color.bg is color_next.bg
+          \ ? [ sep_{section}       , part.__section_color ]
+          \ : [ sep_border_{section}, { s:SCREEN : section is 'L' ?
+          \ [color_next.bg, color.bg] : [color.bg, color_next.bg]
+          \ } ]
+    call add(R, { 's' : s, 'color_name': self.color_info(c).name })
   endfor
   let s:PARTS.__layout = R
   return self
 endfunction
 
-function! s:ez.LR_separator_index(layout)
+function! s:ez.LR_separator_index(layout) "{{{1
   for [idx, s] in map(copy(a:layout), '[v:key, v:val.s]')
     if s is '%=' | return idx | endif
   endfor
-endfunction
-
-function! s:ez.is_LR_separator(part)
-  return a:part.s is '%='
 endfunction
 "}}}
 

@@ -65,14 +65,38 @@ g:ezbar_enable
 	Default: 1
 	Type:    |Number|
 	Set 0 to disable.
+
 								     *g:ezbar*
 g:ezbar
 	Default: {}
 	Type:    |Dictionary|
 	All configuration belongs this Dictionary.
 
-							     *g:ezbar._init()*
+							       *g:ezbar.alias*
+g:ezbar.alias
+	Default: Not defined
+	Type:    |Dictionary|
+	Simple remame table { {form}: {to} } form.
+	If you want to express layout more short form.
+	You can use short name in layout by setting this rename table.
 
+	Example: use short name in layout by aliasing part name~
+>
+	let g:ezbar.alias = {
+	      \ 'm':     'mode',
+	      \ 'ro':    'readonly',
+	      \ 'fn':    'filename',
+	      \ 'mod':   'modified',
+	      \ 'ft':    'filetype',
+	      \ 'wb':    'win_buf',
+	      \ 'enc':   'encoding',
+	      \ '%':     'percent',
+	      \ 'lc':    'line_col',
+	      \ }
+
+	let s:active = '|1 m |2  wb ro |3 cwd = |2 ft fn mod ft |1 enc % lc '
+	let g:ezbar.active = split(s:active)
+<
 ------------------------------------------------------------------------------
 *ezbar-auto-variable*
 
@@ -114,12 +138,12 @@ So user should not use these name as parts name to avoid conflict.
 	Layout is the list you specified in g:ezbar.active or inactive.
 	At start(of each status line refresh), ezbar copy these list and
 	transform each part_name string into normalized part.
-	So you can manupilate this layout within |_init()| hook.
+	So you can manupilate this layout within |__init()| hook.
 	You can modify this variable to manupilate layout.
 
 	Example: hide some parts when winwidth is narrow~
 >
-	function! g:ezbar._init(_)
+	function! g:ezbar.__init(_)
 	  if self.__is_active
 	    let hide = []
 	    if winwidth(0) < 80
@@ -237,6 +261,8 @@ TODO							    *ezbar-todo*
 
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
+2014-01-20:
+	- [newfeature] introduce alias table
 2014-01-18:
 	- [improve] performance for hlmanager, more neat separator color.
 	- [bigchange] no longer pass argment to parts function.

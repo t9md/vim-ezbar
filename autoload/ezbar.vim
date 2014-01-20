@@ -34,7 +34,7 @@ function! s:speacial_parts.___setcolor(color) "{{{1
 endfunction
 
 function! s:speacial_parts.___LR_separator(...) "{{{1
-  let color = get(a:000, 1, '')
+  let color = get(a:000, 0, '')
   if color isnot ''
     call self.___setcolor(color)
   endif
@@ -69,17 +69,18 @@ endfunction
 
 function! s:ez.prepare() "{{{1
   " Init:
-  call extend(s:PARTS, s:speacial_parts, 'force')
   call self.unalias()
   if exists('*s:PARTS.__init')
     let layout_save = s:PARTS.__layout
     call s:PARTS.__init()
     if layout_save isnot s:PARTS.__layout
-      let s:PARTS.__layout = copy(s:PARTS.__layout)
+      let s:PARTS.__layout  = type(s:PARTS.__layout) isnot s:TYPE_LIST
+            \ ? split(s:PARTS.__layout) : copy(s:PARTS.__layout)
       call self.unalias()
     endif
   endif
 
+  call extend(s:PARTS, s:speacial_parts, 'force')
   call map(s:PARTS.__layout,    'self.substitute(v:val)')
   call map(s:PARTS.__layout,    'self.normalize(v:val)')
   call filter(s:PARTS.__parts,  '!(v:val.s is "")')
@@ -123,14 +124,6 @@ function! s:ez.normalize(part) "{{{1
   return part
 endfunction
 
-function! s:ez.color_or_separator(part) "{{{1
-  let color = matchstr(a:part, s:COLOR_SETTER)
-  if !empty(color)
-    let s:PARTS.__c = s:COLOR[color]
-  endif
-  return { 's': (a:part =~# s:LR_SEPARATOR ) ? '%=' : '' }
-endfunction
-
 function! s:ez.color_of(part) "{{{1
   return get(a:part,
         \ ( s:PARTS.__active ? 'ac' : 'ic' ), a:part.c)
@@ -153,7 +146,9 @@ function! s:ez.specialvar_setup(active, winnr) "{{{1
   let s:PARTS.__filetype = getwinvar(a:winnr, '&filetype')
   let s:PARTS.__buftype  = getwinvar(a:winnr, '&buftype')
   let s:PARTS.__parts    = {}
-  let s:PARTS.__layout   = copy(s:EB[ a:active ? 'active' : 'inactive'])
+  let layout             = s:EB[ a:active ? 'active' : 'inactive']
+  let s:PARTS.__layout   = type(layout) isnot s:TYPE_LIST
+        \ ? split(layout) : copy(layout)
   let s:PARTS.__color    = s:COLOR
   let s:PARTS.__c        = self.color[ a:active ? 'StatusLine' : 'StatusLineNC']
   let s:PARTS.__         = s:HELPER

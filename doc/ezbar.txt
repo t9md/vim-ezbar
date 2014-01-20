@@ -262,6 +262,8 @@ TODO							    *ezbar-todo*
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
 2014-01-20:
+	- [newfeature] now layout can take |String|and internally converted to
+	  |List|.
 	- [newfeature] introduce alias table
 2014-01-18:
 	- [improve] performance for hlmanager, more neat separator color.

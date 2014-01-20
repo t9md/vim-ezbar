@@ -4,12 +4,41 @@ let s:TYPE_LIST       = type([])
 let s:TYPE_DICTIONARY = type({})
 let s:TYPE_NUMBER     = type(0)
 let s:SCREEN          = has('gui_running') ? 'gui' : 'cterm'
-let s:LR_SEPARATOR    = '^=\+'
-let s:COLOR_SETTER    = '\v^(-+|\=+|\|)\s*\zs\w*$'
+let s:LR_SEPARATOR    = '\v\=+\s*(\w*)'
+let s:COLOR_SETTER    = '\v^%(-+|\|)\s*(\w*)$'
+let s:MODE2COLOR      = {
+      \ 'n':      'm_normal',
+      \ 'i':      'm_insert',
+      \ 'R':      'm_replace',
+      \ 'v':      'm_visual',
+      \ 'V':      'm_visual',
+      \ "\<C-v>": 'm_visual',
+      \ 'c':      'm_command',
+      \ 's':      'm_select',
+      \ 'S':      'm_select',
+      \ "\<C-s>": 'm_select',
+      \ '?':      'm_other',
+      \ }
 
 " Utility:
 function! s:extract_color_definition(string) "{{{1
   return matchstr(a:string, '\v\{\s*''(gui|cterm)''\s*:\s*\[.{-}\]\s*}')
+endfunction
+"}}}
+
+" SpecialParts:
+let s:speacial_parts = {}
+function! s:speacial_parts.___setcolor(color) "{{{1
+  let s:PARTS.__c = s:COLOR[a:color]
+  return ''
+endfunction
+
+function! s:speacial_parts.___LR_separator(...) "{{{1
+  let color = get(a:000, 1, '')
+  if color isnot ''
+    call self.___setcolor(color)
+  endif
+  return { 's': '%=' }
 endfunction
 "}}}
 
@@ -24,39 +53,57 @@ function! s:ez.init() "{{{1
         \ }
 endfunction
 
-function! s:ez.prepare() "{{{1
-
-  " Init:
+function! s:ez.unalias() "{{{1
   if has_key(s:EB, 'alias')
-    call map(s:PARTS.__layout, 'get(g:ezbar.alias, v:val, v:val)')
+    call map(s:PARTS.__layout, 'get(s:EB.alias, v:val, v:val)')
   endif
+endfunction
 
+function! s:ez.substitute(part) "{{{1
+  let R = substitute(a:part,
+        \ s:LR_SEPARATOR, '\= "___LR_separator::" . submatch(1)', '')
+  let R = substitute(R,
+        \ s:COLOR_SETTER, '\= "___setcolor::" . submatch(1)', '')
+  return R
+endfunction
+
+function! s:ez.prepare() "{{{1
+  " Init:
+  call extend(s:PARTS, s:speacial_parts, 'force')
+  call self.unalias()
   if exists('*s:PARTS.__init')
     let layout_save = s:PARTS.__layout
     call s:PARTS.__init()
     if layout_save isnot s:PARTS.__layout
       let s:PARTS.__layout = copy(s:PARTS.__layout)
+      call self.unalias()
     endif
   endif
-  " Normalize:
-  call map(s:PARTS.__layout, 'self.normalize(v:val)')
-  " Eliminate:
+
+  call map(s:PARTS.__layout,    'self.substitute(v:val)')
+  call map(s:PARTS.__layout,    'self.normalize(v:val)')
   call filter(s:PARTS.__parts,  '!(v:val.s is "")')
   call filter(s:PARTS.__layout, '!(v:val.s is "")')
+
   " Finalize:
   if exists('*s:PARTS.__finish') | call s:PARTS.__finish() | endif
   return self
 endfunction
 
+function! s:ez.transform(part) "{{{1
+  let [part; args] = split(a:part, '::')
+  if has_key(s:PARTS, part)
+    return call(s:PARTS[part], args, s:PARTS)
+  elseif has_key(s:PARTS, '__part_missing')
+    return call(s:PARTS.__part_missing, [part] + args, s:PARTS)
+  endif
+  return ''
+endfunction
+
 function! s:ez.normalize(part) "{{{1
   try
     " using call() below is workaround to avoid strange missing ':' after '?' error
-    let R =
-          \ has_key(s:PARTS, a:part) ?
-          \ call(s:PARTS[a:part], [], s:PARTS) :
-          \ a:part =~# '^[-=|]' ?
-          \ self.color_or_separator(a:part) :
-          \ s:PARTS.__part_missing(a:part)
+    let R = self.transform(a:part)
   catch
     let s = substitute(a:part, '\v^([-=])+\s*(.*)', '\1 \2','')
     let R = { 's': printf('[%s]', s), 'c': 'WarningMsg' }
@@ -118,24 +165,9 @@ function! s:ez.theme_load() "{{{1
     let s:EB.__theme_loaded = 1
   endif
 endfunction
-"}}}
-
-let s:mode2color = {
-      \ 'n':      'm_normal',
-      \ 'i':      'm_insert',
-      \ 'R':      'm_replace',
-      \ 'v':      'm_visual',
-      \ 'V':      'm_visual',
-      \ "\<C-v>": 'm_visual',
-      \ 'c':      'm_command',
-      \ 's':      'm_select',
-      \ 'S':      'm_select',
-      \ "\<C-s>": 'm_select',
-      \ '?':      'm_other',
-      \ }
 
 function! s:ez.color_setup() "{{{1
-  let color      = get(s:mode2color, s:PARTS.__mode, 'm_normal')
+  let color      = get(s:MODE2COLOR, s:PARTS.__mode, 'm_normal')
   let color1     = s:COLOR[color]
   let color1_rev = s:HELPER.reverse(color1)
   let color2     = s:HELPER.bg(color1_rev, s:COLOR['_2'])

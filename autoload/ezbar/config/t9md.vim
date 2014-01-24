@@ -41,7 +41,6 @@ let g:ezbar.active = [
       \ '----------- 2',
       \ 'fugitive',
       \ 'win_buf',
-      \ 'smalls',
       \ 'readonly',
       \ '----------- 3',
       \ 'textmanip',
@@ -173,13 +172,6 @@ function! s:u.cwd() "{{{1
   return cwd[ display :  -1 ]
 endfunction
 
-function! s:u.smalls() "{{{1
-  if !exists('g:smalls_current_mode') | return '' | endif
-  let s = g:smalls_current_mode
-  if empty(s) | return '' | endif
-  return { 's': s,
-        \ 'c': ( s is 'exc') ? 'SmallsCurrent' : 'SmallsCandidate' }
-endfunction
 
 function! s:u.fugitive() "{{{1
   let s = fugitive#head()
@@ -211,10 +203,6 @@ function! s:u.__init() "{{{1
   if self.__width < 60
     " let self.__layout =  self.__layout[2:] + [ 'mode' ]
   endif
-  " if exists('g:smalls_current_mode') && !empty(g:smalls_current_mode)
-  " let self.__layout = [ 'smalls' ]
-  " return
-  " endif
   let self.hide_list = []
   if get(g:, 'choosewin_active', 0)
     let self.hide_list += [ 'validate' ]

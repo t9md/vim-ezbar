@@ -47,6 +47,7 @@ let s:ez = {}
 function! s:ez.init() "{{{1
   let s:HELPER = ezbar#helper#get()
   let self.hlmanager = ezbar#hlmanager#new('EzBar')
+  let self._color_cache = {}
   let self.color     = {
         \ 'StatusLine':   self.hlmanager.convert('StatusLine'),
         \ 'StatusLineNC': self.hlmanager.convert('StatusLineNC'),
@@ -123,8 +124,15 @@ function! s:ez.normalize(part) "{{{1
 endfunction
 
 function! s:ez.color_of(part) "{{{1
-  return get(a:part,
-        \ ( s:PARTS.__active ? 'ac' : 'ic' ), a:part.c)
+  let R = get(a:part, ( s:PARTS.__active ? 'ac' : 'ic' ), a:part.c)
+  if type(R) is s:TYPE_DICTIONARY
+    return R
+  endif
+
+  if !has_key(self._color_cache, R)
+    let self._color_cache[R] = self.hlmanager.convert(R)
+  endif
+  return self._color_cache[R]
 endfunction
 
 function! s:ez.color_info(color) "{{{1
@@ -152,9 +160,17 @@ function! s:ez.specialvar_setup(active, winnr) "{{{1
   let s:PARTS.__         = s:HELPER
 endfunction
 
+    " for [k, v] in items(s:COLOR)
+      " if type(v) is s:TYPE_STRING
+        " let s:COLOR[k] = self.hlmanager.convert(v)
+      " endif
+      " unlet v
+    " endfor
+
 function! s:ez.theme_load() "{{{1
   if !get(s:EB, '__theme_loaded')
     call extend(s:COLOR, ezbar#themes#{s:EB.theme}#load())
+    let self._color_cache = {}
     let s:EB.__theme_loaded = 1
   endif
 endfunction

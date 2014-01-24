@@ -89,6 +89,10 @@ function! s:helper.screen() "{{{1
   return has('gui_running') ? 'gui' : 'cterm'
 endfunction
 
+function! s:helper.convert(color) "{{{1
+  return ezbar#hlmanager().convert(a:color)
+endfunction
+
 function! s:helper.getvar(varname) "{{{1
   return getwinvar(s:PARTS.__winnr, a:varname)
 endfunction

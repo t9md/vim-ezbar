@@ -29,7 +29,7 @@ endfunction
 " SpecialParts:
 let s:speacial_parts = {}
 function! s:speacial_parts.___setcolor(color) "{{{1
-  let s:PARTS.__c = s:COLOR[a:color]
+  let self.__c = s:COLOR[a:color]
   return ''
 endfunction
 
@@ -62,9 +62,8 @@ endfunction
 function! s:ez.substitute(part) "{{{1
   let R = substitute(a:part,
         \ s:LR_SEPARATOR, '\= "___LR_separator::" . submatch(1)', '')
-  let R = substitute(R,
+  return substitute(R,
         \ s:COLOR_SETTER, '\= "___setcolor::" . submatch(1)', '')
-  return R
 endfunction
 
 function! s:ez.prepare() "{{{1
@@ -106,8 +105,7 @@ function! s:ez.normalize(part) "{{{1
     " using call() below is workaround to avoid strange missing ':' after '?' error
     let R = self.transform(a:part)
   catch
-    let s = substitute(a:part, '\v^([-=])+\s*(.*)', '\1 \2','')
-    let R = { 's': printf('[%s]', s), 'c': 'WarningMsg' }
+    let R = { 's': printf('[%s]', a:part), 'c': 'WarningMsg' }
   endtry
 
   let part = type(R) isnot s:TYPE_DICTIONARY ? { 's' : R } : R

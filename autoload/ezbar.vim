@@ -112,10 +112,12 @@ function! s:ez.normalize(part) "{{{1
   let part = type(R) isnot s:TYPE_DICTIONARY ? { 's' : R } : R
   let part.name = a:part
 
-  if empty(get(part, 'c'))
-    " won't deepcopy for performance for ordinary user.
-    let part.c = copy(s:PARTS.__c)
-  endif
+  let key = s:PARTS.__active ? 'ac' : 'ic'
+  let part.c =
+        \ has_key(part, key) ? part[key] :
+        \ has_key(part, 'c') ? part.c    :
+        \ copy(s:PARTS.__c)
+
   " keep section color info
   let part.__section_color = copy(s:PARTS.__c)
 
@@ -124,7 +126,7 @@ function! s:ez.normalize(part) "{{{1
 endfunction
 
 function! s:ez.color_of(part) "{{{1
-  let R = get(a:part, ( s:PARTS.__active ? 'ac' : 'ic' ), a:part.c)
+  let R = a:part.c
   if type(R) is s:TYPE_DICTIONARY
     return R
   endif

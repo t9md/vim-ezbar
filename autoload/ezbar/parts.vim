@@ -6,7 +6,7 @@ function! s:parts.use(name, ...) "{{{1
 
   let spec = a:1
   let parts_list = get(spec, 'parts', keys(parts))
-  let prefix = get(spec, 'prefix', '')
+  let prefix     = get(spec, 'prefix', '')
 
   let R = {}
   for part in parts_list

@@ -97,6 +97,37 @@ g:ezbar.alias
 	let s:active = '|1 m |2  wb ro |3 cwd = |2 ft fn mod ft |1 enc % lc '
 	let g:ezbar.active = split(s:active)
 <
+
+							       *g:ezbar.hide_rule*
+g:ezbar.hide_rule
+	Default: Not defined
+	Type:    |Dictionary|
+	Used to hide parts based on window width( s:PARTS.__width. )
+	This dictionary is used withn helper.hide().
+	So to actually hide parts, you need to call helper.hide() within
+	__init() hook.
+
+	Example: use short name in layout by aliasing part name~
+>
+	let g:ezbar.hide_rule = {
+	      \ 90: ['cwd'],
+	      \ 65: ['fugitive'],
+	      \ 60: ['encoding', 'filetype'],
+	      \ 50: ['percent'],
+	      \ 35: ['mode', 'readonly', 'cwd'],
+	      \ }
+
+	function! s:u.__init() "{{{1
+	  if !self.__active
+	    return
+	  endif
+	  let hide = []
+	  if get(g:, 'choosewin_active', 0)
+	    let hide += ['validate']
+	  endif
+	  call self.__.hide(hide)
+	endfunction
+<
 ------------------------------------------------------------------------------
 *ezbar-auto-variable*
 
@@ -261,6 +292,8 @@ TODO							    *ezbar-todo*
 
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
+2014-02-05:
+	- [newfeature] add hide() feature 
 2014-01-20:
 	- [newfeature] now layout can take |String|and internally converted to
 	  |List|.

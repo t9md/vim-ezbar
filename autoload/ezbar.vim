@@ -1,12 +1,10 @@
 " Constants:
-let s:TYPE_STRING     = type('')
-let s:TYPE_LIST       = type([])
-let s:TYPE_DICTIONARY = type({})
-let s:TYPE_NUMBER     = type(0)
-let s:SCREEN          = has('gui_running') ? 'gui' : 'cterm'
-let s:LR_SEPARATOR    = '\v\=+\s*(\w*)'
-let s:COLOR_SETTER    = '\v^%(-+|\|)\s*(\w*)$'
-let s:MODE2COLOR      = {
+let s:T_STRING     = type('')
+let s:T_LIST       = type([])
+let s:T_DICTIONARY = type({})
+let s:T_NUMBER     = type(0)
+let s:SCREEN       = has('gui_running') ? 'gui' : 'cterm'
+let s:MODE2COLOR   = {
       \ 'n':      'm_normal',
       \ 'i':      'm_insert',
       \ 'R':      'm_replace',
@@ -55,9 +53,10 @@ function! s:ez.init() "{{{1
 endfunction
 
 function! s:ez.unalias() "{{{1
-  if has_key(s:EB, 'alias')
-    call map(s:PARTS.__layout, 'get(s:EB.alias, v:val, v:val)')
+  if !has_key(s:EB, 'alias')
+    return
   endif
+  call map(s:PARTS.__layout, 'get(s:EB.alias, v:val, v:val)')
 endfunction
 
 function! s:ez.substitute(part) "{{{1
@@ -66,6 +65,8 @@ function! s:ez.substitute(part) "{{{1
   return substitute(R,
         \ s:COLOR_SETTER, '\= "___setcolor::" . submatch(1)', '')
 endfunction
+let s:LR_SEPARATOR = '\v\=+\s*(\w*)'
+let s:COLOR_SETTER = '\v^%(-+|\|)\s*(\w*)$'
 
 function! s:ez.prepare() "{{{1
   " Init:
@@ -74,12 +75,11 @@ function! s:ez.prepare() "{{{1
     let layout_save = s:PARTS.__layout
     call s:PARTS.__init()
     if layout_save isnot s:PARTS.__layout
-      let s:PARTS.__layout  = type(s:PARTS.__layout) isnot s:TYPE_LIST
+      let s:PARTS.__layout  = type(s:PARTS.__layout) isnot s:T_LIST
             \ ? split(s:PARTS.__layout) : copy(s:PARTS.__layout)
       call self.unalias()
     endif
   endif
-
   call extend(s:PARTS, s:speacial_parts, 'force')
   call map(s:PARTS.__layout,    'self.substitute(v:val)')
   call map(s:PARTS.__layout,    'self.normalize(v:val)')
@@ -93,23 +93,21 @@ endfunction
 
 function! s:ez.transform(part) "{{{1
   let [part; args] = split(a:part, '::')
-  if has_key(s:PARTS, part)
-    return call(s:PARTS[part], args, s:PARTS)
-  elseif has_key(s:PARTS, '__part_missing')
-    return call(s:PARTS.__part_missing, [part] + args, s:PARTS)
-  endif
-  return ''
+  return  has_key(s:PARTS, part)
+        \ ? call(s:PARTS[part], args, s:PARTS)
+        \ : has_key(s:PARTS, '__part_missing')
+        \ ? call(s:PARTS.__part_missing, [part] + args, s:PARTS)
+        \ : ''
 endfunction
 
 function! s:ez.normalize(part) "{{{1
   try
-    " using call() below is workaround to avoid strange missing ':' after '?' error
     let R = self.transform(a:part)
   catch
     let R = { 's': printf('[%s]', a:part), 'c': 'WarningMsg' }
   endtry
 
-  let part = type(R) isnot s:TYPE_DICTIONARY ? { 's' : R } : R
+  let part = type(R) isnot s:T_DICTIONARY ? { 's' : R } : R
   let part.name = a:part
 
   let key = s:PARTS.__active ? 'ac' : 'ic'
@@ -120,14 +118,13 @@ function! s:ez.normalize(part) "{{{1
 
   " keep section color info
   let part.__section_color = copy(s:PARTS.__c)
-
   let s:PARTS.__parts[a:part] = part
   return part
 endfunction
 
 function! s:ez.color_of(part) "{{{1
   let R = a:part.c
-  if type(R) is s:TYPE_DICTIONARY
+  if type(R) is s:T_DICTIONARY
     return R
   endif
 
@@ -146,28 +143,24 @@ function! s:ez.color_info(color) "{{{1
 endfunction
 
 function! s:ez.specialvar_setup(active, winnr) "{{{1
-  let s:PARTS.__active   = a:active
-  let s:PARTS.__mode     = mode()
-  let s:PARTS.__winnr    = a:winnr
-  let s:PARTS.__bufnr    = winbufnr(a:winnr)
-  let s:PARTS.__width    = winwidth(a:winnr)
-  let s:PARTS.__filetype = getwinvar(a:winnr, '&filetype')
-  let s:PARTS.__buftype  = getwinvar(a:winnr, '&buftype')
-  let s:PARTS.__parts    = {}
-  let layout             = s:EB[ a:active ? 'active' : 'inactive']
-  let s:PARTS.__layout   = type(layout) isnot s:TYPE_LIST
-        \ ? split(layout) : copy(layout)
-  let s:PARTS.__color    = s:COLOR
-  let s:PARTS.__c        = self.color[ a:active ? 'StatusLine' : 'StatusLineNC']
-  let s:PARTS.__         = s:HELPER
+  let _layout = s:EB[ a:active ? 'active' : 'inactive']
+  let layout  = type(_layout) isnot s:T_LIST ? split(_layout) : copy(_layout)
+  let special_var = {
+        \ '__active':   a:active,
+        \ '__mode':     mode(),
+        \ '__winnr':    a:winnr,
+        \ '__bufnr':    winbufnr(a:winnr),
+        \ '__width':    winwidth(a:winnr),
+        \ '__filetype': getwinvar(a:winnr, '&filetype'),
+        \ '__buftype':  getwinvar(a:winnr, '&buftype'),
+        \ '__parts':    {},
+        \ '__color':    s:COLOR,
+        \ '__layout':   layout,
+        \ '__c':        self.color[ a:active ? 'StatusLine' : 'StatusLineNC'],
+        \ '__':         s:HELPER,
+        \ }
+  call extend(s:PARTS, special_var, 'force')
 endfunction
-
-    " for [k, v] in items(s:COLOR)
-      " if type(v) is s:TYPE_STRING
-        " let s:COLOR[k] = self.hlmanager.convert(v)
-      " endif
-      " unlet v
-    " endfor
 
 function! s:ez.theme_load() "{{{1
   if !get(s:EB, '__theme_loaded')
@@ -249,7 +242,7 @@ function! ezbar#string(active, winnr) "{{{1
   let s:EB     = g:ezbar
   let s:PARTS  = s:EB.parts
   call s:HELPER.__init()
-  if type(get(s:EB, 'color')) isnot s:TYPE_DICTIONARY
+  if type(get(s:EB, 'color')) isnot s:T_DICTIONARY
     let s:EB.color = {}
   endif
   let s:COLOR = s:EB.color

@@ -85,6 +85,16 @@ function! s:helper._color_change(...) "{{{1
   return R
 endfunction
 
+function! s:helper.hide(...) "{{{1
+  let list = get(a:000, 0, [])
+  for [ limit, parts ] in items(s:EB.hide_rule)
+    if s:PARTS.__width < str2nr(limit)
+      let list += parts
+    endif
+  endfor
+  call filter(s:PARTS.__layout, 'index(list, v:val) ==# -1')
+endfunction
+
 function! s:helper.screen() "{{{1
   return has('gui_running') ? 'gui' : 'cterm'
 endfunction

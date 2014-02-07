@@ -37,12 +37,12 @@ MAPPINGS					*ezbar-mappings*
 ==============================================================================
 COMMANDS						*ezbar-commands*
 
-*:EzBarDisable*
-*:EzBarEnable*
+*:EzbarDisable*
+*:EzbarEnable*
 	See corresponding |ezbar-functions|.
 
-							*:EzBarColorCheck*
-{range}:EzBarColorCheck
+							*:EzbarColorCheck*
+{range}:EzbarColorCheck
 	Useful while you are trying to customize color.
 	Temporarily highlight selected reange of lines like following color
 	coonfiguration. Its' just helper setup helper, not essential part of
@@ -50,12 +50,12 @@ COMMANDS						*ezbar-commands*
 >
       \ { 'chg_color': {'gui': [ s:bg, 'gray61'], 'cterm': [240, 254] }},
 <
-							  *:EzBarColorCapture*
-EzBarColorCapture {highlight}
+							  *:EzbarColorCapture*
+EzbarColorCapture {highlight}
 	Capture specified highlight as ezbar color dictionary form to v:register.
 	You can paste with |p| after capture.
 	Example >
-		:EzBarColorCapture Constant
+		:EzbarColorCapture Constant
 <
 ==============================================================================
 VARIABLES						*ezbar-variables*
@@ -292,6 +292,8 @@ TODO							    *ezbar-todo*
 
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
+2014-02-07:
+	- renamed command prefix from 'EzBar' to 'Ezbar'
 2014-02-05:
 	- [newfeature] add hide() feature 
 2014-01-20:

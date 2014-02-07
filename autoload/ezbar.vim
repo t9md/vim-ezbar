@@ -27,7 +27,10 @@ endfunction
 " SpecialParts:
 let s:speacial_parts = {}
 function! s:speacial_parts.___setcolor(color) "{{{1
-  let self.__c = s:COLOR[a:color]
+  let prefix = a:color =~# '^\d$'
+        \ ? get(s:MODE2COLOR, s:PARTS.__mode, 'm_normal') . '_'
+        \ : ''
+  let self.__c = s:COLOR[prefix . a:color ]
   return ''
 endfunction
 
@@ -59,7 +62,7 @@ function! s:ez.unalias() "{{{1
   call map(s:PARTS.__layout, 'get(s:EB.alias, v:val, v:val)')
 endfunction
 
-function! s:ez.substitute(part) "{{{1
+function! s:ez.substitute_part(part) "{{{1
   let R = substitute(a:part,
         \ s:LR_SEPARATOR, '\= "___LR_separator::" . submatch(1)', '')
   return substitute(R,
@@ -68,30 +71,42 @@ endfunction
 let s:LR_SEPARATOR = '\v\=+\s*(\w*)'
 let s:COLOR_SETTER = '\v^%(-+|\|)\s*(\w*)$'
 
+function! s:ez.load_special_parts() "{{{1
+  if has_key(s:PARTS, '__loaded_special_parts')
+    return
+  endif
+  call extend(s:PARTS, s:speacial_parts, 'force')
+  let s:PARTS.__loaded_special_parts = 1
+endfunction
+
+function! s:ez.normalize_layout(layout)
+  return
+        \ type(a:layout) isnot s:T_LIST
+        \ ? split(a:layout)
+        \ : copy(a:layout)
+endfunction
+
 function! s:ez.prepare() "{{{1
-  " Init:
   call self.unalias()
   if exists('*s:PARTS.__init')
     let layout_save = s:PARTS.__layout
     call s:PARTS.__init()
     if layout_save isnot s:PARTS.__layout
-      let s:PARTS.__layout  = type(s:PARTS.__layout) isnot s:T_LIST
-            \ ? split(s:PARTS.__layout) : copy(s:PARTS.__layout)
+      let s:PARTS.__layout = self.normalize_layout(s:PARTS.__layout)
       call self.unalias()
     endif
   endif
-  call extend(s:PARTS, s:speacial_parts, 'force')
-  call map(s:PARTS.__layout,    'self.substitute(v:val)')
-  call map(s:PARTS.__layout,    'self.normalize(v:val)')
-  call filter(s:PARTS.__parts,  '!(v:val.s is "")')
+  call self.load_special_parts()
+  call    map(s:PARTS.__layout, 'self.substitute_part(v:val)')
+  call    map(s:PARTS.__layout, 'self.normalize_part(v:val)')
   call filter(s:PARTS.__layout, '!(v:val.s is "")')
-
-  " Finalize:
+  call filter(s:PARTS.__parts,  '!(v:val.s is "")')
   if exists('*s:PARTS.__finish') | call s:PARTS.__finish() | endif
   return self
 endfunction
 
-function! s:ez.transform(part) "{{{1
+function! s:ez.transform_part(part) "{{{1
+  " Transform: simply call parts function
   let [part; args] = split(a:part, '::')
   return  has_key(s:PARTS, part)
         \ ? call(s:PARTS[part], args, s:PARTS)
@@ -100,9 +115,11 @@ function! s:ez.transform(part) "{{{1
         \ : ''
 endfunction
 
-function! s:ez.normalize(part) "{{{1
+function! s:ez.normalize_part(part) "{{{1
+  " Normalize: make transformed result into dictionary and add standard
+  " attributes.
   try
-    let R = self.transform(a:part)
+    let R = self.transform_part(a:part)
   catch
     let R = { 's': printf('[%s]', a:part), 'c': 'WarningMsg' }
   endtry
@@ -143,8 +160,6 @@ function! s:ez.color_info(color) "{{{1
 endfunction
 
 function! s:ez.specialvar_setup(active, winnr) "{{{1
-  let _layout = s:EB[ a:active ? 'active' : 'inactive']
-  let layout  = type(_layout) isnot s:T_LIST ? split(_layout) : copy(_layout)
   let special_var = {
         \ '__active':   a:active,
         \ '__mode':     mode(),
@@ -155,36 +170,43 @@ function! s:ez.specialvar_setup(active, winnr) "{{{1
         \ '__buftype':  getwinvar(a:winnr, '&buftype'),
         \ '__parts':    {},
         \ '__color':    s:COLOR,
-        \ '__layout':   layout,
+        \ '__layout':   self.normalize_layout(s:EB[ a:active ? 'active' : 'inactive' ]),
         \ '__c':        self.color[ a:active ? 'StatusLine' : 'StatusLineNC'],
         \ '__':         s:HELPER,
         \ }
   call extend(s:PARTS, special_var, 'force')
 endfunction
 
-function! s:ez.theme_load() "{{{1
-  if !get(s:EB, '__theme_loaded')
-    call extend(s:COLOR, ezbar#themes#{s:EB.theme}#load())
-    let self._color_cache = {}
-    let s:EB.__theme_loaded = 1
-  endif
+function! s:ez.load_theme(theme) "{{{1
+  let self._color_cache = {}
+  let s:EB.__loaded_theme = 1
+
+  let theme = ezbar#theme#get(a:theme)
+  let theme = deepcopy(get(theme, has_key(theme, &background) ? &background : 'dark' ))
+  call extend(s:COLOR, self._normalize_theme(theme))
 endfunction
 
-function! s:ez.color_setup() "{{{1
-  let color      = get(s:MODE2COLOR, s:PARTS.__mode, 'm_normal')
-  let color1     = s:COLOR[color]
-  let color1_rev = s:HELPER.reverse(color1)
-  let color2     = s:HELPER.bg(color1_rev, s:COLOR['_2'])
-  let s:COLOR.1  = color1
-  let s:COLOR.2  = color2
-  let s:COLOR.3  = color1_rev
+function! s:ez._normalize_theme(theme) "{{{1
+  let colors = {}
+  for color in split('m_normal m_insert m_visual m_replace m_command m_select m_other')
+    let _color1     = get(a:theme, color, 'm_normal')
+    let _color1_rev = s:HELPER.reverse(_color1)
+    let _color2     = s:HELPER.bg(_color1_rev, a:theme['_2'])
+    if has_key(a:theme, '_3')
+      let _color1_rev = s:HELPER.bg(_color1_rev, a:theme['_3'])
+    endif
+
+    let colors[color . '_1'] = _color1
+    let colors[color . '_2'] = _color2
+    let colors[color . '_3'] = _color1_rev
+  endfor
+  return extend(a:theme, colors, 'keep')
 endfunction
 
 function! s:ez.string(active, winnr) "{{{1
-  call self.theme_load()
   call self.specialvar_setup(a:active, a:winnr)
-  if s:PARTS.__active
-    call self.color_setup()
+  if !get(s:EB, '__loaded_theme')
+    call self.load_theme(s:EB.theme)
   endif
   return self.prepare().insert_separator().join()
 endfunction
@@ -213,18 +235,22 @@ function! s:ez.insert_separator() "{{{1
     call add(R, part)
 
     if idx is idx_last | break | endif
-    if idx_next is idx_LRsep
+
+    let color_next = self.color_info(self.color_of(LAYOUT[idx_next]))
+    if color.bg is color_next.bg && idx_next is idx_LRsep
       let section = 'R'
       continue
     endif
 
-    let color_next = self.color_info(self.color_of(LAYOUT[idx_next]))
     let [ s, c ] = color.bg is color_next.bg
           \ ? [ sep_{section}       , part.__section_color ]
           \ : [ sep_border_{section}, { s:SCREEN : section is 'L' ?
           \ [color_next.bg, color.bg] : [color.bg, color_next.bg]
           \ } ]
     call add(R, { 's' : s, 'color_name': self.color_info(c).name })
+    if idx_next is idx_LRsep
+      let section = 'R'
+    endif
   endfor
   let s:PARTS.__layout = R
   return self
@@ -270,7 +296,7 @@ function! ezbar#set() "{{{1
 endfunction
 
 function! ezbar#hl_refresh() "{{{1
-  let s:EB.__theme_loaded = 0
+  let s:EB.__loaded_theme = 0
   call s:ez.hlmanager.refresh()
 endfunction
 
@@ -317,6 +343,10 @@ function! ezbar#color_capture(color) "{{{1
   let R = s:ez.hlmanager.convert_full(a:color)
   call setreg(v:register, string(R), 'V')
 endfunction
+
+function! ezbar#load_theme(theme) "{{{1
+  call s:ez.load_theme(a:theme)
+endfunction
 "}}}
 
 call s:ez.init()
@@ -324,6 +354,8 @@ call s:ez.init()
 if expand("%:p") !=# expand("<sfile>:p")
   finish
 endif
+nnoremap <F10> :%EzbarColorCheck<CR>
+nnoremap <silent> <F9> :<C-u>execute 'EzbarColorCapture ' . expand('<cword>')<CR>
 
 function! s:extract_airline_color(string) "{{{1
   return matchstr(a:string, '\v\zs[.*\]\ze')

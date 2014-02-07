@@ -38,13 +38,15 @@ call s:set_options(s:options)
 call s:startup()
 
 " Command:
-command! EzBarDisable call ezbar#disable()
-command! EzBarEnable  call ezbar#enable()
+command! EzbarDisable call ezbar#disable()
+command! EzbarEnable  call ezbar#enable()
 
-command! -range EzBarColorCheck
+command! -range EzbarColorCheck
       \ :<line1>,<line2>call ezbar#color_check()
 command! -nargs=1 -complete=highlight
-      \ EzBarColorCapture call ezbar#color_capture(<f-args>)
+      \ EzbarColorCapture call ezbar#color_capture(<f-args>)
+command! -nargs=? -complete=customlist,ezbar#theme#list
+      \ EzbarTheme :call ezbar#load_theme(<f-args>)
 
 " Finish:
 let &cpo = s:old_cpo

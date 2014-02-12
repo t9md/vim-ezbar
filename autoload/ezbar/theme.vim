@@ -5,6 +5,6 @@ function! ezbar#theme#list(A, L, P) "{{{1
         \ )
 endfunction
 
-function! ezbar#theme#get(theme) "{{{1
-  return ezbar#theme#{a:theme}#get()
+function! ezbar#theme#load(theme) "{{{1
+  return ezbar#theme#{a:theme}#load()
 endfunction

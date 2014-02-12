@@ -17,6 +17,9 @@ function! s:hlmgr.register(color) "{{{1
   if type(a:color) is s:TYPE_STRING
     return a:color
   elseif type(a:color) is s:TYPE_DICTIONARY
+    " if type(a:color[s:SCREEN]) is s:TYPE_STRING
+      " let a:color[s:SCREEN] = split(a:color[s:SCREEN], '\s*|\s*')
+    " endif
     let name = get(self._color2name, string(a:color[s:SCREEN]))
     if !empty(name)
       return name
@@ -25,10 +28,8 @@ function! s:hlmgr.register(color) "{{{1
 
   let name = self.color_name_next()
   call self.define(name, a:color)
-
   let self._store[name] = a:color
   let self._color2name[string(a:color[s:SCREEN])] = name
-
   return name
 endfunction
 
@@ -47,7 +48,7 @@ function! s:hlmgr.refresh() "{{{1
 endfunction
 
 function! s:hlmgr.color_name_next() "{{{1
-  return printf( self.prefix . '%03d', len(self._store))
+  return printf( self.prefix . '%05d', len(self._store))
 endfunction
 "}}}
 

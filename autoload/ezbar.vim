@@ -1,4 +1,3 @@
-" Constants:
 let s:T_STRING     = type('')
 let s:T_LIST       = type([])
 let s:T_DICTIONARY = type({})
@@ -17,14 +16,39 @@ let s:MODE2COLOR   = {
       \ "\<C-s>": 'm_select',
       \ '?':      'm_other',
       \ }
-
-" Utility:
 function! s:extract_color_definition(string) "{{{1
   return matchstr(a:string, '\v\{\s*''(gui|cterm)''\s*:\s*\[.{-}\]\s*}')
 endfunction
+
+
+function! s:hl_color_names() "{{{1
+  for [name, rgb] in items(s:RGB)
+    let color = { s:SCREEN : [rgb, '#000000'] }
+    let cname = s:ez.hlmanager.register(color)
+    call matchadd(cname, '\<' .name .'\>')
+    call matchadd(cname, '\V' . rgb)
+  endfor
+endfunction
+
+function! s:color_name2rgb() "{{{1
+  let lines = readfile(expand("$VIMRUNTIME/rgb.txt"))
+  call filter(lines, "v:val !~# '^\s*\d'")
+  call filter(lines, 'len(split(v:val)) is# 4')
+  let RGB_NAMES = []
+  let R = {}
+  for line in lines
+    let [r, g, b, name] = split(line)
+    let rgb = printf("#%02x%02x%02x", r, g, b)
+    let R[name] = rgb
+    call add(RGB_NAMES, name)
+    " let R[rgb] = rgb
+  endfor
+  return [R, RGB_NAMES]
+endfunction
+let [s:RGB, s:RGB_NAMES] = s:color_name2rgb()
+" let s:RGB = s:color_name2rgb()
 "}}}
 
-" SpecialParts:
 let s:speacial_parts = {}
 function! s:speacial_parts.___setcolor(color) "{{{1
   let prefix = a:color =~# '^\d$'
@@ -42,8 +66,6 @@ function! s:speacial_parts.___LR_separator(...) "{{{1
   return { 's': '%=' }
 endfunction
 "}}}
-
-" Main:
 let s:ez = {}
 function! s:ez.init() "{{{1
   let s:HELPER = ezbar#helper#get()
@@ -97,8 +119,8 @@ function! s:ez.prepare() "{{{1
     endif
   endif
   call self.load_special_parts()
-  call    map(s:PARTS.__layout, 'self.substitute_part(v:val)')
-  call    map(s:PARTS.__layout, 'self.normalize_part(v:val)')
+  call map   (s:PARTS.__layout, 'self.substitute_part(v:val)')
+  call map   (s:PARTS.__layout, 'self.normalize_part(v:val)')
   call filter(s:PARTS.__layout, '!(v:val.s is "")')
   call filter(s:PARTS.__parts,  '!(v:val.s is "")')
   if exists('*s:PARTS.__finish') | call s:PARTS.__finish() | endif
@@ -106,7 +128,6 @@ function! s:ez.prepare() "{{{1
 endfunction
 
 function! s:ez.transform_part(part) "{{{1
-  " Transform: simply call parts function
   let [part; args] = split(a:part, '::')
   return  has_key(s:PARTS, part)
         \ ? call(s:PARTS[part], args, s:PARTS)
@@ -181,7 +202,7 @@ function! s:ez.load_theme(theme) "{{{1
   let self._color_cache = {}
   let s:EB.__loaded_theme = 1
 
-  let theme = ezbar#theme#get(a:theme)
+  let theme = ezbar#theme#load(a:theme)
   let theme = deepcopy(get(theme, has_key(theme, &background) ? &background : 'dark' ))
   call extend(s:COLOR, self._normalize_theme(theme))
 endfunction
@@ -261,9 +282,6 @@ function! s:ez.LR_separator_index(layout) "{{{1
     if s is '%=' | return idx | endif
   endfor
 endfunction
-"}}}
-
-" Public:
 function! ezbar#string(active, winnr) "{{{1
   let s:EB     = g:ezbar
   let s:PARTS  = s:EB.parts
@@ -280,9 +298,6 @@ function! ezbar#string(active, winnr) "{{{1
   finally
     return s
   endtry
-endfunction
-
-function! ezbar#nop(...) "{{{1
 endfunction
 
 function! ezbar#set() "{{{1
@@ -332,11 +347,33 @@ function! ezbar#color_check() range "{{{1
         \ filter(getmatches(), 'v:val.group =~# "EzBar"'),
         \ 'matchdelete(v:val.id)')
 
+  call s:hl_color_names()
   for n in range(a:firstline, a:lastline)
-    let color = s:extract_color_definition(getline(n))
-    if empty(color) | continue | endif
-    call matchadd(s:ez.hlmanager.register(eval(color)), '\V' . color)
+    let line = getline(n)
+    let colors = s:scan(line, '\v\c(#[a-f0-9]{6})')
+    if empty(colors) | continue | endif
+    for c in colors
+      call matchadd(s:ez.hlmanager.register({ "gui": [ c, '#fafafa' ] }), c)
+    endfor
+    " let color = s:extract_color_definition(line)
+    " if empty(color) | continue | endif
+    " call matchadd(s:ez.hlmanager.register(eval(color)), '\V' . color)
   endfor
+endfunction
+
+function! s:scan(str, pattern) "{{{1
+  let ret = []
+  let pattern = a:pattern
+  let nth = 1
+  while 1
+    let m = matchlist(a:str, pattern, 0, nth)
+    if empty(m)
+      break
+    endif
+    call add(ret, m[1])
+    let nth += 1
+  endwhile
+  return ret
 endfunction
 
 function! ezbar#color_capture(color) "{{{1
@@ -347,8 +384,14 @@ endfunction
 function! ezbar#load_theme(theme) "{{{1
   call s:ez.load_theme(a:theme)
 endfunction
-"}}}
 
+function! ezbar#rgb()
+  return s:RGB
+endfunction
+function! ezbar#rgb_names()
+  return s:RGB_NAMES
+endfunction
+"}}}
 call s:ez.init()
 
 if expand("%:p") !=# expand("<sfile>:p")

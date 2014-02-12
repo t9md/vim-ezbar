@@ -68,6 +68,6 @@ let s:theme.light = {
       \ '_2':   {'gui': 'gray88',      'cterm':      251      },
       \ }
 
-function! ezbar#theme#gradation#get()
+function! ezbar#theme#gradation#load()
   return s:theme
 endfunction

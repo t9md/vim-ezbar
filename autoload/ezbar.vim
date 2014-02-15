@@ -20,7 +20,6 @@ function! s:extract_color_definition(string) "{{{1
   return matchstr(a:string, '\v\{\s*''(gui|cterm)''\s*:\s*\[.{-}\]\s*}')
 endfunction
 
-
 function! s:hl_color_names() "{{{1
   for [name, rgb] in items(s:RGB)
     let color = { s:SCREEN : [rgb, '#000000'] }
@@ -180,8 +179,8 @@ function! s:ez.color_info(color) "{{{1
         \ }
 endfunction
 
-function! s:ez.specialvar_setup(active, winnr) "{{{1
-  let special_var = {
+function! s:ez.setup(active, winnr) "{{{1
+  call extend(s:PARTS, {
         \ '__active':   a:active,
         \ '__mode':     mode(),
         \ '__winnr':    a:winnr,
@@ -194,8 +193,17 @@ function! s:ez.specialvar_setup(active, winnr) "{{{1
         \ '__layout':   self.normalize_layout(s:EB[ a:active ? 'active' : 'inactive' ]),
         \ '__c':        self.color[ a:active ? 'StatusLine' : 'StatusLineNC'],
         \ '__':         s:HELPER,
-        \ }
-  call extend(s:PARTS, special_var, 'force')
+        \ })
+
+  if self._did_setup | return | endif
+  " for performance benefit, we setup once per refresh.
+  call extend(self, {
+        \ 'sep_L':        get(g:ezbar, 'separator_L', '|'),
+        \ 'sep_R':        get(g:ezbar, 'separator_R', '|'),
+        \ 'sep_border_L': get(g:ezbar, 'separator_border_L', ''),
+        \ 'sep_border_R': get(g:ezbar, 'separator_border_R', ''),
+        \ })
+  let self._did_setup = 1
 endfunction
 
 function! s:ez.load_theme(theme) "{{{1
@@ -208,24 +216,25 @@ function! s:ez.load_theme(theme) "{{{1
 endfunction
 
 function! s:ez._normalize_theme(theme) "{{{1
+  let default_color = get(a:theme, 'm_normal')
+
   let colors = {}
   for color in split('m_normal m_insert m_visual m_replace m_command m_select m_other')
-    let _color1     = get(a:theme, color, 'm_normal')
-    let _color1_rev = s:HELPER.reverse(_color1)
-    let _color2     = s:HELPER.bg(_color1_rev, a:theme['_2'])
-    if has_key(a:theme, '_3')
-      let _color1_rev = s:HELPER.bg(_color1_rev, a:theme['_3'])
-    endif
-
+    let _color1 = get(a:theme, color, default_color)
     let colors[color . '_1'] = _color1
-    let colors[color . '_2'] = _color2
-    let colors[color . '_3'] = _color1_rev
+    let _color1_rev = s:HELPER.reverse(_color1)
+    let colors[color . '_2'] = has_key(a:theme, '_2')
+          \ ? s:HELPER.merge(_color1_rev, a:theme['_2'])
+          \ : _color1_rev
+    let colors[color . '_3'] = has_key(a:theme, '_3')
+          \ ? s:HELPER.merge(_color1_rev, a:theme['_3'])
+          \ : _color1_rev
   endfor
   return extend(a:theme, colors, 'keep')
 endfunction
 
 function! s:ez.string(active, winnr) "{{{1
-  call self.specialvar_setup(a:active, a:winnr)
+  call self.setup(a:active, a:winnr)
   if !get(s:EB, '__loaded_theme')
     call self.load_theme(s:EB.theme)
   endif
@@ -237,11 +246,6 @@ function! s:ez.join() "{{{1
 endfunction
 
 function! s:ez.insert_separator() "{{{1
-  let sep_L        = get(g:ezbar, 'separator_L', '|')
-  let sep_R        = get(g:ezbar, 'separator_R', '|')
-  let sep_border_L = get(g:ezbar, 'separator_border_L', '')
-  let sep_border_R = get(g:ezbar, 'separator_border_R', '')
-
   let LAYOUT    = s:PARTS.__layout
   let idx_last  = len(LAYOUT) - 1
   let idx_LRsep = self.LR_separator_index(LAYOUT)
@@ -264,8 +268,8 @@ function! s:ez.insert_separator() "{{{1
     endif
 
     let [ s, c ] = color.bg is color_next.bg
-          \ ? [ sep_{section}       , part.__section_color ]
-          \ : [ sep_border_{section}, { s:SCREEN : section is 'L' ?
+          \ ? [ self['sep_' . section]       , part.__section_color ]
+          \ : [ self['sep_border_' . section], { s:SCREEN : section is 'L' ?
           \ [color_next.bg, color.bg] : [color.bg, color_next.bg]
           \ } ]
     call add(R, { 's' : s, 'color_name': self.color_info(c).name })
@@ -286,6 +290,7 @@ function! ezbar#string(active, winnr) "{{{1
   let s:EB     = g:ezbar
   let s:PARTS  = s:EB.parts
   call s:HELPER.__init()
+
   if type(get(s:EB, 'color')) isnot s:T_DICTIONARY
     let s:EB.color = {}
   endif
@@ -304,10 +309,12 @@ function! ezbar#set() "{{{1
   let winnr_active = winnr()
   " setup each window's &statusline to
   "   %!ezbar#string(num is winnr_active, winnr())
+  let s:ez._did_setup = 0
   call map(range(1, winnr('$')), '
         \ setwinvar(v:val, "&statusline",
-        \ "%!ezbar#string(". (v:val is# winnr_active) . ", " . v:val . ")")
+        \ printf("%%!ezbar#string(%d, %d)", v:val is# winnr_active, v:val))
         \ ')
+        " \ "%!ezbar#string(". (v:val is# winnr_active) . ", " . v:val . ")")
 endfunction
 
 function! ezbar#hl_refresh() "{{{1
@@ -388,6 +395,7 @@ endfunction
 function! ezbar#rgb()
   return s:RGB
 endfunction
+
 function! ezbar#rgb_names()
   return s:RGB_NAMES
 endfunction

@@ -8,11 +8,10 @@ let s:theme.dark = {
       \ 'm_select':   {'gui': ['MediumAquamarine', 'gray14'], 'cterm': [  9, 16] },
       \ 'm_other':    {'gui': ['MediumAquamarine', 'gray14'], 'cterm': [  9, 16] },
       \
-      \ 'inactive': {'gui': ['gray23',     'gray68'],    'cterm': [ '','','reverse'] },
-      \ 'warn':     {'gui': ['OrangeRed2', 'AliceBlue'], 'cterm': [ 9,16             ] },
-      \ '_2':   {'gui': 'gray20',      'cterm':      'gray'   },
+      \ 'inactive': {'gui': ['gray23', 'gray68'], 'cterm': [ '', '', 'reverse'] },
+      \ 'warn':     {'gui': ['OrangeRed2', 'AliceBlue'], 'cterm': [ 9,  16 ] },
+      \ '_2':       {'gui': ['gray20', ''], 'cterm': ['gray', ''] },
       \ }
-
 function! ezbar#theme#default#load()
   return s:theme
 endfunction

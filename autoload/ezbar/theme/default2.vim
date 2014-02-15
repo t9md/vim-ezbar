@@ -10,8 +10,8 @@ let s:theme.dark = {
       \
       \ 'inactive': {'gui': ['gray23',     'gray68'],    'cterm': [ '','','reverse'] },
       \ 'warn':     {'gui': ['OrangeRed2', 'AliceBlue'], 'cterm': [ 9,16             ] },
-      \ '_2':   {'gui': 'ivory',      'cterm':      'gray'   },
-      \ '_3':   {'gui': '#FFFFFF',      'cterm':      'gray'   },
+      \ '_2':   {'gui': ['ivory', ''],'cterm':['gray', '']   },
+      \ '_3':   {'gui': ['#FFFFFF', ''],'cterm':['gray', '']   },
       \ }
 function! ezbar#theme#default2#load()
   return s:theme

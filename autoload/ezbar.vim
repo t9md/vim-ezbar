@@ -236,7 +236,7 @@ endfunction
 function! s:ez.string(active, winnr) "{{{1
   call self.setup(a:active, a:winnr)
   if !get(s:EB, '__loaded_theme')
-    call self.load_theme(s:EB.theme)
+    call self.load_theme(get(s:EB, 'theme', 'default'))
   endif
   return self.prepare().insert_separator().join()
 endfunction

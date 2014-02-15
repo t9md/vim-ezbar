@@ -22,7 +22,6 @@
 ![Fill-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill2.png)  
 
 # クイックスタート
-
 ```Vim
 let g:ezbar_enable   = 1
 ```
@@ -37,10 +36,8 @@ let g:ezbar_enable   = 1
 ```Vim
 " 簡単に編集出来るようにする。<Space>e で編集
 nnoremap <Space>e  :<C-u>edit $EZBAR_CONFIG<CR>
-
 let g:ezbar_enable   = 1
-
-let $EZBAR_CONFIG = expand("~/.vim/ezbar_config.vim")
+let $EZBAR_CONFIG = expand("~/ezbar_config.vim")
 if filereadable($EZBAR_CONFIG)
   source $EZBAR_CONFIG
 endif

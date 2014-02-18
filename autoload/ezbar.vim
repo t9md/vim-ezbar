@@ -212,7 +212,7 @@ function! s:ez.load_theme(theme) "{{{1
 
   let theme = ezbar#theme#load(a:theme)
   let theme = deepcopy(get(theme, has_key(theme, &background) ? &background : 'dark' ))
-  call extend(s:COLOR, self._normalize_theme(theme))
+  call extend(s:COLOR, self._normalize_theme(theme),'keep')
 endfunction
 
 function! s:ez._normalize_theme(theme) "{{{1
@@ -318,7 +318,7 @@ function! ezbar#set() "{{{1
 endfunction
 
 function! ezbar#hl_refresh() "{{{1
-  let s:EB.__loaded_theme = 0
+  let g:ezbar.__loaded_theme = 0
   call s:ez.hlmanager.refresh()
 endfunction
 
@@ -362,9 +362,9 @@ function! ezbar#color_check() range "{{{1
     for c in colors
       call matchadd(s:ez.hlmanager.register({ "gui": [ c, '#fafafa' ] }), c)
     endfor
-    " let color = s:extract_color_definition(line)
-    " if empty(color) | continue | endif
-    " call matchadd(s:ez.hlmanager.register(eval(color)), '\V' . color)
+    let color = s:extract_color_definition(line)
+    if empty(color) | continue | endif
+    call matchadd(s:ez.hlmanager.register(eval(color)), '\V' . color)
   endfor
 endfunction
 

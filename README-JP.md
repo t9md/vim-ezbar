@@ -44,20 +44,20 @@ endif
 
 ### 特別な変数: `__c`, `__color` , `__filetype` etc.
 
- | *VarName*      | *Description*                                     |
- | -------------- | ------------------------------------------------- |
- | `__active `    | indicate active window or not                     |
- | `__mode     `  | result of mode()                                  |
- | `__winnr    `  | winwidth                                          |
- | `__bufnr    `  | winwidth                                          |
- | `__width    `  | winwidth                                          |
- | `__filetype `  | filetype                                          |
- | `__buftype  `  | buftype                                           |
- | `__parts    `  | normalized part with parts name as key            |
- | `__color    `  | normalized part with parts name as key            |
- | `__layout   `  | layout specified as g:ezbar.active or inactive    |
- | `__c        `  | indicate current default color set to part        |
- | `__         `  | helper function collection                        |
+| *VarName*      | *Description*                                     |
+| -------------- | ------------------------------------------------- |
+| `__active `    | indicate active window or not                     |
+| `__mode     `  | result of mode()                                  |
+| `__winnr    `  | winwidth                                          |
+| `__bufnr    `  | winwidth                                          |
+| `__width    `  | winwidth                                          |
+| `__filetype `  | filetype                                          |
+| `__buftype  `  | buftype                                           |
+| `__parts    `  | normalized part with parts name as key            |
+| `__color    `  | normalized part with parts name as key            |
+| `__layout   `  | layout specified as g:ezbar.active or inactive    |
+| `__c        `  | indicate current default color set to part        |
+| `__         `  | helper function collection                        |
 
 * Hook: `_init()`, `_finish()`, `_parts_missing()` etc.
 * カラーテーブル: g:ezbar.color に保存して使う。

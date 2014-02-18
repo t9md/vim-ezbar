@@ -29,7 +29,7 @@ let g:ezbar_enable   = 1
 上記のみで、他に何も設定しなければ、起動時にデフォルトの設定が使われる。
 デフォルトの設定は `autoload/ezbar/config/default.vim` にある。
 
-### カスタマイズ
+## カスタマイズ
 
 `autoload/ezbar/config/default.vim` を自分の設定フォルダにコピーして、`.vimrc` から `:source` する。
 

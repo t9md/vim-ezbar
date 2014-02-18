@@ -27,20 +27,6 @@ let s:theme.dark = {
       \ 'warn':     {'gui': ['OrangeRed2', 'AliceBlue'], 'cterm': [ 9,16             ] },
       \ '_2':   {'gui': ['gray20', ''],'cterm':['gray', '']   },
       \ }
-let s:theme.light = {
-      \ 'm_normal':   {'gui': ['MediumBlue',    'white'], 'cterm': [33, 16] },
-      \ 'm_insert':   {'gui': ['LimeGreen',     'white'], 'cterm': [10, 16] },
-      \ 'm_replace':  {'gui': ['DeepPink',      'white'], 'cterm': [ 1, 16] },
-      \ 'm_visual':   {'gui': ['DarkGoldenrod', 'white'], 'cterm': [ 9, 16] },
-      \ 'm_command':  {'gui': ['LightSeaGreen', 'white'], 'cterm': [ 9, 16] },
-      \ 'm_select':   {'gui': ['LightSeaGreen', 'white'], 'cterm': [ 9, 16] },
-      \ 'm_other':    {'gui': ['LightSeaGreen', 'white'], 'cterm': [ 9, 16] },
-      \
-      \ 'inactive': {'gui': ['#586e75',    '#eee8d5'],   'cterm': ['', '', 'reverse']},
-      \ 'warn':     {'gui': ['OrangeRed2', 'AliceBlue'], 'cterm': [    9,  16] },
-      \ '_2':   {'gui': ['gray88', ''],'cterm':[251, '']   },
-      \ }
-
 function! ezbar#theme#gradation#load()
   return s:theme
 endfunction

@@ -1,27 +1,38 @@
 function! ezbar#pallet#compact() "{{{1
   let colors = copy(ezbar#rgb_names())
-  " let colors = keys(RGB)
   let width = 80
+  let R = []
+
+  new
+  setlocal buftype=nofile bufhidden=hide noswapfile
+
   while !empty(colors)
     let s = ''
     while 1
       if empty(colors) | break | endif
+
       let color = remove(colors, 0)
-      if len( s . color . ' ') > width
+      let color_s = ' ' . color . ' '
+      if len( s . color_s) > width
         call insert(colors, color, 0)
         break
       else
-        let s .= color . ' '
+        let s .= color_s
       endif
+      execute 'highlight color_'.color.' guifg=black guibg='.color
+      call matchadd('color_'. color , color_s , -1)
     endwhile
-    if !empty(s) | echo s | endif
+    if !empty(s)
+      call add(R, s)
+    endif
   endwhile
+  call setline(1, R)
 endfunction
 
 function! ezbar#pallet#full() "{{{1
-  call clearmatches()
   new
   setlocal buftype=nofile bufhidden=hide noswapfile
+
   let lines = readfile(expand('$VIMRUNTIME/rgb.txt'))
   call filter(lines, 'v:val =~# ''^\s*\d''')
   call filter(lines, 'len(split(v:val)) is 4')
@@ -39,7 +50,6 @@ function! ezbar#pallet#full() "{{{1
   endfor
   call setline(1, R)
 endfunction
-
 
 function! ezbar#pallet#rgbs() "{{{1
   function! Colors()

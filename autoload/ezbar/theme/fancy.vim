@@ -13,6 +13,6 @@ let s:theme.dark = {
       \ '_2':   {'gui': ['ivory', ''],'cterm':['gray', '']   },
       \ '_3':   {'gui': ['#FFFFFF', ''],'cterm':['gray', '']   },
       \ }
-function! ezbar#theme#default2#load()
+function! ezbar#theme#fancy#load()
   return s:theme
 endfunction

@@ -21,15 +21,13 @@
 ![Fill-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill1.png)  
 ![Fill-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill2.png)  
 
-# クイックスタート
-```Vim
-let g:ezbar_enable   = 1
-```
+# 使ってみる
+インストールするだけ。
 
 上記のみで、他に何も設定しなければ、起動時にデフォルトの設定が使われる。
 デフォルトの設定は `autoload/ezbar/config/default.vim` にある。
 
-## カスタマイズ
+# カスタマイズ
 
 `autoload/ezbar/config/default.vim` を自分の設定フォルダにコピーして、`.vimrc` から `:source` する。
 
@@ -42,10 +40,25 @@ if filereadable($EZBAR_CONFIG)
   source $EZBAR_CONFIG
 endif
 ```
-
 ## カスタマイズに使える仕組み
 
-* 特別な変数: `__c`, `__color` , `__filetype` etc.
+### 特別な変数: `__c`, `__color` , `__filetype` etc.
+
+ | *VarName*      | *Description*                                     |
+ | -------------- | ------------------------------------------------- |
+ | `__active `    | indicate active window or not                     |
+ | `__mode     `  | result of mode()                                  |
+ | `__winnr    `  | winwidth                                          |
+ | `__bufnr    `  | winwidth                                          |
+ | `__width    `  | winwidth                                          |
+ | `__filetype `  | filetype                                          |
+ | `__buftype  `  | buftype                                           |
+ | `__parts    `  | normalized part with parts name as key            |
+ | `__color    `  | normalized part with parts name as key            |
+ | `__layout   `  | layout specified as g:ezbar.active or inactive    |
+ | `__c        `  | indicate current default color set to part        |
+ | `__         `  | helper function collection                        |
+
 * Hook: `_init()`, `_finish()`, `_parts_missing()` etc.
 * カラーテーブル: g:ezbar.color に保存して使う。
 * ヘルパー関数: 主に色を操作する系の関数群

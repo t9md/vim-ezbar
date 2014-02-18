@@ -26,6 +26,9 @@ let s:theme.dark = {
       \ 'inactive': {'gui': ['gray23',     'gray68'],    'cterm': [ '','','reverse'] },
       \ 'warn':     {'gui': ['OrangeRed2', 'AliceBlue'], 'cterm': [ 9,16             ] },
       \ }
+
 function! ezbar#theme#gradation2#load()
   return s:theme
 endfunction
+
+

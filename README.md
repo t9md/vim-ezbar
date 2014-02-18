@@ -53,7 +53,7 @@ endif
 ## You can use following tool to customize statusline
 
 * special variable: `__c`, `__color`, `__filetype` etc.
-* hook: `_init()`, `_finish()`, `_parts_missing()` etc.
+* hook: `__init()`, `__finish()`, `__part_missing()` etc.
 * color_table: stored to g:ezbar.color dictionary.
 * helper: collection of function to manupilate color
 

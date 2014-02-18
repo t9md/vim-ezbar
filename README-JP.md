@@ -70,13 +70,20 @@ endif
 全ての設定はこの辞書のフィールドとして設定する。
 ここにないものも(名前がかぶらない限り)勝手に作って、パート関数から参照して良い(ここはユーザーが自由にやれば良い)。
 
-| *Name*            | *Description*                                                    |
-| ----------------- | ---------------------------------------------------------------- |
-| g:ezbar           | 各設定を格納する辞書                                             |
-| g:ezbar.theme     | カラーテーマ名を設定                                             |
-| g:ezbar.color     | パート関数から参照したい色を格納する辞書                         |
-| g:ezbar.alias     | パート関数の別名を格納する辞書。レイアウト内で簡易名を使用できる |
-| g:ezbar.hide_rule | ウィンドウ幅が狭い時にパートを隠すルールを指定する辞書           |
+| *Name*                     | *Description*                                                    |
+| -------------------------- | ---------------------------------------------------------------- |
+| g:ezbar                    | 各設定を格納する辞書                                             |
+| g:ezbar.theme              | カラーテーマ名を設定                                             |
+| g:ezbar.parts              | レイアウトの各要素に対応するパート関数群が格納される辞書。       |
+| g:ezbar.active             | アクティブウィンドウで使用されるレイアウト(文字列 or リスト)     |
+| g:ezbar.inactive           | インアクティブウィンドウで使用されるレイアウト(文字列 or リスト) |
+| g:ezbar.color              | パート関数から参照したい色を格納する辞書                         |
+| g:ezbar.alias              | パート関数の別名を格納する辞書。レイアウト内で簡易名を使用できる |
+| g:ezbar.hide_rule          | ウィンドウ幅が狭い時にパートを隠すルールを指定する辞書           |
+| g:ezbar.separator_L        | 次のパートの背景色が同じ場合に使われる                           |
+| g:ezbar.separator_R        | 次のパートの背景色が同じ場合に使われる                           |
+| g:ezbar.separator_border_L | 次のパートの背景色が異なる場合に使われる                         |
+| g:ezbar.separator_border_R | 次のパートの背景色が異なる場合に使われる                         |
                    
 ### 処理の流れ
 
@@ -90,11 +97,174 @@ Vim のステータスライン(`:help 'statusline'`) は `'statusline'` 変数�
 2. 使用するレイアウトを決定する。アクティブウィンドウの場合は、`g:ezbar.active` が、インアクティブウィンドウの場合は `g:ezbar.inactive` が使用される。
 レイアウトが文字列の場合、`split()` を呼んで、空白文字で分割して `List` にする。
 3. エイリアス(`g:ezbar.alias`)が設定されている場合、レイアウト内で使われていエイリアス(簡易名)をアンエイリアスする(簡易名をパート関数の名前に書き換える)。
-4. レイアウト
-* カラーテーブル: g:ezbar.color に保存して使う。
-* ヘルパー関数: 主に色を操作する系の関数群
+4. フック(`__init()`) が呼ばれる。
+5. `__init()` フック内で、レイアウトが変更されていた場合、レイアウトのリスト化、アンエイリアスが行われる
+6. レイアウトリストの各文字列に対応するパート関数を呼ぶ。対応するパート関数が見つからない場合 `__part_missing({partname})` を呼ぶ。
+パート関数の返り値を標準化する(normalize)。標準化とは、パート関数の返り値が文字列であれば、辞書化し、辞書に対して、必要な属性(セクションカラー等)を設定する。
+7. 's' フィールドが空のパートを削除する。
+8. フック(`__finish()`) が呼ばれる。
 
-* 実例:
+### 実例
+#### セクションのカラーの指定
+レイアウト内で使用する文字列は基本的に g:parts 内のパート関数に対応するが以下の例外がある。
+* セクションカラーの指定
+以下は全てセクションカラーの指定とみなされる。`-` は一文字以上であれば何文字でも良い。
+`|{color_name}` 
+`-{color_name}` 
+`--{color_name}` 
+
+* 左右を分けるセパレータの指定
+一文字以上の `=` は左右を分けるセパレータになる。
+`=`, `==`, `===` も全て同じ意味。
+`={colorname}` の様にセクションカラーを同時に指定することも可能
+
+#### パート関数を作って使う
+
+`g:ezbar.parts` に辞書関数を登録し、その関数をレイアウトの中で使えば良い。
+```Vim
+let g:ezbar = {}
+let g:ezbar.active = ['readonly']
+let g:ezbar.parts = {}
+function! g:ezbar.parts.readonly() "{{{1
+  return getwinvar(self.__winnr, '&readonly') ? g:ezbar.sym.lock : ''
+endfunction
+```
+
+複数のパート関数を作成する場合、以下の様にした方が煩雑でない。
+```Vim
+let g:ezbar = {}
+let g:ezbar.active = ['readonly']
+let g:ezbar.inactive = ['readonly']
+
+let s:u = {}
+function! s:u.readonly() "{{{1
+  return getwinvar(self.__winnr, '&readonly') ? g:ezbar.sym.lock : ''
+endfunction
+let g:ezbar.parts = s:u
+unlet s:u
+```
+パート関数は、文字列か、辞書を返さなければならない。
+文字列を返した場合、空の文字列でなければ、そのままパートの値として表示される。
+辞書の場合は以下の様に、`s` フィールドに文字列を設定して返す。
+`{ 's': {string} }`
+辞書を返す場合は、色の指定も可能。
+`{ 's': {string}, 'ic': {color_inactive}, 'ac': {color_active}, 'c': 'color' }`
+色は全てオプション。
+色は以下の順位で参照される
+1. パート辞書の `ic`(インアクティブウインドウ時), `ac`(アクティブウィンドウ時)
+2. パート辞書の `c`
+3. セクションカラー
+
+#### 色を変更する
+#### カラーテーマを作る
+#### パーツ集を使う
+
+パーツ集は '&rtp/autoload/ezbar/parts/{parts_name}.vim' から検索される。
+標準で `default.vim` が提供されている。
+パーツ集のパーツを取得するには、バーツ集の名前と、使用するパートを指定して `ezbar#part#use()` を呼び出す。
+この関数は指定したパート集から、選択したパート郡のみを含んだ辞書を返すので、これを `g:ezbar.parts` に設定すれば良い。
+
+let s:u = ezbar#parts#use('default', {'parts': s:features })
+```Vim
+let s:features = [
+      \ 'mode',
+      \ 'readonly',
+      \ 'filename',
+      \ 'modified',
+      \ 'filetype',
+      \ 'win_buf',
+      \ 'encoding',
+      \ 'percent',
+      \ 'line_col'
+      \ ]
+let s:u = ezbar#parts#use('default', {'parts': s:features })
+unlet s:features
+let g:ezbar.parts = s:u
+```
+#### エイリアスを使う
+レイアウトはリストでも、文字列でも指定できる。
+エイリアスを使って、文字列でレイアウトを表現すれば、より簡潔にレイアウトを指定出来る。
+以下のレイアウトをエイリアスを使用して書きなおしてみる。
+
+* 書き換え前
+```Vim
+let g:ezbar.active = [
+      \ '----------- 1',
+      \ 'mode',
+      \ '----------- 2',
+      \ 'win_buf',
+      \ '----------- 3',
+      \ 'cwd',
+      \ '===========',
+      \ 'readonly',
+      \ '----------- 2',
+      \ 'filename',
+      \ 'filetype',
+      \ '----------- 1',
+      \ 'modified',
+      \ 'encoding',
+      \ 'percent',
+      \ 'line_col',
+      \ ]
+let g:ezbar.inactive = [
+      \ '----------- inactive',
+      \ 'win_buf',
+      \ 'modified',
+      \ '==========',
+      \ 'filename',
+      \ 'filetype',
+      \ 'encoding',
+      \ 'line_col',
+      \ ]
+```
+
+* 書き換え後(エイリアスを使用)
+```Vim
+let g:ezbar.alias = {
+      \ 'm':   'mode',
+      \ 'wb':  'win_buf',
+      \ 'ro':  'readonly',
+      \ 'mod': 'modified',
+      \ 'fn':  'filename',
+      \ 'ft':  'filetype',
+      \ '%':   'percent',
+      \ 'enc': 'encoding',
+      \ 'lc':  'line_col',
+      \ '|i':  '|inactive',
+      \ }
+let g:ezbar.active = '|1 m |2 wb |3 cwd = ro |2 fn ft |1 mod enc % lc'
+let g:ezbar.inactive = '|i wb mod = fn ft enc lc'
+```
+
+#### ウィンドウ幅によって表示するパーツを隠す
+各パート関数内で、`__width` を使用して、ウィンドウ幅を判断し、表示したくない場合は空の文字列を返せば、そのパートは表示されない。
+しかし、このような処理をパート関数毎に実装するとパート関数の汎用性が無くなるし、煩雑である。
+
+`g:ezbar.hide_rule` 辞書とヘルパー関数`__.hide()`を使用すれば簡潔に設定できる
+```Vim
+" window 幅が90より狭い場合、'cwd' パートを隠す。65 より小さい場合 'fugitive'
+" を隠す。以下同様
+let g:ezbar.hide_rule = {
+      \ 90: ['cwd'],
+      \ 65: ['fugitive'],
+      \ 60: ['encoding', 'filetype'],
+      \ 50: ['percent'],
+      \ 35: ['mode', 'readonly', 'cwd'],
+      \ }
+" 実際に隠すには、__init() フックの中で、__.hide() を呼ぶ必要がある。
+" __.hide() " にはオプション引数としてListを渡せる。ウィンドウ幅とは別の条件で隠したい
+" パートがあれば、オプション引数で渡せば良い
+function! s:u.__init() "{{{1
+  let hide = []
+  " choosewin が有効な場合、validate パート(行末スペースの検出)を隠す
+  if get(g:, 'choosewin_active', 0)
+    let hide += ['validate']
+  endif
+  call self.__.hide(hide)
+endfunction
+```
+
+#### 実例:
 作者の設定が `autoload/ezbar/config/t9md.vim` にある。
 
 * Help

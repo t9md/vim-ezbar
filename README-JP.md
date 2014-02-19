@@ -263,6 +263,45 @@ function! s:u.__init() "{{{1
 endfunction
 ```
 
+#### パート関数に引数を渡す and __init() フックで、レイアウトを変更する
+
+Unite バッファではステータスラインを独自のものに設定したい。  
+見た目がよくなるように、'Unite' というラベルをつける。このラベルは asis パーツを使用している。  
+パート関数は'::' で区切ることで、引数を渡すことが出来る。`asis::Unite` とすることで、`g:ezbar.parts.asis('Unite')` が呼ばれる。  
+文字列をそのまま表示したい場合、文字列毎にパート関数を用意するのは煩雑なので、汎用的に使用できる`asis` パーツを作成している。  
+`__init()` フックの中で、`__layout` に Unite バッファ用のレイアウトを設定して、直ぐに return する。  
+これで、ファイルタイプが 'unite' の場合のみ独自のレイアウトを使用することができる。  
+
+```Vim
+" avoid unite.vim to overwrite statusline which is enabled by default
+let g:unite_force_overwrite_statusline  = 0
+
+function! s:u.asis(...) "{{{1
+  return join(a:000, '|')
+endfunction
+
+function! s:u.unite_buffer_name() "{{{1
+  return '%{b:unite.buffer_name}'
+endfunction
+
+function! s:u.unite_status() "{{{1
+  return '%{unite#get_status_string()}'
+endfunction
+
+function! s:u.__init() "{{{1
+  " return if its not active window(optional).
+  if !self.__active
+    return
+  endif
+  " if &filetype is 'unite', modify layout via special __layout variable and
+  " return immediately
+  if self.__filetype is# 'unite'
+    let self.__layout = '|1 asis::Unite |2 unite_buffer_name |3 unite_status'
+    return
+  endif
+endfunction
+```
+
 #### 色を変更する
 #### カラーテーマを作る
 

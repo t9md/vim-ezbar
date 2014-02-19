@@ -285,6 +285,7 @@ function! s:ez.LR_separator_index(layout) "{{{1
   for [idx, s] in map(copy(a:layout), '[v:key, v:val.s]')
     if s is '%=' | return idx | endif
   endfor
+  return -1
 endfunction
 function! ezbar#string(active, winnr) "{{{1
   let s:EB     = g:ezbar

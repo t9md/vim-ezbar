@@ -212,7 +212,7 @@ function! s:ez.load_theme(theme) "{{{1
 
   let theme = ezbar#theme#load(a:theme)
   let theme = deepcopy(get(theme, has_key(theme, &background) ? &background : 'dark' ))
-  call extend(s:COLOR, self._normalize_theme(theme),'keep')
+  call extend(s:COLOR, self._normalize_theme(theme))
 endfunction
 
 function! s:ez._normalize_theme(theme) "{{{1

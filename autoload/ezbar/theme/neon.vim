@@ -2,7 +2,7 @@ let s:theme = {}
 let s:theme.dark = {
       \ 'm_normal':    { 'gui': ['#000000', '#ab82ff'] },
       \ 'm_normal_1':  { 'gui': ['#ab82ff', '#000000'] },
-      \ 'm_normal_2':  { 'gui': ['#1f1f1f', '#ba55d3'] },
+      \ 'm_normal_2':  { 'gui': ['#2f2f2f', '#ba55d3'] },
       \ 'm_normal_3':  { 'gui': ['#000000', '#ba55d3'] },
       \ 'm_insert':    { 'gui': ['#000000', '#00ff7f'] },
       \ 'm_insert_1':  { 'gui': ['#9aff9a', '#000000'] },

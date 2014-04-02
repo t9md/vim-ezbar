@@ -65,7 +65,7 @@ See `:help ezbar`
 
 ## TIPS for color preparation
 
-1. Capture with command `:EzBarColorCapture Constant`  
+1. Capture with command `:EzbarColorCapture Constant`  
 2. paste to buffer with `p`. here is result of my environment.  
 
 ```Vim

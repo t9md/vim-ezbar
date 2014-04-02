@@ -21,7 +21,8 @@ function! s:extract_color_definition(string) "{{{1
 endfunction
 
 function! s:hl_color_names() "{{{1
-  for [name, rgb] in items(s:RGB)
+  let RGB, RGB_NAMES = s:color_name2rgb()
+  for [name, rgb] in items(RGB)
     let color = { s:SCREEN : [rgb, '#000000'] }
     let cname = s:ez.hlmanager.register(color)
     call matchadd(cname, '\<' .name .'\>')
@@ -44,7 +45,7 @@ function! s:color_name2rgb() "{{{1
   endfor
   return [R, RGB_NAMES]
 endfunction
-let [s:RGB, s:RGB_NAMES] = s:color_name2rgb()
+" let [s:RGB, s:RGB_NAMES] = s:color_name2rgb()
 " let s:RGB = s:color_name2rgb()
 "}}}
 
@@ -394,11 +395,13 @@ function! ezbar#load_theme(theme) "{{{1
 endfunction
 
 function! ezbar#rgb()
-  return s:RGB
+  let RGB, RGB_NAMES = s:color_name2rgb()
+  return RGB
 endfunction
 
 function! ezbar#rgb_names()
-  return s:RGB_NAMES
+  let [RGB, RGB_NAMES] = s:color_name2rgb()
+  return RGB_NAMES
 endfunction
 "}}}
 call s:ez.init()

@@ -8,9 +8,9 @@ let s:theme.dark = {
       \ 'm_select':   {'gui': ['MediumAquamarine', 'gray14'], 'cterm': [  9, 16] },
       \ 'm_other':    {'gui': ['MediumAquamarine', 'gray14'], 'cterm': [  9, 16] },
       \
-      \ 'inactive': {'gui': ['gray23', 'gray68'], 'cterm': [ 235, 246] },
-      \ 'warn':     {'gui': ['OrangeRed2', 'AliceBlue'], 'cterm': [ 9,  16 ] },
-      \ '_2':       {'gui': ['gray20', ''], 'cterm': ['234', ''] },
+      \ 'inactive': { 'gui': ['gray23', 'gray68'], 'cterm': [ 235, 246] },
+      \ 'warn':     { 'gui': ['OrangeRed2', 'AliceBlue'], 'cterm': [ 9,  16 ] },
+      \ '_2':       { 'gui': ['gray20', ''], 'cterm': ['234', ''] },
       \ }
 let s:theme.light = {
       \ 'm_normal':   {'gui': ['DodgerBlue4', 'white'], 'cterm': [ 33, 16] },

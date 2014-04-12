@@ -365,15 +365,16 @@ function! ezbar#color_check() range "{{{1
         \ filter(getmatches(), 'v:val.group =~# "EzBar"'),
         \ 'matchdelete(v:val.id)')
 
-  call s:hl_color_names()
+  " call s:hl_color_names()
   for n in range(a:firstline, a:lastline)
     let line = getline(n)
     let colors = s:scan(line, '\v\c(#[a-f0-9]{6})')
     if empty(colors) | continue | endif
-    for c in colors
-      call matchadd(s:ez.hlmanager.register({ "gui": [ c, '#fafafa' ] }), c)
-    endfor
+    " for c in colors
+      " call matchadd(s:ez.hlmanager.register({ "gui": [ c, '#fafafa' ] }), c)
+    " endfor
     let color = s:extract_color_definition(line)
+    " echo color
     if empty(color) | continue | endif
     call matchadd(s:ez.hlmanager.register(eval(color)), '\V' . color)
   endfor

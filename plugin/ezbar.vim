@@ -1,13 +1,17 @@
 " GUARD:
-if expand("%:p") ==# expand("<sfile>:p") | unlet! g:loaded_ezbar | endif
-if exists('g:loaded_ezbar') | finish | endif
+if expand("%:p") ==# expand("<sfile>:p")
+  unlet! g:loaded_ezbar
+endif
+if exists('g:loaded_ezbar')
+  finish
+endif
 let g:loaded_ezbar = 1
 let s:old_cpo = &cpo
 set cpo&vim
 
 " Main:
 let s:options = {
-      \ 'g:ezbar':        {},
+      \ 'g:ezbar':       {},
       \ 'g:ezbar_enable': 1,
       \ }
 let s:default_config
@@ -23,6 +27,7 @@ function! s:set_options(options) "{{{
 endfunction
 
 function! s:startup() "{{{1
+  call s:set_options(s:options)
   if !g:ezbar_enable
     return
   endif
@@ -34,7 +39,6 @@ function! s:startup() "{{{1
 endfunction
 "}}}
 
-call s:set_options(s:options)
 call s:startup()
 
 " Command:

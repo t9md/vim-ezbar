@@ -1,10 +1,14 @@
+function! s:open_tmp_buffer() "{{{
+  new
+  setlocal buftype=nofile bufhidden=hide noswapfile
+endfunction
+
 function! ezbar#pallet#compact() "{{{1
-  let colors = copy(ezbar#rgb_names())
+  let colors = ezbar#color_names()
   let width = 80
   let R = []
 
-  new
-  setlocal buftype=nofile bufhidden=hide noswapfile
+  call s:open_tmp_buffer()
 
   while !empty(colors)
     let s = ''
@@ -30,23 +34,20 @@ function! ezbar#pallet#compact() "{{{1
 endfunction
 
 function! ezbar#pallet#full() "{{{1
-  new
-  setlocal buftype=nofile bufhidden=hide noswapfile
+  let colors      = ezbar#color_names()
+  let colors_dict = ezbar#color_name2rgb()
+  call s:open_tmp_buffer()
 
-  let lines = readfile(expand('$VIMRUNTIME/rgb.txt'))
-  call filter(lines, 'v:val =~# ''^\s*\d''')
-  call filter(lines, 'len(split(v:val)) is 4')
   let R = []
-  for line in lines
-    let [r, g, b, name] = split(line)
-    let rgb = printf('%02x%02x%02x', r, g, b)
+  for color in colors
+    let rgb = colors_dict[color]
     let cmd_bg = 'highlight color_'.rgb.' guifg=black guibg=#'.rgb
     let cmd_fg = 'highlight color_'.rgb.'_fg guifg=#'.rgb.' guibg=NONE'
     execute cmd_bg
     execute cmd_fg
-    call matchadd('color_'.rgb, '\<'.name.'\>', -1)
-    call matchadd('color_'.rgb.'_fg', ' \{2,}| \zs\<'.name.'\>', -1)
-    call add(R, printf('#%s | %-20s | %-20s', rgb, name, name))
+    call matchadd('color_'.rgb, '\<'.color.'\>', -1)
+    call matchadd('color_'.rgb.'_fg', ' \{2,}| \zs\<'.color.'\>', -1)
+    call add(R, printf('%s | %-20s | %-20s', rgb, color, color))
   endfor
   call setline(1, R)
 endfunction
@@ -75,8 +76,8 @@ function! ezbar#pallet#rgbs() "{{{1
     call add(R, bg)
     let matchadd_todo[bg] = color_name
   endfor
-  new
-  setlocal buftype=nofile bufhidden=hide noswapfile
+  call s:open_tmp_buffer()
+
   let last = []
   while !empty(R)
     call add(last, join(remove(R, 0, min([10, len(R) - 1]) ), ' '))
@@ -87,4 +88,5 @@ function! ezbar#pallet#rgbs() "{{{1
     call matchadd(color, word)
   endfor
 endfunction
+"}}}
 " vim: foldmethod=marker

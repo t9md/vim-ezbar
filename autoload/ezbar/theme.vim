@@ -8,3 +8,5 @@ endfunction
 function! ezbar#theme#load(theme) "{{{1
   return ezbar#theme#{a:theme}#load()
 endfunction
+"}}}
+" vim: foldmethod=marker

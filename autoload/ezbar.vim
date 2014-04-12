@@ -3,6 +3,7 @@ let s:T_LIST       = type([])
 let s:T_DICTIONARY = type({})
 let s:T_NUMBER     = type(0)
 let s:SCREEN       = has('gui_running') ? 'gui' : 'cterm'
+
 let s:MODE2COLOR   = {
       \ 'n':      'm_normal',
       \ 'i':      'm_insert',
@@ -16,13 +17,15 @@ let s:MODE2COLOR   = {
       \ "\<C-s>": 'm_select',
       \ '?':      'm_other',
       \ }
+
 function! s:extract_color_definition(string) "{{{1
   return matchstr(a:string, '\v\{\s*''(gui|cterm)''\s*:\s*\[.{-}\]\s*}')
 endfunction
 
 function! s:hl_color_names() "{{{1
-  let RGB, RGB_NAMES = s:color_name2rgb()
-  for [name, rgb] in items(RGB)
+  let RGB = s:color_name2rgb()
+  for [name, _rgb] in items(RGB)
+    let rgb = '#' . _rgb
     let color = { s:SCREEN : [rgb, '#000000'] }
     let cname = s:ez.hlmanager.register(color)
     call matchadd(cname, '\<' .name .'\>')
@@ -34,27 +37,29 @@ function! s:color_name2rgb() "{{{1
   let lines = readfile(expand("$VIMRUNTIME/rgb.txt"))
   call filter(lines, "v:val !~# '^\s*\d'")
   call filter(lines, 'len(split(v:val)) is# 4')
-  let RGB_NAMES = []
   let R = {}
   for line in lines
     let [r, g, b, name] = split(line)
-    let rgb = printf("#%02x%02x%02x", r, g, b)
+    let rgb = printf("%02x%02x%02x", r, g, b)
     let R[name] = rgb
-    call add(RGB_NAMES, name)
-    " let R[rgb] = rgb
   endfor
-  return [R, RGB_NAMES]
+  return R
 endfunction
-" let [s:RGB, s:RGB_NAMES] = s:color_name2rgb()
-" let s:RGB = s:color_name2rgb()
+
+function! s:color_names() "{{{1
+  let lines = readfile(expand("$VIMRUNTIME/rgb.txt"))
+  call filter(lines, "v:val !~# '^\s*\d'")
+  call filter(lines, 'len(split(v:val)) is# 4')
+  return map(lines, 'split(v:val)[-1]')
+endfunction
 "}}}
 
 let s:speacial_parts = {}
 function! s:speacial_parts.___setcolor(color) "{{{1
-  let prefix = a:color =~# '^\d$'
-        \ ? get(s:MODE2COLOR, s:PARTS.__mode, 'm_normal') . '_'
-        \ : ''
-  let self.__c = s:COLOR[prefix . a:color ]
+  let self.__c = s:COLOR[ a:color =~# '^\d$'
+        \ ? get(s:MODE2COLOR, s:PARTS.__mode, 'm_normal') . '_' . a:color
+        \ : a:color
+        \ ]
   return ''
 endfunction
 
@@ -66,10 +71,11 @@ function! s:speacial_parts.___LR_separator(...) "{{{1
   return { 's': '%=' }
 endfunction
 "}}}
+
 let s:ez = {}
 function! s:ez.init() "{{{1
-  let s:HELPER = ezbar#helper#get()
-  let self.hlmanager = ezbar#hlmanager#new('EzBar')
+  let s:HELPER          = ezbar#helper#get()
+  let self.hlmanager    = ezbar#hlmanager#new('EzBar')
   let self._color_cache = {}
   let self.color     = {
         \ 'StatusLine':   self.hlmanager.convert('StatusLine'),
@@ -90,7 +96,11 @@ function! s:ez.substitute_part(part) "{{{1
   return substitute(R,
         \ s:COLOR_SETTER, '\= "___setcolor::" . submatch(1)', '')
 endfunction
+"}}}
+
+" '====='
 let s:LR_SEPARATOR = '\v\=+\s*(\w*)'
+" '++++' or '|'
 let s:COLOR_SETTER = '\v^%(-+|\|)\s*(\w*)$'
 
 function! s:ez.load_special_parts() "{{{1
@@ -316,7 +326,6 @@ function! ezbar#set() "{{{1
         \ setwinvar(v:val, "&statusline",
         \ printf("%%!ezbar#string(%d, %d)", v:val is# winnr_active, v:val))
         \ ')
-        " \ "%!ezbar#string(". (v:val is# winnr_active) . ", " . v:val . ")")
 endfunction
 
 function! ezbar#hl_refresh() "{{{1
@@ -394,14 +403,12 @@ function! ezbar#load_theme(theme) "{{{1
   call s:ez.load_theme(a:theme)
 endfunction
 
-function! ezbar#rgb()
-  let RGB, RGB_NAMES = s:color_name2rgb()
-  return RGB
+function! ezbar#color_names() "{{{1
+  return s:color_names()
 endfunction
 
-function! ezbar#rgb_names()
-  let [RGB, RGB_NAMES] = s:color_name2rgb()
-  return RGB_NAMES
+function! ezbar#color_name2rgb() "{{{1
+  return s:color_name2rgb()
 endfunction
 "}}}
 call s:ez.init()
@@ -411,24 +418,4 @@ if expand("%:p") !=# expand("<sfile>:p")
 endif
 nnoremap <F10> :%EzbarColorCheck<CR>
 nnoremap <silent> <F9> :<C-u>execute 'EzbarColorCapture ' . expand('<cword>')<CR>
-
-function! s:extract_airline_color(string) "{{{1
-  return matchstr(a:string, '\v\zs[.*\]\ze')
-endfunction
-
-function! ezbar#check_highlight2() range "{{{1
-  " clear
-  call map(
-        \ filter(getmatches(), 'v:val.group =~# "EzBar"'),
-        \ 'matchdelete((v:val.id)')
-
-  for n in range(a:firstline, a:lastline)
-    let color_s = s:extract_airline_color(getline(n))
-    if empty(color_s) | continue | endif
-    let color = eval(color_s)[0:1]
-    let ezbar_expr = " { 'gui': " . string(color) . " }"
-    let ezbar_color = eval(ezbar_expr)
-    call matchadd(s:ez.hlmanager.register(ezbar_color), '\V' . color_s)
-  endfor
-endfunction
 " vim: foldmethod=marker

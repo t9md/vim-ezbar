@@ -55,10 +55,11 @@ endfunction
 " Special Parts:
 let s:speacial_parts = {}
 function! s:speacial_parts.___setcolor(color) "{{{1
-  let self.__c = s:COLOR[ a:color =~# '^\d$'
+  let color = a:color =~# '^\d$'
         \ ? get(s:MODE2COLOR, s:Parts.__mode, 'm_normal') . '_' . a:color
         \ : a:color
-        \ ]
+
+  let self.__c = g:ezbar.color[color]
   return ''
 endfunction
 
@@ -198,13 +199,16 @@ function! s:ez.setup(active, winnr) "{{{1
         \ '__filetype': getwinvar(a:winnr, '&filetype'),
         \ '__buftype':  getwinvar(a:winnr, '&buftype'),
         \ '__parts':    {},
-        \ '__color':    s:COLOR,
+        \ '__color':    g:ezbar.color,
         \ '__layout':   self.normalize_layout(s:EB[ a:active ? 'active' : 'inactive' ]),
-        \ '__c':        self.color[ a:active ? 'StatusLine' : 'StatusLineNC'],
+        \ '__c':        self.color[a:active ? 'StatusLine' : 'StatusLineNC'],
         \ '__':         s:Helper,
         \ })
 
-  if self._did_setup | return | endif
+  if self._did_setup
+    return
+  endif
+
   " for performance benefit, we setup once per refresh.
   call extend(self, {
         \ 'sep_L':        get(g:ezbar, 'separator_L', '|'),
@@ -221,7 +225,7 @@ function! s:ez.load_theme(theme) "{{{1
 
   let theme = ezbar#theme#load(a:theme)
   let theme = deepcopy(get(theme, has_key(theme, &background) ? &background : 'dark' ))
-  call extend(s:COLOR, self._normalize_theme(theme))
+  call extend(g:ezbar.color, self._normalize_theme(theme))
 endfunction
 
 function! s:ez._normalize_theme(theme) "{{{1
@@ -298,6 +302,13 @@ function! s:ez.LR_separator_index(layout) "{{{1
 endfunction
 "}}}
 
+let s:conf_default = {
+      \ '__loaded_default_config': 0,
+      \ '__loaded_theme': 0,
+      \ '__theme': 'default',
+      \ 'color': {},
+      \ }
+
 " API:
 function! ezbar#string(active, winnr) "{{{1
   let s:EB     = g:ezbar
@@ -309,10 +320,10 @@ function! ezbar#string(active, winnr) "{{{1
   let s:Parts  = s:EB.parts
   call s:Helper.__init()
 
-  if ! s:_.is_Dictionary(get(s:EB, 'color'))
-    let s:EB.color = {}
+  if ! s:_.is_Dictionary(get(g:ezbar, 'color'))
+    let g:ezbar.color = {}
   endif
-  let s:COLOR = s:EB.color
+
   try
     let s = ''
     let s = s:ez.string(a:active, a:winnr)
@@ -324,13 +335,13 @@ function! ezbar#string(active, winnr) "{{{1
 endfunction
 
 function! ezbar#set() "{{{1
-  let winnr_active = winnr()
+  let active = winnr()
   " setup each window's &statusline to
-  "   %!ezbar#string(num is winnr_active, winnr())
+  "   %!ezbar#string(active, winnr())
   let s:ez._did_setup = 0
   call map(range(1, winnr('$')), '
         \ setwinvar(v:val, "&statusline",
-        \ printf("%%!ezbar#string(%d, %d)", v:val is# winnr_active, v:val))
+        \ printf("%%!ezbar#string(%d, %d)", v:val is# active, v:val))
         \ ')
 endfunction
 
@@ -341,6 +352,14 @@ endfunction
 
 function! ezbar#hlmanager() "{{{1
   return s:ez.hlmanager
+endfunction
+
+function! ezbar#enable() "{{{1
+  augroup plugin-ezbar
+    autocmd!
+    autocmd WinEnter,BufWinEnter,FileType,ColorScheme * call ezbar#set()
+    autocmd ColorScheme,SessionLoadPost * call ezbar#hl_refresh()
+  augroup END
 endfunction
 
 function! ezbar#disable() "{{{1
@@ -354,14 +373,6 @@ function! ezbar#disable() "{{{1
 
   augroup plugin-ezbar
     autocmd!
-  augroup END
-endfunction
-
-function! ezbar#enable() "{{{1
-  augroup plugin-ezbar
-    autocmd!
-    autocmd WinEnter,BufWinEnter,FileType,ColorScheme * call ezbar#set()
-    autocmd ColorScheme,SessionLoadPost * call ezbar#hl_refresh()
   augroup END
 endfunction
 

@@ -27,13 +27,11 @@ endfunction
 
 function! s:startup() "{{{1
   call s:set_options(s:options)
+
   if !g:ezbar_enable
     return
   endif
 
-  if g:ezbar_enable_default_config
-    call extend(g:ezbar, ezbar#config#default#get(), 'keep')
-  endif
   call ezbar#enable()
 endfunction
 "}}}

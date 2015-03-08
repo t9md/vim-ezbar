@@ -298,8 +298,16 @@ function! s:ez.LR_separator_index(layout) "{{{1
   endfor
   return -1
 endfunction
+"}}}
+
+" API:
 function! ezbar#string(active, winnr) "{{{1
   let s:EB     = g:ezbar
+  if !get(s:EB, '__loaded_default_config') && g:ezbar_enable_default_config
+    call extend(s:EB, ezbar#config#default#get(), 'keep')
+    let s:EB.__loaded_default_config = 1
+  endif
+
   let s:PARTS  = s:EB.parts
   call s:HELPER.__init()
 
@@ -412,11 +420,13 @@ function! ezbar#color_name2rgb() "{{{1
   return s:color_name2rgb()
 endfunction
 "}}}
+
 call s:ez.init()
 
-if expand("%:p") !=# expand("<sfile>:p")
-  finish
-endif
-nnoremap <F10> :%EzbarColorCheck<CR>
-nnoremap <silent> <F9> :<C-u>execute 'EzbarColorCapture ' . expand('<cword>')<CR>
+" if expand("%:p") !=# expand("<sfile>:p")
+  " finish
+" endif
+" nnoremap <F10> :%EzbarColorCheck<CR>
+" nnoremap <silent> <F9> :<C-u>execute 'EzbarColorCapture ' . expand('<cword>')<CR>
+
 " vim: foldmethod=marker

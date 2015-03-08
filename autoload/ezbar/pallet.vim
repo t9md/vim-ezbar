@@ -1,10 +1,15 @@
+" This file is not essential part of ezbar.
+" Should be work without this file.
+
 function! s:open_tmp_buffer() "{{{
   new
   setlocal buftype=nofile bufhidden=hide noswapfile
 endfunction
+"}}}
 
+" API:
 function! ezbar#pallet#compact() "{{{1
-  let colors = ezbar#color_names()
+  let colors = ezbar#color#list()
   let width = 80
   let R = []
 
@@ -34,8 +39,8 @@ function! ezbar#pallet#compact() "{{{1
 endfunction
 
 function! ezbar#pallet#full() "{{{1
-  let colors      = ezbar#color_names()
-  let colors_dict = ezbar#color_name2rgb()
+  let colors      = ezbar#color#list()
+  let colors_dict = ezbar#color#name2rgb()
   call s:open_tmp_buffer()
 
   let R = []
@@ -51,9 +56,7 @@ function! ezbar#pallet#full() "{{{1
   endfor
   call setline(1, R)
 endfunction
-"}}}
 
-" API:
 function! ezbar#pallet#rgbs() "{{{1
   function! Colors()
     let base = range(0, 255, 16)

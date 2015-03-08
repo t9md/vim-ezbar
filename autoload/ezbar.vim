@@ -1,3 +1,30 @@
+" Overview:
+" g:ezbar.layout
+" # Design & terminology
+"  ezbar compose &statusline string from layout(array of part)
+"   * layout: Array of part
+"   * part: Each part must have corresponding part function.
+"           Part will be transformed to result of corresponding part func.
+"   * part_def: Dictionary representation for part.
+"   * part_func: return part_def or string.
+"   * helper: helper functions avaiable within part function.
+"   * theme: color theme.
+"
+" # Processsing flow
+"  preparation
+"    - unalias if aliased.
+"    - extend parts with special_parts
+"    - substitute_part
+"        substitute ===, ---, | to corresponding parts name.
+"  transform
+"     evaluate each parts.
+"     in this stage, layout is transformed to array of part_def.
+"  insert_separator
+"     insert separator between each parts.
+"  join()
+"     join layout to string.
+"
+
 " Util:
 let s:_ = ezbar#util#get()
 let s:SCREEN = s:_.screen_type()
@@ -15,42 +42,6 @@ let s:MODE2COLOR   = {
       \ "\<C-s>": 'm_select',
       \ '?':      'm_other',
       \ }
-
-function! s:extract_color_definition(string) "{{{1
-  return matchstr(a:string, '\v\{\s*''(gui|cterm)''\s*:\s*\[.{-}\]\s*}')
-endfunction
-
-function! s:hl_color_names() "{{{1
-  let RGB = s:color_name2rgb()
-  for [name, _rgb] in items(RGB)
-    let rgb = '#' . _rgb
-    let color = { s:SCREEN : [rgb, '#000000'] }
-    let cname = s:ez.hlmanager.register(color)
-    call matchadd(cname, '\<' .name .'\>')
-    call matchadd(cname, '\V' . rgb)
-  endfor
-endfunction
-
-function! s:color_name2rgb() "{{{1
-  let lines = readfile(expand("$VIMRUNTIME/rgb.txt"))
-  call filter(lines, "v:val !~# '^\s*\d'")
-  call filter(lines, 'len(split(v:val)) is# 4')
-  let R = {}
-  for line in lines
-    let [r, g, b, name] = split(line)
-    let rgb = printf("%02x%02x%02x", r, g, b)
-    let R[name] = rgb
-  endfor
-  return R
-endfunction
-
-function! s:color_names() "{{{1
-  let lines = readfile(expand("$VIMRUNTIME/rgb.txt"))
-  call filter(lines, "v:val !~# '^\s*\d'")
-  call filter(lines, 'len(split(v:val)) is# 4')
-  return map(lines, 'split(v:val)[-1]')
-endfunction
-"}}}
 
 " Special Parts:
 let s:speacial_parts = {}
@@ -75,7 +66,6 @@ endfunction
 " Main:
 let s:ez = {}
 
-
 function! s:ez.init() "{{{1
   let s:Helper          = ezbar#helper#get()
   let self.hlmanager    = ezbar#hlmanager#new('EzBar')
@@ -87,10 +77,10 @@ function! s:ez.init() "{{{1
 endfunction
 
 function! s:ez.unalias() "{{{1
-  if !has_key(s:EB, 'alias')
+  if !has_key(self.conf, 'alias')
     return
   endif
-  call map(s:Parts.__layout, 'get(s:EB.alias, v:val, v:val)')
+  call map(s:Parts.__layout, 'get(self.conf.alias, v:val, v:val)')
 endfunction
 
 function! s:ez.substitute_part(part) "{{{1
@@ -112,6 +102,7 @@ endfunction
 
 function! s:ez.prepare() "{{{1
   call self.unalias()
+
   if exists('*s:Parts.__init')
     let layout_save = s:Parts.__layout
     call s:Parts.__init()
@@ -188,9 +179,8 @@ function! s:ez.color_info(color) "{{{1
 endfunction
 
 function! s:ez.setup(active, winnr) "{{{1
-  if !s:EB.__loaded_theme
-    " call self.load_theme(get(s:EB, 'theme', 'default'))
-    call self.load_theme(s:EB.theme)
+  if !self.conf.__loaded_theme
+    call self.load_theme(self.conf.theme)
   endif
 
   call extend(s:Parts, {
@@ -203,7 +193,7 @@ function! s:ez.setup(active, winnr) "{{{1
         \ '__buftype':  getwinvar(a:winnr, '&buftype'),
         \ '__parts':    {},
         \ '__color':    g:ezbar.color,
-        \ '__layout':   self.normalize_layout(s:EB[ a:active ? 'active' : 'inactive' ]),
+        \ '__layout':   self.normalize_layout(self.conf[ a:active ? 'active' : 'inactive' ]),
         \ '__c':        self.color[a:active ? 'StatusLine' : 'StatusLineNC'],
         \ '__':         s:Helper,
         \ })
@@ -224,40 +214,44 @@ endfunction
 
 function! s:ez.load_theme(theme) "{{{1
   let self._color_cache = {}
-  let s:EB.__loaded_theme = 1
-
   let theme = ezbar#theme#load(a:theme)
-  let bg = has_key(theme, &background) ? &background : 'dark'
-  " let theme = deepcopy(get(theme, bg))
-  let theme = get(theme, bg)
-  call extend(g:ezbar.color, self._normalize_theme(theme))
-endfunction
-
-function! s:ez._normalize_theme(theme) "{{{1
-  let default_color = get(a:theme, 'm_normal')
-
-  let colors = {}
-  for color in split('m_normal m_insert m_visual m_replace m_command m_select m_other')
-    let _color1 = get(a:theme, color, default_color)
-    let colors[color . '_1'] = _color1
-    let _color1_rev = s:Helper.reverse(_color1)
-    let colors[color . '_2'] = has_key(a:theme, '_2')
-          \ ? s:Helper.merge(_color1_rev, a:theme['_2'])
-          \ : _color1_rev
-    let colors[color . '_3'] = has_key(a:theme, '_3')
-          \ ? s:Helper.merge(_color1_rev, a:theme['_3'])
-          \ : _color1_rev
-  endfor
-  return extend(a:theme, colors, 'keep')
+  call extend(g:ezbar.color, theme)
+  let self.conf.__loaded_theme = 1
 endfunction
 
 function! s:ez.join() "{{{1
   return join(map(s:Parts.__layout, "printf('%%#%s#%s', v:val.color_name, v:val.s)"), '')
 endfunction
 
+let s:conf_default = {
+      \ '__loaded_default_config': 0,
+      \ '__loaded_theme': 0,
+      \ 'theme': 'default',
+      \ 'hide_rule': {},
+      \ 'color': {},
+      \ }
+
+function! s:ez.string(active, winnr) "{{{1
+  let self.conf = g:ezbar
+  cal extend(self.conf, s:conf_default, 'keep')
+  if g:ezbar_enable_default_config && !self.conf.__loaded_default_config
+    call extend(self.conf, ezbar#config#default#get(), 'keep')
+    let self.conf.__loaded_default_config = 1
+  endif
+  let s:Parts  = self.conf.parts
+  try
+    call self.setup(a:active, a:winnr)
+    let s = ''
+    let s = self.prepare().insert_separator().join()
+  catch
+    echom v:exception
+  finally
+    return s
+  endtry
+endfunction
+
 function! s:ez.insert_separator() "{{{1
   let LAYOUT    = s:Parts.__layout
-
   let idx_last  = len(LAYOUT) - 1
   let idx_LRsep = self.index_of_LR_separator(LAYOUT)
   let section   = 'L'
@@ -294,42 +288,17 @@ endfunction
 
 function! s:ez.index_of_LR_separator(layout) "{{{1
   for [idx, s] in map(copy(a:layout), '[v:key, v:val.s]')
-    if s ==# '%=' | return idx | endif
+    if s ==# '%='
+      return idx
+    endif
   endfor
   return -1
 endfunction
 "}}}
 
 " API:
-let s:conf_default = {
-      \ '__loaded_default_config': 0,
-      \ '__loaded_theme': 0,
-      \ 'theme': 'default',
-      \ 'hide_rule': {},
-      \ 'color': {},
-      \ }
-
 function! ezbar#string(active, winnr) "{{{1
-  cal extend(g:ezbar, s:conf_default, 'keep')
-  let s:EB     = g:ezbar
-  if g:ezbar_enable_default_config && !s:EB.__loaded_default_config
-    call extend(s:EB, ezbar#config#default#get(), 'keep')
-    let s:EB.__loaded_default_config = 1
-  endif
-
-  let s:Parts  = s:EB.parts
-  call s:Helper.__init()
-
-  try
-    call s:ez.setup(a:active, a:winnr)
-    let s = ''
-    let s = s:ez.prepare().insert_separator().join()
-
-  catch
-    echom v:exception
-  finally
-    return s
-  endtry
+  return s:ez.string(a:active, a:winnr)
 endfunction
 
 function! ezbar#set() "{{{1
@@ -374,66 +343,10 @@ function! ezbar#disable() "{{{1
   augroup END
 endfunction
 
-function! ezbar#color_check() range "{{{1
-  " clear color
-  call map(
-        \ filter(getmatches(), 'v:val.group =~# "EzBar"'),
-        \ 'matchdelete(v:val.id)')
-
-  " call s:hl_color_names()
-  for n in range(a:firstline, a:lastline)
-    let line = getline(n)
-    let colors = s:scan(line, '\v\c(#[a-f0-9]{6})')
-    if empty(colors) | continue | endif
-    " for c in colors
-      " call matchadd(s:ez.hlmanager.register({ "gui": [ c, '#fafafa' ] }), c)
-    " endfor
-    let color = s:extract_color_definition(line)
-    " echo color
-    if empty(color) | continue | endif
-    call matchadd(s:ez.hlmanager.register(eval(color)), '\V' . color)
-  endfor
-endfunction
-
-function! s:scan(str, pattern) "{{{1
-  let ret = []
-  let pattern = a:pattern
-  let nth = 1
-  while 1
-    let m = matchlist(a:str, pattern, 0, nth)
-    if empty(m)
-      break
-    endif
-    call add(ret, m[1])
-    let nth += 1
-  endwhile
-  return ret
-endfunction
-
-function! ezbar#color_capture(color) "{{{1
-  let R = s:ez.hlmanager.convert_full(a:color)
-  call setreg(v:register, string(R), 'V')
-endfunction
-
 function! ezbar#load_theme(theme) "{{{1
   call s:ez.load_theme(a:theme)
-endfunction
-
-function! ezbar#color_names() "{{{1
-  return s:color_names()
-endfunction
-
-function! ezbar#color_name2rgb() "{{{1
-  return s:color_name2rgb()
 endfunction
 "}}}
 
 call s:ez.init()
-
-" if expand("%:p") !=# expand("<sfile>:p")
-  " finish
-" endif
-" nnoremap <F10> :%EzbarColorCheck<CR>
-" nnoremap <silent> <F9> :<C-u>execute 'EzbarColorCapture ' . expand('<cword>')<CR>
-
 " vim: foldmethod=marker

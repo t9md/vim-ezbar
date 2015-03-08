@@ -55,16 +55,16 @@ function! s:helper.fg(...) "{{{1
 endfunction
 
 function! s:helper.s(part) "{{{1
-  if has_key(s:Parts, a:part)
-    return s:Parts[a:part].s
+  if has_key(g:ezbar.parts, a:part)
+    return g:ezbar.parts[a:part].s
   else
     return ''
   endif
 endfunction
 
 function! s:helper.c(part) "{{{1
-  if has_key(s:Parts, a:part)
-    return s:Parts[a:part].c
+  if has_key(g:ezbar.parts, a:part)
+    return g:ezbar.parts[a:part].c
   else
     return {}
   endif
@@ -72,7 +72,7 @@ endfunction
 
 function! s:helper._color_change(...) "{{{1
   if a:0 ==# 2
-    let [index, color, color_new ] = [ a:1, s:Parts.__c, a:2 ]
+    let [index, color, color_new ] = [ a:1, g:ezbar.parts.__c, a:2 ]
   elseif a:0 ==# 3
     let [index, color, color_new ] = a:000
   endif
@@ -86,12 +86,12 @@ endfunction
 
 function! s:helper.hide(...) "{{{1
   let list = get(a:000, 0, [])
-  for [ limit, parts ] in items(s:EB.hide_rule)
-    if s:Parts.__width < str2nr(limit)
+  for [ limit, parts ] in items(g:ezbar.hide_rule)
+    if g:ezbar.parts.__width < str2nr(limit)
       let list += parts
     endif
   endfor
-  call filter(s:Parts.__layout, 'index(list, v:val) ==# -1')
+  call filter(g:ezbar.parts.__layout, 'index(list, v:val) ==# -1')
 endfunction
 
 function! s:helper.screen() "{{{1
@@ -103,12 +103,7 @@ function! s:helper.convert(color) "{{{1
 endfunction
 
 function! s:helper.getvar(varname) "{{{1
-  return getwinvar(s:Parts.__winnr, a:varname)
-endfunction
-
-function! s:helper.__init() "{{{1
-  let s:EB    = g:ezbar
-  let s:Parts = g:ezbar.parts
+  return getwinvar(g:ezbar.parts.__winnr, a:varname)
 endfunction
 "}}}
 

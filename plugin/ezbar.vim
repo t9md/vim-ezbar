@@ -5,6 +5,7 @@ endif
 if exists('g:loaded_ezbar')
   finish
 endif
+
 let g:loaded_ezbar = 1
 let s:old_cpo = &cpo
 set cpo&vim
@@ -27,11 +28,9 @@ endfunction
 
 function! s:startup() "{{{1
   call s:set_options(s:options)
-
   if !g:ezbar_enable
     return
   endif
-
   call ezbar#enable()
 endfunction
 "}}}
@@ -39,13 +38,18 @@ endfunction
 call s:startup()
 
 " Command:
-command! EzbarDisable call ezbar#disable()
-command! EzbarEnable  call ezbar#enable()
+command!
+      \ EzbarDisable call ezbar#disable()
 
-command! -range EzbarColorCheck
-      \ :<line1>,<line2>call ezbar#color_check()
+command!
+      \ EzbarEnable  call ezbar#enable()
+
+command! -range
+      \ EzbarColorCheck :<line1>,<line2>call ezbar#color#check()
+
 command! -nargs=1 -complete=highlight
-      \ EzbarColorCapture call ezbar#color_capture(<f-args>)
+      \ EzbarColorCapture call ezbar#color#capture(<f-args>)
+
 command! -nargs=? -complete=customlist,ezbar#theme#list
       \ EzbarTheme :call ezbar#load_theme(<f-args>)
 

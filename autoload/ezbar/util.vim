@@ -15,32 +15,6 @@ function! s:debug(msg) "{{{1
   endif
 endfunction
 
-
-function! s:buffer_options_set(bufnr, options) "{{{1
-  let R = {}
-  for [var, val] in items(a:options)
-    let R[var] = getbufvar(a:bufnr, var)
-    call setbufvar(a:bufnr, var, val)
-    unlet var val
-  endfor
-  return R
-endfunction
-
-function! s:window_options_set(winnr, options) "{{{1
-  let R = {}
-  for [var, val] in items(a:options)
-    let R[var] = getwinvar(a:winnr, var)
-    call setwinvar(a:winnr, var, val)
-    unlet var val
-  endfor
-  return R
-endfunction
-"}}}
-
-function! s:str_split(str) "{{{1
-  return split(a:str, '\zs')
-endfunction
-
 function! s:define_type_checker() "{{{1
   " dynamically define s:is_Number(v)  etc..
   let types = {
@@ -71,10 +45,7 @@ endfunction
 
 let s:functions = [
       \ "debug",
-      \ "str_split",
       \ "screen_type",
-      \ "buffer_options_set",
-      \ "window_options_set",
       \ "is_Number",
       \ "is_String",
       \ "is_Funcref",

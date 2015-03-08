@@ -11,17 +11,48 @@ Advanced, customizable statusline plugin for minimalist.
 
 # Screen Capture
 * Mode aware
-![Mode](https://raw.github.com/t9md/t9md/master/img/ezbar/mode_insert.png)
+![normal](https://raw.github.com/t9md/t9md/master/img/ezbar/neon-normal.png)
+![insert](https://raw.github.com/t9md/t9md/master/img/ezbar/neon-insert.png)
+![visual](https://raw.github.com/t9md/t9md/master/img/ezbar/neon-visual.png)
 
-* Change color when filename is XXX in this case begin with `tryit`
-![Filename](https://raw.github.com/t9md/t9md/master/img/ezbar/filename_notify.png)
+* Conditional color change
+In following example, if buffer is `[quickrun output]` change foreground color `green`, and if filename is begin with `tryit` use color `yellow`.
+Its fully configurable.
+![cond-buffer](https://raw.github.com/t9md/t9md/master/img/ezbar/cond-buffer.png)
+```vim
+function! s:u._filename() "{{{1
+  let s = self.filename()
+  if !self.__active && s =~# '\[quickrun output\]'
+    return {
+          \ 's' : s,
+          \ 'c'  : self.__color.m_insert }
+  endif
 
-* Change color when git branch is not master  
-![Git-1](https://raw.github.com/t9md/t9md/master/img/ezbar/git-branch_notify.png)
+  let notify_sym = "\U2022"
+  if s =~# 'tryit\.\|default\.vim\|phrase__'
+    return {
+          \ 's' : notify_sym . s,
+          \ 'c'  : self.__.fg(self.__color._info) }
+  else
+    return s
+  endif
+endfunction
+```
 
-* Hide other statusline part when specific plugin active  
-![Fill-1](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill1.png)  
-![Fill-2](https://raw.github.com/t9md/t9md/master/img/ezbar/ezbar_fill2.png)  
+use red foreground color when git-branch is not `master`.
+![dev-branch](https://raw.github.com/t9md/t9md/master/img/ezbar/cond-git-branch.png)
+```vim
+function! s:u.fugitive() "{{{1
+  let s = fugitive#head()
+  if s is '' | return '' | endif
+  let branch_symbol = g:ezbar.symbols['branch'] . ' '
+  if s ==# 'master'
+    return { 's': branch_symbol . s }
+  else
+    return { 's': branch_symbol . s, 'c': self.__.fg(self.__color._warn) }
+  endif
+endfunction
+```
 
 # QuickStart
 

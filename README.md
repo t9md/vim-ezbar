@@ -8,8 +8,7 @@ Advanced, customizable statusline plugin for minimalist.
 * Simple design, easy to configure for Vimscripter(advanced user).
 * Easy to create color [theme](https://github.com/t9md/vim-ezbar/tree/master/autoload/ezbar/theme).
 * Pluggable design for parts, theme.
-* Dynamically configure color based on condition.
-* All statusline component(part) is implemented as dictionary function.
+* Change color dynamically based on condition(filename, git-branch etc).
 * No precedence to predefined parts, so it's up to you how organize your statusline.
 
 # Screen Capture

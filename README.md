@@ -65,19 +65,17 @@ endfunction
 let g:ezbar_enable   = 1
 ```
 
-Without any other configuration, ezbar use default configuration stored
-in `autoload/ezbar/config/default.vim`.
+Without any other configuration, ezbar use [default config](https://github.com/t9md/vim-ezbar/blob/master/autoload/ezbar/config/default.vim).
 
 ### To customize.
 
-Copy `autoload/ezbar/config/default.vim` to your configuration folder and source it in you `.vimrc`
+Copy [default config](https://github.com/t9md/vim-ezbar/blob/master/autoload/ezbar/config/default.vim) to your configuration folder and source it in you `.vimrc`
 
 ```Vim
-" for quick edit of ezbar config
+" for quick edit of ezbar config with <Space>e
 nnoremap <Space>e  :<C-u>edit $EZBAR_CONFIG<CR>
 
-let g:ezbar_enable   = 1
-
+let g:ezbar_enable  = 1
 let $EZBAR_CONFIG = expand("~/.vim/ezbar_config.vim")
 if filereadable($EZBAR_CONFIG)
   source $EZBAR_CONFIG
@@ -92,7 +90,7 @@ endif
 * helper: collection of function to manupilate color
 
 * Example:
-See `autoload/ezbar/config/t9md.vim` which is my config.
+See [Advanced example](https://github.com/t9md/vim-ezbar/blob/master/misc/config_t9md.vim).
 
 * Help
 See `:help ezbar`

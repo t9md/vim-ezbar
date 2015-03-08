@@ -70,6 +70,8 @@ function! s:u.win_buf() "{{{1
   return printf('w:%d b:%d', self.__winnr, self.__bufnr)
 endfunction
 "}}}
+
+" API:
 function! ezbar#parts#default#new() "{{{1
   return deepcopy(s:u)
 endfunction

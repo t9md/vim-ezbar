@@ -77,11 +77,6 @@ VARIABLES						*ezbar-variables*
 	All configuration belongs this Dictionary.
 
 
-==============================================================================
-CUSTOMIZE						*ezbar-customize*
-
-Following configuration is merely example of many customization possibilities.
-
 *g:ezbar.alias*
 	Default: Not defined
 	Type:    |Dictionary|
@@ -106,6 +101,11 @@ Following configuration is merely example of many customization possibilities.
 	let s:active = '|1 m |2  wb ro |3 cwd = |2 ft fn mod ft |1 enc % lc '
 	let g:ezbar.active = split(s:active)
 <
+==============================================================================
+CUSTOMIZE						*ezbar-customize*
+
+Following configuration is merely example of many customization possibilities.
+
 
 *g:ezbar.hide_rule*
 	Default: Not defined

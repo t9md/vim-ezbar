@@ -51,7 +51,9 @@ function! ezbar#pallet#full() "{{{1
   endfor
   call setline(1, R)
 endfunction
+"}}}
 
+" API:
 function! ezbar#pallet#rgbs() "{{{1
   function! Colors()
     let base = range(0, 255, 16)

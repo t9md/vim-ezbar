@@ -3,6 +3,7 @@ let s:TYPE_DICTIONARY = type({})
 let s:TYPE_NUMBER     = type(0)
 let s:SCREEN          = has("gui_running") ? 'gui' : 'cterm'
 
+
 let s:hlmgr = {}
 
 function! s:hlmgr.init(prefix) "{{{1
@@ -146,8 +147,12 @@ endfunction
 function! s:hlmgr.dump() "{{{1
   return PP(self)
 endfunction
+"}}}
 
+" API:
 function! ezbar#hlmanager#new(prefix) "{{{1
   return deepcopy(s:hlmgr).init(a:prefix)
-endfunction "}}}
+endfunction
+"}}}
+
 " vim: foldmethod=marker

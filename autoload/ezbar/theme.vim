@@ -1,3 +1,4 @@
+" API:
 function! ezbar#theme#list(A, L, P) "{{{1
   let themes = map(
         \ split(globpath(&rtp , 'autoload/ezbar/theme/*.vim'), "\n"),

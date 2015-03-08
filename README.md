@@ -18,8 +18,8 @@ Advanced, customizable statusline plugin for minimalist.
 
 ### Conditional color change
 
-In following example, if buffer is `[quickrun output]` change foreground color `green`, and if filename is begin with `tryit` use color `yellow`.   
-Its fully configurable.  
+* Color `green` if buffer is `[quickrun output]`.
+* Color `yellow` for filename begin with `tryit`.
 
 ![cond-buffer](https://raw.github.com/t9md/t9md/master/img/ezbar/cond-buffer.png)
 ```vim
@@ -42,7 +42,7 @@ function! s:u._filename() "{{{1
 endfunction
 ```
 
-use red foreground color when git-branch is not `master`.
+* Color `red` when git-branch is not `master`.
 ![dev-branch](https://raw.github.com/t9md/t9md/master/img/ezbar/cond-git-branch.png)
 ```vim
 function! s:u.fugitive() "{{{1

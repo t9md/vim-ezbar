@@ -1,8 +1,6 @@
-let s:T_STRING     = type('')
-let s:T_LIST       = type([])
-let s:T_DICTIONARY = type({})
-let s:T_NUMBER     = type(0)
-let s:SCREEN       = has('gui_running') ? 'gui' : 'cterm'
+" Util:
+let s:_ = ezbar#util#get()
+let s:SCREEN = s:_.screen_type()
 
 let s:MODE2COLOR   = {
       \ 'n':      'm_normal',
@@ -54,10 +52,11 @@ function! s:color_names() "{{{1
 endfunction
 "}}}
 
+" Special Parts:
 let s:speacial_parts = {}
 function! s:speacial_parts.___setcolor(color) "{{{1
   let self.__c = s:COLOR[ a:color =~# '^\d$'
-        \ ? get(s:MODE2COLOR, s:PARTS.__mode, 'm_normal') . '_' . a:color
+        \ ? get(s:MODE2COLOR, s:Parts.__mode, 'm_normal') . '_' . a:color
         \ : a:color
         \ ]
   return ''
@@ -72,9 +71,10 @@ function! s:speacial_parts.___LR_separator(...) "{{{1
 endfunction
 "}}}
 
+" Main:
 let s:ez = {}
 function! s:ez.init() "{{{1
-  let s:HELPER          = ezbar#helper#get()
+  let s:Helper          = ezbar#helper#get()
   let self.hlmanager    = ezbar#hlmanager#new('EzBar')
   let self._color_cache = {}
   let self.color     = {
@@ -87,7 +87,7 @@ function! s:ez.unalias() "{{{1
   if !has_key(s:EB, 'alias')
     return
   endif
-  call map(s:PARTS.__layout, 'get(s:EB.alias, v:val, v:val)')
+  call map(s:Parts.__layout, 'get(s:EB.alias, v:val, v:val)')
 endfunction
 
 function! s:ez.substitute_part(part) "{{{1
@@ -100,49 +100,47 @@ endfunction
 
 " '====='
 let s:LR_SEPARATOR = '\v\=+\s*(\w*)'
-" '++++' or '|'
+" '----' or '|'
 let s:COLOR_SETTER = '\v^%(-+|\|)\s*(\w*)$'
 
 function! s:ez.load_special_parts() "{{{1
-  if has_key(s:PARTS, '__loaded_special_parts')
+  if has_key(s:Parts, '__loaded_special_parts')
     return
   endif
-  call extend(s:PARTS, s:speacial_parts, 'force')
-  let s:PARTS.__loaded_special_parts = 1
+  call extend(s:Parts, s:speacial_parts, 'force')
+  let s:Parts.__loaded_special_parts = 1
 endfunction
 
 function! s:ez.normalize_layout(layout)
   return
-        \ type(a:layout) isnot s:T_LIST
-        \ ? split(a:layout)
-        \ : copy(a:layout)
+        \ !s:_.is_List(a:layout) ? split(a:layout) : copy(a:layout)
 endfunction
 
 function! s:ez.prepare() "{{{1
   call self.unalias()
-  if exists('*s:PARTS.__init')
-    let layout_save = s:PARTS.__layout
-    call s:PARTS.__init()
-    if layout_save isnot s:PARTS.__layout
-      let s:PARTS.__layout = self.normalize_layout(s:PARTS.__layout)
+  if exists('*s:Parts.__init')
+    let layout_save = s:Parts.__layout
+    call s:Parts.__init()
+    if layout_save isnot s:Parts.__layout
+      let s:Parts.__layout = self.normalize_layout(s:Parts.__layout)
       call self.unalias()
     endif
   endif
   call self.load_special_parts()
-  call map   (s:PARTS.__layout, 'self.substitute_part(v:val)')
-  call map   (s:PARTS.__layout, 'self.normalize_part(v:val)')
-  call filter(s:PARTS.__layout, '!(v:val.s is "")')
-  call filter(s:PARTS.__parts,  '!(v:val.s is "")')
-  if exists('*s:PARTS.__finish') | call s:PARTS.__finish() | endif
+  call map   (s:Parts.__layout, 'self.substitute_part(v:val)')
+  call map   (s:Parts.__layout, 'self.normalize_part(v:val)')
+  call filter(s:Parts.__layout, '!(v:val.s is "")')
+  call filter(s:Parts.__parts,  '!(v:val.s is "")')
+  if exists('*s:Parts.__finish') | call s:Parts.__finish() | endif
   return self
 endfunction
 
 function! s:ez.transform_part(part) "{{{1
   let [part; args] = split(a:part, '::')
-  return  has_key(s:PARTS, part)
-        \ ? call(s:PARTS[part], args, s:PARTS)
-        \ : has_key(s:PARTS, '__part_missing')
-        \ ? call(s:PARTS.__part_missing, [part] + args, s:PARTS)
+  return  has_key(s:Parts, part)
+        \ ? call(s:Parts[part], args, s:Parts)
+        \ : has_key(s:Parts, '__part_missing')
+        \ ? call(s:Parts.__part_missing, [part] + args, s:Parts)
         \ : ''
 endfunction
 
@@ -155,24 +153,24 @@ function! s:ez.normalize_part(part) "{{{1
     let R = { 's': printf('[%s]', a:part), 'c': 'WarningMsg' }
   endtry
 
-  let part = type(R) isnot s:T_DICTIONARY ? { 's' : R } : R
+  let part = s:_.is_Dictionary(R) ? R : { 's' : R }
   let part.name = a:part
 
-  let key = s:PARTS.__active ? 'ac' : 'ic'
+  let key = s:Parts.__active ? 'ac' : 'ic'
   let part.c =
         \ has_key(part, key) ? part[key] :
         \ has_key(part, 'c') ? part.c    :
-        \ copy(s:PARTS.__c)
+        \ copy(s:Parts.__c)
 
   " keep section color info
-  let part.__section_color = copy(s:PARTS.__c)
-  let s:PARTS.__parts[a:part] = part
+  let part.__section_color = copy(s:Parts.__c)
+  let s:Parts.__parts[a:part] = part
   return part
 endfunction
 
 function! s:ez.color_of(part) "{{{1
   let R = a:part.c
-  if type(R) is s:T_DICTIONARY
+  if s:_.is_Dictionary(R)
     return R
   endif
 
@@ -191,7 +189,7 @@ function! s:ez.color_info(color) "{{{1
 endfunction
 
 function! s:ez.setup(active, winnr) "{{{1
-  call extend(s:PARTS, {
+  call extend(s:Parts, {
         \ '__active':   a:active,
         \ '__mode':     mode(),
         \ '__winnr':    a:winnr,
@@ -203,7 +201,7 @@ function! s:ez.setup(active, winnr) "{{{1
         \ '__color':    s:COLOR,
         \ '__layout':   self.normalize_layout(s:EB[ a:active ? 'active' : 'inactive' ]),
         \ '__c':        self.color[ a:active ? 'StatusLine' : 'StatusLineNC'],
-        \ '__':         s:HELPER,
+        \ '__':         s:Helper,
         \ })
 
   if self._did_setup | return | endif
@@ -233,12 +231,12 @@ function! s:ez._normalize_theme(theme) "{{{1
   for color in split('m_normal m_insert m_visual m_replace m_command m_select m_other')
     let _color1 = get(a:theme, color, default_color)
     let colors[color . '_1'] = _color1
-    let _color1_rev = s:HELPER.reverse(_color1)
+    let _color1_rev = s:Helper.reverse(_color1)
     let colors[color . '_2'] = has_key(a:theme, '_2')
-          \ ? s:HELPER.merge(_color1_rev, a:theme['_2'])
+          \ ? s:Helper.merge(_color1_rev, a:theme['_2'])
           \ : _color1_rev
     let colors[color . '_3'] = has_key(a:theme, '_3')
-          \ ? s:HELPER.merge(_color1_rev, a:theme['_3'])
+          \ ? s:Helper.merge(_color1_rev, a:theme['_3'])
           \ : _color1_rev
   endfor
   return extend(a:theme, colors, 'keep')
@@ -253,11 +251,11 @@ function! s:ez.string(active, winnr) "{{{1
 endfunction
 
 function! s:ez.join() "{{{1
-  return join(map(s:PARTS.__layout, "printf('%%#%s#%s', v:val.color_name, v:val.s)"), '')
+  return join(map(s:Parts.__layout, "printf('%%#%s#%s', v:val.color_name, v:val.s)"), '')
 endfunction
 
 function! s:ez.insert_separator() "{{{1
-  let LAYOUT    = s:PARTS.__layout
+  let LAYOUT    = s:Parts.__layout
   let idx_last  = len(LAYOUT) - 1
   let idx_LRsep = self.LR_separator_index(LAYOUT)
   let section   = 'L'
@@ -288,7 +286,7 @@ function! s:ez.insert_separator() "{{{1
       let section = 'R'
     endif
   endfor
-  let s:PARTS.__layout = R
+  let s:Parts.__layout = R
   return self
 endfunction
 
@@ -308,10 +306,10 @@ function! ezbar#string(active, winnr) "{{{1
     let s:EB.__loaded_default_config = 1
   endif
 
-  let s:PARTS  = s:EB.parts
-  call s:HELPER.__init()
+  let s:Parts  = s:EB.parts
+  call s:Helper.__init()
 
-  if type(get(s:EB, 'color')) isnot s:T_DICTIONARY
+  if ! s:_.is_Dictionary(get(s:EB, 'color'))
     let s:EB.color = {}
   endif
   let s:COLOR = s:EB.color

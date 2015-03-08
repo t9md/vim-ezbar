@@ -26,6 +26,14 @@ function! s:u.mode() "{{{1
   return s
 endfunction
 
+function! s:u.as_is(...) "{{{1
+  " Return string 'as-is'
+  " ex)
+  "   as_is::Unite   => Unite
+  "   as_is::a::b::c => a|b|c
+  return join(a:000, '|')
+endfunction
+
 function! s:u.percent() "{{{1
   return '%p%%'
 endfunction

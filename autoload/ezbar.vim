@@ -75,12 +75,6 @@ endfunction
 " Main:
 let s:ez = {}
 
-let s:conf_default = {
-      \ '__loaded_default_config': 0,
-      \ '__loaded_special_parts': 0,
-      \ '__loaded_theme': 0,
-      \ 'color': {},
-      \ }
 
 function! s:ez.init() "{{{1
   let s:Helper          = ezbar#helper#get()
@@ -194,8 +188,9 @@ function! s:ez.color_info(color) "{{{1
 endfunction
 
 function! s:ez.setup(active, winnr) "{{{1
-  if !get(s:EB, '__loaded_theme')
-    call self.load_theme(get(s:EB, 'theme', 'default'))
+  if !s:EB.__loaded_theme
+    " call self.load_theme(get(s:EB, 'theme', 'default'))
+    call self.load_theme(s:EB.theme)
   endif
 
   call extend(s:Parts, {
@@ -232,7 +227,9 @@ function! s:ez.load_theme(theme) "{{{1
   let s:EB.__loaded_theme = 1
 
   let theme = ezbar#theme#load(a:theme)
-  let theme = deepcopy(get(theme, has_key(theme, &background) ? &background : 'dark' ))
+  let bg = has_key(theme, &background) ? &background : 'dark'
+  " let theme = deepcopy(get(theme, bg))
+  let theme = get(theme, bg)
   call extend(g:ezbar.color, self._normalize_theme(theme))
 endfunction
 
@@ -304,19 +301,24 @@ endfunction
 "}}}
 
 " API:
+let s:conf_default = {
+      \ '__loaded_default_config': 0,
+      \ '__loaded_theme': 0,
+      \ 'theme': 'default',
+      \ 'hide_rule': {},
+      \ 'color': {},
+      \ }
+
 function! ezbar#string(active, winnr) "{{{1
+  cal extend(g:ezbar, s:conf_default, 'keep')
   let s:EB     = g:ezbar
-  if !get(s:EB, '__loaded_default_config') && g:ezbar_enable_default_config
+  if g:ezbar_enable_default_config && !s:EB.__loaded_default_config
     call extend(s:EB, ezbar#config#default#get(), 'keep')
     let s:EB.__loaded_default_config = 1
   endif
 
   let s:Parts  = s:EB.parts
   call s:Helper.__init()
-
-  if ! s:_.is_Dictionary(get(g:ezbar, 'color'))
-    let g:ezbar.color = {}
-  endif
 
   try
     call s:ez.setup(a:active, a:winnr)

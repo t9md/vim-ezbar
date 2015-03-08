@@ -23,12 +23,11 @@ function! s:parts.cwd() "{{{1
 endfunction
 
 function! s:parts.__init() "{{{1
-  let hide = []
   if self.__width < 70
-    let hide += ['encoding', 'percent', 'filetype']
+    call self.__.hide(['encoding', 'percent', 'filetype'])
   endif
-  call filter(self.__layout, 'index(hide, v:val) ==# -1')
 endfunction
+"}}}
 
 " Main:
 let s:config = {}
@@ -68,4 +67,6 @@ let s:config.inactive = [
 function! ezbar#config#default#get() abort
   return s:config
 endfunction
+"}}}
+
 " vim: foldmethod=marker

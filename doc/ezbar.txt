@@ -10,6 +10,7 @@ Introduction				    |ezbar-introduction|
 Mapping					    |ezbar-mapping|
 Commands				    |ezbar-commands|
 Variables				    |ezbar-variables|
+Customize				    |ezbar-customize|
 Functions				    |ezbar-functions|
 Configuration Example			    |ezbar-example|
 Bug					    |ezbar-bug|
@@ -60,20 +61,28 @@ EzbarColorCapture {highlight}
 ==============================================================================
 VARIABLES						*ezbar-variables*
 
-							      *g:ezbar_enable*
-g:ezbar_enable
+*g:ezbar_enable*
 	Default: 1
 	Type:    |Number|
 	Set 0 to disable.
 
-								     *g:ezbar*
-g:ezbar
+*g:ezbar_enable_default_config*
+	Default: 1
+	Type:    |Number|
+	Set 0 to disable default configration.
+
+*g:ezbar*
 	Default: {}
 	Type:    |Dictionary|
 	All configuration belongs this Dictionary.
 
-							       *g:ezbar.alias*
-g:ezbar.alias
+
+==============================================================================
+CUSTOMIZE						*ezbar-customize*
+
+Following configuration is merely example of many customization possibilities.
+
+*g:ezbar.alias*
 	Default: Not defined
 	Type:    |Dictionary|
 	Simple remame table { {form}: {to} } form.
@@ -98,8 +107,7 @@ g:ezbar.alias
 	let g:ezbar.active = split(s:active)
 <
 
-							       *g:ezbar.hide_rule*
-g:ezbar.hide_rule
+*g:ezbar.hide_rule*
 	Default: Not defined
 	Type:    |Dictionary|
 	Used to hide parts based on window width( s:PARTS.__width. )
@@ -292,6 +300,8 @@ TODO							    *ezbar-todo*
 
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
+2015-03-08:
+	- add variable to g:ezbar_enable_default_config.
 2014-02-07:
 	- renamed command prefix from 'EzBar' to 'Ezbar'
 2014-02-05:

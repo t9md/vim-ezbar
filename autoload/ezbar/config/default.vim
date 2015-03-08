@@ -1,9 +1,42 @@
-let g:ezbar       = {}
-let g:ezbar.theme = 'default'
+" Parts:
+let s:features = [
+      \ 'mode',
+      \ 'readonly',
+      \ 'filename',
+      \ 'modified',
+      \ 'filetype',
+      \ 'win_buf',
+      \ 'encoding',
+      \ 'percent',
+      \ 'line_col'
+      \ ]
 
- " Layout:
- " {{{
-let g:ezbar.active = [
+let s:parts = ezbar#parts#use('default', {'parts': s:features })
+unlet s:features
+
+function! s:parts.cwd() "{{{1
+  let cwd = substitute(getcwd(), expand($HOME), '~', '')
+  let display =
+        \ self.__width < 90 ? -15 :
+        \ self.__width < 45 ? -10 : 0
+  return cwd[ display :  -1 ]
+endfunction
+
+function! s:parts.__init() "{{{1
+  let hide = []
+  if self.__width < 70
+    let hide += ['encoding', 'percent', 'filetype']
+  endif
+  call filter(self.__layout, 'index(hide, v:val) ==# -1')
+endfunction
+
+" Main:
+let s:config = {}
+let s:config.theme = 'default'
+let s:config.parts = s:parts
+unlet s:parts
+
+let s:config.active = [
       \ '----------- 1',
       \ 'mode',
       \ '----------- 2',
@@ -21,7 +54,7 @@ let g:ezbar.active = [
       \ 'percent',
       \ 'line_col',
       \ ]
-let g:ezbar.inactive = [
+let s:config.inactive = [
       \ '----------- inactive',
       \ 'win_buf',
       \ 'modified',
@@ -31,39 +64,8 @@ let g:ezbar.inactive = [
       \ 'encoding',
       \ 'line_col',
       \ ]
- " }}}
 
-let s:features = [
-      \ 'mode',
-      \ 'readonly',
-      \ 'filename',
-      \ 'modified',
-      \ 'filetype',
-      \ 'win_buf',
-      \ 'encoding',
-      \ 'percent',
-      \ 'line_col'
-      \ ]
-let s:u = ezbar#parts#use('default', {'parts': s:features })
-unlet s:features
-
-function! s:u.cwd() "{{{1
-  let cwd = substitute(getcwd(), expand($HOME), '~', '')
-  let display =
-        \ self.__width < 90 ? -15 :
-        \ self.__width < 45 ? -10 : 0
-  return cwd[ display :  -1 ]
+function! ezbar#config#default#get() abort
+  return s:config
 endfunction
-
-function! s:u.__init() "{{{1
-  let hide = []
-  if self.__width < 70
-    let hide += ['encoding', 'percent', 'filetype']
-  endif
-  call filter(self.__layout, 'index(hide, v:val) ==# -1')
-endfunction
-"}}}
-
-let g:ezbar.parts = s:u
-unlet s:u
 " vim: foldmethod=marker

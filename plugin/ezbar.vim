@@ -13,9 +13,8 @@ set cpo&vim
 let s:options = {
       \ 'g:ezbar':       {},
       \ 'g:ezbar_enable': 1,
+      \ 'g:ezbar_enable_default_config': 1,
       \ }
-let s:default_config
-      \ = expand('<sfile>:h:h') . '/autoload/ezbar/config/default.vim'
 
 function! s:set_options(options) "{{{
   for [varname, value] in items(a:options)
@@ -32,8 +31,8 @@ function! s:startup() "{{{1
     return
   endif
 
-  if empty(g:ezbar)
-    execute 'source' s:default_config
+  if g:ezbar_enable_default_config
+    call extend(g:ezbar, ezbar#config#default#get(), 'keep')
   endif
   call ezbar#enable()
 endfunction

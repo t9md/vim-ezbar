@@ -1,4 +1,5 @@
 " Overview:
+
 " g:ezbar.layout
 " # Design & terminology
 "  ezbar compose &statusline string from layout(array of part)
@@ -94,7 +95,6 @@ function! s:ez.substitute_part(part) "{{{1
   return substitute(R,
         \ color_changer, '\= "___setcolor::" . submatch(1)', '')
 endfunction
-"}}}
 
 function! s:ez.normalize_layout(layout) "{{{1
   return s:_.is_List(a:layout) ? copy(a:layout) : split(a:layout)

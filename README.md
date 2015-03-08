@@ -1,5 +1,3 @@
-[日本語はこちら](https://github.com/t9md/vim-ezbar/blob/master/README-JP.md)
-
 # What's this?
 Advanced, customizable statusline plugin for minimalist.
 

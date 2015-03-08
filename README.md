@@ -69,7 +69,7 @@ Without any other configuration, ezbar use [default config](https://github.com/t
 
 ### To customize.
 
-Copy [default config](https://github.com/t9md/vim-ezbar/blob/master/autoload/ezbar/config/default.vim) to your configuration folder and source it in you `.vimrc`
+Copy [default config](https://github.com/t9md/vim-ezbar/blob/master/autoload/ezbar/config/default.vim) to your configuration folder and source it from your `.vimrc`
 
 ```Vim
 " for quick edit of ezbar config with <Space>e

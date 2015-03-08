@@ -10,14 +10,17 @@ Advanced, customizable statusline plugin for minimalist.
 * no precedence to predefined parts, so it's up to you how organize your statusline.
 
 # Screen Capture
-* Mode aware
+
+### Mode aware
 ![normal](https://raw.github.com/t9md/t9md/master/img/ezbar/neon-normal.png)
 ![insert](https://raw.github.com/t9md/t9md/master/img/ezbar/neon-insert.png)
 ![visual](https://raw.github.com/t9md/t9md/master/img/ezbar/neon-visual.png)
 
-* Conditional color change
-In following example, if buffer is `[quickrun output]` change foreground color `green`, and if filename is begin with `tryit` use color `yellow`.
-Its fully configurable.
+### Conditional color change
+
+In following example, if buffer is `[quickrun output]` change foreground color `green`, and if filename is begin with `tryit` use color `yellow`.   
+Its fully configurable.  
+
 ![cond-buffer](https://raw.github.com/t9md/t9md/master/img/ezbar/cond-buffer.png)
 ```vim
 function! s:u._filename() "{{{1

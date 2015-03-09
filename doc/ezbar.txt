@@ -8,6 +8,7 @@ CONTENTS					*ezbar-contents*
 
 Introduction				    |ezbar-introduction|
 Mapping					    |ezbar-mapping|
+How It Works				    |ezbar-how-it-works|
 Commands				    |ezbar-commands|
 Variables				    |ezbar-variables|
 Customize				    |ezbar-customize|
@@ -36,6 +37,35 @@ Feature~
 MAPPINGS					*ezbar-mappings*
 
 ==============================================================================
+HOW-IT-WORKS					*ezbar-how-it-works*
+
+Design & terminology~
+
+ ezbar compose &statusline string from layout(array of part)
+  * layout:    Array of part
+  * part:      Each part must have corresponding part function.
+               Part will be transformed to result of corresponding part func.
+  * part_def:  Dictionary representation for part.
+  * part_func: return part_def or string.
+  * helper:    helper functions avaiable within part function.
+  * theme:     color theme.
+
+Processsing flow~
+
+ 1. Preparation
+   - Unalias if aliased.
+   - Extend parts with special_parts
+   - Substitute_part
+       substitute '===', '---', '|' to corresponding parts name.
+ 2. Transform
+    Replace part string with result of corresponding {part_func}.
+    In this stage, layout is transformed to array of {part_def}.
+ 3. Insert_separator
+    Insert separator between each parts.
+ 4. Join()
+    Join layout to string.
+
+==============================================================================
 COMMANDS						*ezbar-commands*
 
 *:EzbarDisable*
@@ -49,7 +79,7 @@ COMMANDS						*ezbar-commands*
 	coonfiguration. Its' just helper setup helper, not essential part of
 	this plugin.
 >
-      \ { 'chg_color': {'gui': [ s:bg, 'gray61'], 'cterm': [240, 254] }},
+		\ 'm_normal':    { 'gui': ['#000000', '#ab82ff'] },
 <
 							  *:EzbarColorCapture*
 EzbarColorCapture {highlight}
@@ -101,12 +131,6 @@ VARIABLES						*ezbar-variables*
 	let s:active = '|1 m |2  wb ro |3 cwd = |2 ft fn mod ft |1 enc % lc '
 	let g:ezbar.active = split(s:active)
 <
-==============================================================================
-CUSTOMIZE						*ezbar-customize*
-
-Following configuration is merely example of many customization possibilities.
-
-
 *g:ezbar.hide_rule*
 	Default: Not defined
 	Type:    |Dictionary|
@@ -136,36 +160,38 @@ Following configuration is merely example of many customization possibilities.
 	  call self.__.hide(hide)
 	endfunction
 <
+==============================================================================
+CUSTOMIZE						*ezbar-customize*
+
 ------------------------------------------------------------------------------
 *ezbar-auto-variable*
 
 Each time ezbar generate &statusline and before calling each parts function.
 ezbar automatically set special variable for convenience.
-All of these automatic variable name began double underscore.
+All of these automatic variable name begin with double underscore.
 So user should not use these name as parts name to avoid conflict.
 
+{PARTS}.__active
+	Type: |Number|
+	Value: 0 or 1
+	Indicate active window or not.
 
- | varname        | brief description                                 |
- | -------------- | ------------------------------------------------- |
- | __active       | indicate active window or not                     |
- | __mode         | result of mode()                                  |
- | __width        | winwidth                                          |
- | __filetype     | filetype                                          |
- | __buftype      | buftype                                           |
- | __parts        | normalized part with parts name as key            |
- | __layout       | layout specified as g:ezbar.active or inactive    |
- | __c            | indicate current default color set to part        |
- | __color        | color collections you specify as g:ezbar.color    |
- | __winnr        | window number                                     |
- | __             | helper function collection                        |
- | __theme_loaded | flag to manage theme is loaded                    |
+{PARTS}.__mode
+	Type: |String|
+	Value: |mode()|
 
+{PARTS}.__width
+	Type: |Number|
+	Value: |winwidth()|
 
-{PARTS}.__active	|Number|: ( 0 or 1 ). Indicate active window or not.
-{PARTS}.__mode		|String|:  result of |mode()|
-{PARTS}.__width		|Number|: result of |winwidth()|
-{PARTS}.__filetype	|String|: |&filetype|
-{PARTS}.__buftype	|String|: |&buftype|
+{PARTS}.__filetype
+	Type: |String|
+	Value: |&filetype|
+
+{PARTS}.__buftype
+	Type: |String|
+	Value: |&buftype|
+
 {PARTS}.__parts
 	Type: |Dictionary|
 	{key}:		part function name.
@@ -198,7 +224,7 @@ So user should not use these name as parts name to avoid conflict.
 
 {PARTS}.__c
 	Type: |Dictionary| or |String|
-	Represent current color which is used for un colorized part.
+	Represent current section color.
 
 {PARTS}.__color
 	Type: |Dictionary|
@@ -213,20 +239,24 @@ So user should not use these name as parts name to avoid conflict.
 *ezbar-helper*
 
 Below is the list of helper function which is stored under {PARTS}.__ .
+Within parts function. you can use helper function like
+>
+	self.__c = self.__.reverse(self.__c)
+<
 
-ezbar.parts.__.screen()
+screen()
 	Return: 'gui' or 'ctem'
 
-ezbar.parts.__.reverse({color})
-	return reversed(swapped background to foreground) {color} dictionary.
+reverse({color})
+	Return reversed(swap background with foreground) {color} dictionary.
 >
 	" within parts function
 	" set reversed color to self.__c (default color)
 	self.__c = self.__.reverse(self.__c)
 <
 
-ezbar.parts.__.getvar({varname})
-	return value of {varname} for current window.
+getvar({varname})
+	Return value of {varname} for current window.
 	this is the simple wrapper of getwinvar({PARTS}.__winnr, {varname})
 >
 	" strait foward way
@@ -239,6 +269,22 @@ ezbar.parts.__.getvar({varname})
 	  return self.__getvar('&encoding')
 	endfunction
 <
+merge({color1}, {color2})
+	Return merged color.
+
+fg(color)
+	Set foreground color.
+
+bg(color)
+	Set background color.
+
+s({part})
+	{part}: String
+	get 's' field of part from {part} string.
+
+c({part})
+	{part}: String
+	get 'c' field of part from {part} string.
 
 ------------------------------------------------------------------------------
 *ezbar-hook*
@@ -300,6 +346,9 @@ TODO							    *ezbar-todo*
 
 ==============================================================================
 CHANGELOG						*ezbar-changelog*
+2015-03-09:
+	- Refactoring over all src code.
+	- add src comment and doc.
 2015-03-08:
 	- add variable to g:ezbar_enable_default_config.
 2014-02-07:

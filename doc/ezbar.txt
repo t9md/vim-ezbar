@@ -106,6 +106,44 @@ VARIABLES						*ezbar-variables*
 	Type:    |Dictionary|
 	All configuration belongs this Dictionary.
 
+*g:ezbar.theme*
+	Default: 'default'
+	Type:    |String|
+	color theme name
+
+*g:ezbar.active*
+	Default: Not defined
+	Type:    |String| or |List|
+	layout used for active window.
+
+*g:ezbar.inactive*
+	Default: Not defined
+	Type:    |String| or |List|
+	layout used for inactive window.
+
+*g:ezbar.separator_L*
+	Type:    |String| 
+	Default: '|'
+	Section seprator character used in Left section when next section
+	color is SAME.
+
+*g:ezbar.separator_R*
+	Type:    |String| 
+	Default: '|'
+	Section seprator character used in Right section when next section
+	color is SAME.
+
+*g:ezbar.separator_border_L*
+	Type:    |String| 
+	Default: ''
+	Section seprator character used in Left section when next section
+	color is DIFFERENT.
+
+*g:ezbar.separator_border_R*
+	Type:    |String| 
+	Default: ''
+	Section seprator character used in Right section when next section
+	color is DIFFERENT.
 
 *g:ezbar.alias*
 	Default: Not defined

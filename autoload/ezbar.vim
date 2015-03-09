@@ -1,5 +1,5 @@
 " Overview:
-
+"
 " g:ezbar.layout
 " # Design & terminology
 "  ezbar compose &statusline string from layout(array of part)
@@ -12,18 +12,18 @@
 "   * theme: color theme.
 "
 " # Processsing flow
-"  preparation
-"    - unalias if aliased.
-"    - extend parts with special_parts
-"    - substitute_part
-"        substitute ===, ---, | to corresponding parts name.
-"  transform
-"     evaluate each parts.
-"     in this stage, layout is transformed to array of part_def.
-"  insert_separator
-"     insert separator between each parts.
-"  join()
-"     join layout to string.
+"  * Preparation
+"    - Unalias if aliased.
+"    - Extend parts with special_parts
+"    - Substitute_part
+"        substitute '===', '---', '|' to corresponding parts name.
+"  * Transform
+"     Replace part string with result of corresponding {part_func}.
+"     In this stage, layout is transformed to array of {part_def}.
+"  * Insert_separator
+"     Insert separator between each parts.
+"  * Join()
+"     Join layout to string.
 "
 
 " Util:

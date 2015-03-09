@@ -1,4 +1,5 @@
 let s:parts = {}
+
 function! s:parts.use(name, ...) "{{{1
   " Usage:
   " use('default', {'parts': ['part1,'part2'], 'prefix': ''})

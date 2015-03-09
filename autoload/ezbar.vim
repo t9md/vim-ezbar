@@ -30,6 +30,17 @@
 let s:_ = ezbar#util#get()
 let s:SCREEN = s:_.screen_type()
 
+function! s:index_of_LR_separator(layout) "{{{1
+  for [idx, s] in map(copy(a:layout), '[v:key, v:val.s]')
+    if s ==# '%='
+      return idx
+    endif
+  endfor
+  return -1
+endfunction
+"}}}
+
+" Table map from mode() string to color name in theme.
 let s:MODE2COLOR   = {
       \ 'n':      'm_normal',
       \ 'i':      'm_insert',
@@ -45,8 +56,11 @@ let s:MODE2COLOR   = {
       \ }
 
 " Special Parts:
+" Special Parts is special parts which is always merged into g:ezbar.parts.
 let s:speacial_parts = {}
+
 function! s:speacial_parts.___setcolor(color) "{{{1
+  " __setcolor(color) set default section color( part.__c ).
   let color = a:color =~# '^\d$'
         \ ? get(s:MODE2COLOR, s:Parts.__mode, 'm_normal') . '_' . a:color
         \ : a:color
@@ -56,11 +70,49 @@ function! s:speacial_parts.___setcolor(color) "{{{1
 endfunction
 
 function! s:speacial_parts.___separator(...) "{{{1
+  " Return separator representation('%=').
   let color = get(a:000, 0, '')
   if color isnot ''
     call self.___setcolor(color)
   endif
   return { 's': '%=' }
+endfunction
+"}}}
+
+" ColorCache:
+let s:cc = {}
+
+function! s:cc.new(mgr) "{{{1
+  let self.data = {}
+  let self.mgr = a:mgr
+  return self
+endfunction
+
+function! s:cc.reset() "{{{1
+  let self.data = {}
+endfunction
+
+function! s:cc.get(part) "{{{1
+  let _color = a:part.c
+  if s:_.is_Dictionary(_color)
+    return self.info(_color)
+  endif
+
+  " Cache for performance.
+  if !has_key(self.data, _color)
+    let color = self.mgr.convert(_color)
+    let self.data[color]
+  endif
+
+  return self.info(color)
+endfunction
+
+function! s:cc.info(color) "{{{1
+  return {
+        \ 'name': self.mgr.register(a:color),
+        \ 'bg': a:color[s:SCREEN][0],
+        \ 'fg': a:color[s:SCREEN][1],
+        \ }
 endfunction
 "}}}
 
@@ -70,11 +122,102 @@ let s:ez = {}
 function! s:ez.init() "{{{1
   let s:Helper          = ezbar#helper#get()
   let self.hlmanager    = ezbar#hlmanager#new('EzBar')
-  let self._color_cache = {}
+  let self.cc = s:cc.new(self.hlmanager)
   let self.color     = {
         \ 'StatusLine':   self.hlmanager.convert('StatusLine'),
         \ 'StatusLineNC': self.hlmanager.convert('StatusLineNC'),
         \ }
+endfunction
+"}}}
+
+let s:conf_default = {
+      \ '__loaded_default_config': 0,
+      \ '__loaded_theme': 0,
+      \ 'theme': 'default',
+      \ 'hide_rule': {},
+      \ 'color': {},
+      \ }
+
+function! s:ez.string(active, winnr) "{{{1
+  let self.conf = g:ezbar
+  cal extend(self.conf, s:conf_default, 'keep')
+
+  if g:ezbar_enable_default_config && !self.conf.__loaded_default_config
+    call extend(self.conf, ezbar#config#default#get(), 'keep')
+    let self.conf.__loaded_default_config = 1
+  endif
+
+  let s:Parts  = self.conf.parts
+  if !has_key(s:Parts, '__loaded_special_parts')
+    call extend(s:Parts, s:speacial_parts)
+    let s:Parts.__loaded_special_parts = 1
+  endif
+
+  try
+    call self.setup(a:active, a:winnr)
+    let s = ''
+    call self.prepare()
+    call self.insert_separator()
+    let s = self.join()
+  catch
+    echom v:exception
+  finally
+    return s
+  endtry
+endfunction
+
+function! s:ez.setup(active, winnr) "{{{1
+  if !self.conf.__loaded_theme
+    call self.load_theme(self.conf.theme)
+  endif
+
+  call extend(s:Parts, {
+        \ '__active':   a:active,
+        \ '__mode':     mode(),
+        \ '__winnr':    a:winnr,
+        \ '__bufnr':    winbufnr(a:winnr),
+        \ '__width':    winwidth(a:winnr),
+        \ '__filetype': getwinvar(a:winnr, '&filetype'),
+        \ '__buftype':  getwinvar(a:winnr, '&buftype'),
+        \ '__parts':    {},
+        \ '__color':    g:ezbar.color,
+        \ '__layout':   self.layout_normalize(self.conf[ a:active ? 'active' : 'inactive' ]),
+        \ '__c':        self.color[a:active ? 'StatusLine' : 'StatusLineNC'],
+        \ '__':         s:Helper,
+        \ })
+
+  if self._did_setup
+    return
+  endif
+
+  " for performance benefit, we setup once per refresh.
+  call extend(self, {
+        \ 'sep_L':        get(g:ezbar, 'separator_L', '|'),
+        \ 'sep_R':        get(g:ezbar, 'separator_R', '|'),
+        \ 'sep_border_L': get(g:ezbar, 'separator_border_L', ''),
+        \ 'sep_border_R': get(g:ezbar, 'separator_border_R', ''),
+        \ })
+  let self._did_setup = 1
+endfunction
+
+function! s:ez.prepare() "{{{1
+  call self.unalias()
+  if exists('*s:Parts.__init')
+    let layout_save = s:Parts.__layout
+    call s:Parts.__init()
+    if layout_save isnot s:Parts.__layout
+      let s:Parts.__layout = self.layout_normalize(s:Parts.__layout)
+      call self.unalias()
+    endif
+  endif
+
+  call map(s:Parts.__layout, 'self.part_substitute(v:val)')
+  call map(s:Parts.__layout, 'self.part_transform(v:val)')
+  call filter(s:Parts.__layout, '!(v:val.s is "")')
+  call filter(s:Parts.__parts,  '!(v:val.s is "")')
+  if exists('*s:Parts.__finish')
+    call s:Parts.__finish()
+  endif
 endfunction
 
 function! s:ez.unalias() "{{{1
@@ -84,61 +227,48 @@ function! s:ez.unalias() "{{{1
   call map(s:Parts.__layout, 'get(self.conf.alias, v:val, v:val)')
 endfunction
 
-function! s:ez.substitute_part(part) "{{{1
-  " '====='
+function! s:ez.part_substitute(part) "{{{1
+  " Replace '===='
+  " ex)
+  "  '===== 1'    -> __separator::1
+  "  '=====inact' -> __separator::inact
+  "  '====='      -> __separator
+
   let separator = '\v\=+\s*(\w*)'
   let R = substitute(a:part,
         \ separator, '\= "___separator::" . submatch(1)', '')
 
-  " '----' or '|'
+  " Replace '----' or '|'
+  " ex)
+  "  '|1'         -> __setcolor::1
+  "  '| 2'        -> __setcolor::2
+  "  '----- 1'    -> __setcolor::1
+  "  '-----inact' -> __sepcolor::inact
   let color_changer = '\v^%(-+|\|)\s*(\w*)$'
   return substitute(R,
         \ color_changer, '\= "___setcolor::" . submatch(1)', '')
 endfunction
 
-function! s:ez.normalize_layout(layout) "{{{1
-  return s:_.is_List(a:layout) ? copy(a:layout) : split(a:layout)
-endfunction
-
-function! s:ez.prepare() "{{{1
-  call self.unalias()
-
-  if exists('*s:Parts.__init')
-    let layout_save = s:Parts.__layout
-    call s:Parts.__init()
-    if layout_save isnot s:Parts.__layout
-      let s:Parts.__layout = self.normalize_layout(s:Parts.__layout)
-      call self.unalias()
-    endif
-  endif
-
-  if !has_key(s:Parts, '__loaded_special_parts')
-    call extend(s:Parts, s:speacial_parts)
-    let s:Parts.__loaded_special_parts = 1
-  endif
-
-  call map(s:Parts.__layout, 'self.substitute_part(v:val)')
-  call map(s:Parts.__layout, 'self.normalize_part(v:val)')
-  call filter(s:Parts.__layout, '!(v:val.s is "")')
-  call filter(s:Parts.__parts,  '!(v:val.s is "")')
-  if exists('*s:Parts.__finish') | call s:Parts.__finish() | endif
-  return self
-endfunction
-
-function! s:ez.transform_part(part) "{{{1
-  let [part; args] = split(a:part, '::')
-  return has_key(s:Parts, part)
-        \ ? call(s:Parts[part], args, s:Parts)
-        \ : has_key(s:Parts, '__part_missing')
-        \ ? call(s:Parts.__part_missing, [part] + args, s:Parts)
-        \ : ''
-endfunction
-
-function! s:ez.normalize_part(part) "{{{1
-  " Normalize: make transformed result into dictionary and add necessary
-  " attributes.
+function! s:ez.part_transform(part) "{{{1
+  " Transform each part and add necessary attributes.
+  " 
+  " * Part representation
+  "  { 's': {string}, 'ic': {color_inactive}, 'ac': {color_active}, 'c': 'color' }`
+  "
+  "  - Color( either of ac, ic, c ) specifier is optional.
+  "  - Color precedence
+  "    | No. | color       |  Description             |
+  "    | --- | ----------- | ------------------------ |
+  "    |  1  | ic, ac      |  Color specified in part |
+  "    |  2  | c           |  Color specified in part |
+  "    |  3  | s:Parts.__c |  Section color           |
   try
-    let R = self.transform_part(a:part)
+    let [_part; args] = split(a:part, '::')
+    let R = has_key(s:Parts, _part)
+          \ ? call(s:Parts[_part], args, s:Parts)
+          \ : has_key(s:Parts, '__part_missing')
+          \ ? call(s:Parts.__part_missing, [_part] + args, s:Parts)
+          \ : ''
   catch
     let R = { 's': printf('[%s]', a:part), 'c': 'WarningMsg' }
   endtry
@@ -158,115 +288,52 @@ function! s:ez.normalize_part(part) "{{{1
   return part
 endfunction
 
-function! s:ez.color_of(part) "{{{1
-  let R = a:part.c
-  if s:_.is_Dictionary(R)
-    return R
-  endif
-
-  if !has_key(self._color_cache, R)
-    let self._color_cache[R] = self.hlmanager.convert(R)
-  endif
-  return self._color_cache[R]
+function! s:ez.join() "{{{1
+  "  join('[
+  "    '%#EzBar00025# •tryit.vim ',
+  "    '%#EzBar00006#⮀',
+  "  ], '')
+  return join(map(s:Parts.__layout, "printf('%%#%s#%s', v:val.color_name, v:val.s)"), '')
 endfunction
+"}}}
 
-function! s:ez.color_info(color) "{{{1
-  return {
-        \ 'name':self.hlmanager.register(a:color),
-        \ 'bg': a:color[s:SCREEN][0],
-        \ 'fg': a:color[s:SCREEN][1],
-        \ }
-endfunction
-
-function! s:ez.setup(active, winnr) "{{{1
-  if !self.conf.__loaded_theme
-    call self.load_theme(self.conf.theme)
-  endif
-
-  call extend(s:Parts, {
-        \ '__active':   a:active,
-        \ '__mode':     mode(),
-        \ '__winnr':    a:winnr,
-        \ '__bufnr':    winbufnr(a:winnr),
-        \ '__width':    winwidth(a:winnr),
-        \ '__filetype': getwinvar(a:winnr, '&filetype'),
-        \ '__buftype':  getwinvar(a:winnr, '&buftype'),
-        \ '__parts':    {},
-        \ '__color':    g:ezbar.color,
-        \ '__layout':   self.normalize_layout(self.conf[ a:active ? 'active' : 'inactive' ]),
-        \ '__c':        self.color[a:active ? 'StatusLine' : 'StatusLineNC'],
-        \ '__':         s:Helper,
-        \ })
-
-  if self._did_setup
-    return
-  endif
-
-  " for performance benefit, we setup once per refresh.
-  call extend(self, {
-        \ 'sep_L':        get(g:ezbar, 'separator_L', '|'),
-        \ 'sep_R':        get(g:ezbar, 'separator_R', '|'),
-        \ 'sep_border_L': get(g:ezbar, 'separator_border_L', ''),
-        \ 'sep_border_R': get(g:ezbar, 'separator_border_R', ''),
-        \ })
-  let self._did_setup = 1
+" Misc:
+function! s:ez.layout_normalize(layout) "{{{1
+  return s:_.is_List(a:layout) ? copy(a:layout) : split(a:layout)
 endfunction
 
 function! s:ez.load_theme(theme) "{{{1
-  let self._color_cache = {}
+  call self.cc.reset()
   let theme = ezbar#theme#load(a:theme)
   call extend(g:ezbar.color, theme)
   let self.conf.__loaded_theme = 1
 endfunction
 
-function! s:ez.join() "{{{1
-  return join(map(s:Parts.__layout, "printf('%%#%s#%s', v:val.color_name, v:val.s)"), '')
-endfunction
-
-let s:conf_default = {
-      \ '__loaded_default_config': 0,
-      \ '__loaded_theme': 0,
-      \ 'theme': 'default',
-      \ 'hide_rule': {},
-      \ 'color': {},
-      \ }
-
-function! s:ez.string(active, winnr) "{{{1
-  let self.conf = g:ezbar
-  cal extend(self.conf, s:conf_default, 'keep')
-  if g:ezbar_enable_default_config && !self.conf.__loaded_default_config
-    call extend(self.conf, ezbar#config#default#get(), 'keep')
-    let self.conf.__loaded_default_config = 1
-  endif
-  let s:Parts  = self.conf.parts
-  try
-    call self.setup(a:active, a:winnr)
-    let s = ''
-    let s = self.prepare().insert_separator().join()
-  catch
-    echom v:exception
-  finally
-    return s
-  endtry
-endfunction
-
 function! s:ez.insert_separator() "{{{1
+  " Insert section separator between parts.
+  " Consider background change like if
+  "  - background color is same to next section, then
+  "     -> use g:ezbar.separator_{section}.
+  "  - background color is different to next section, then
+  "     -> use g:ezbar.separator_border_{section}.
   let LAYOUT    = s:Parts.__layout
   let idx_last  = len(LAYOUT) - 1
-  let idx_LRsep = self.index_of_LR_separator(LAYOUT)
+  let idx_LRsep = s:index_of_LR_separator(LAYOUT)
   let section   = 'L'
 
   let R = []
   for [idx, idx_next, part] in map(copy(LAYOUT), '[v:key, v:key+1, v:val]')
-    let color           = self.color_info(self.color_of(part))
+    let color           = self.cc.get(part)
     let part.color_name = color.name
 
-    if idx isnot idx_LRsep | let part.s = ' ' . part.s . ' ' | endif
+    if idx isnot idx_LRsep
+      let part.s = ' ' . part.s . ' '
+    endif
     call add(R, part)
 
     if idx is idx_last | break | endif
 
-    let color_next = self.color_info(self.color_of(LAYOUT[idx_next]))
+    let color_next = self.cc.get(LAYOUT[idx_next])
     if color.bg is color_next.bg && idx_next is idx_LRsep
       let section = 'R'
       continue
@@ -277,22 +344,12 @@ function! s:ez.insert_separator() "{{{1
           \ : [ self['sep_border_' . section], { s:SCREEN : section is 'L' ?
           \ [color_next.bg, color.bg] : [color.bg, color_next.bg]
           \ } ]
-    call add(R, { 's' : s, 'color_name': self.color_info(c).name })
+    call add(R, { 's' : s, 'color_name': self.cc.info(c).name })
     if idx_next is idx_LRsep
       let section = 'R'
     endif
   endfor
   let s:Parts.__layout = R
-  return self
-endfunction
-
-function! s:ez.index_of_LR_separator(layout) "{{{1
-  for [idx, s] in map(copy(a:layout), '[v:key, v:val.s]')
-    if s ==# '%='
-      return idx
-    endif
-  endfor
-  return -1
 endfunction
 "}}}
 

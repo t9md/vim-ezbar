@@ -39,7 +39,7 @@ call s:define_type_checker()
 unlet! s:define_type_checker
 
 function! s:screen_type() "{{{1
-  return has('gui_running') ? 'gui' : 'cterm'
+  return ezbar#util#is_guicolors() ? 'gui' : 'cterm'
 endfunction
 "}}}
 
@@ -62,5 +62,9 @@ function! ezbar#util#get() "{{{1
   return R
 endfunction
 "}}}
+
+function! ezbar#util#is_guicolors() abort
+  return has('gui_running') || has('termguicolors') && &termguicolors
+endfunction
 
 " vim: foldmethod=marker

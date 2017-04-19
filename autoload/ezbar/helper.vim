@@ -95,7 +95,7 @@ function! s:helper.hide(...) "{{{1
 endfunction
 
 function! s:helper.screen() "{{{1
-  return has('gui_running') ? 'gui' : 'cterm'
+  return ezbar#util#is_guicolors() ? 'gui' : 'cterm'
 endfunction
 
 function! s:helper.convert(color) "{{{1

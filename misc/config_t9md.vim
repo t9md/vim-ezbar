@@ -9,7 +9,7 @@
 
 let g:ezbar_enable_default_config = 0
 let g:ezbar = {}
-let g:ezbar.theme = has('gui_running') ? 'neon' : 'neon3'
+let g:ezbar.theme = ezbar#util#is_guicolors() ? 'neon' : 'neon3'
 " let g:ezbar.theme = 'fancy'
 " let g:ezbar.theme = 'neon3'
 
